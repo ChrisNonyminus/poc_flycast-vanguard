@@ -24,6 +24,7 @@
 #include "hw/sh4/sh4_mem.h"
 #include "hw/naomi/naomi_cart.h"
 #include "reios/reios.h"
+#include <Vanguard/VanguardClient.h>
 
 const Cheat CheatManager::_widescreen_cheats[] =
 {
@@ -340,6 +341,7 @@ bool CheatManager::Reset()
 
 void CheatManager::Apply()
 {
+	VanguardClientUnmanaged::CORE_STEP();
 	if (_widescreen_cheat != nullptr)
 	{
 		for (size_t i = 0; i < ARRAY_SIZE(_widescreen_cheat->addresses) && _widescreen_cheat->addresses[i] != 0; i++)

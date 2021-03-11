@@ -4,6 +4,7 @@
 #include "sh4_core.h"
 #include "sh4_sched.h"
 #include "oslib/oslib.h"
+#include <Vanguard/VanguardClient.h>
 
 
 //sh4 scheduler
@@ -68,6 +69,7 @@ void sh4_sched_ffts()
 
 int sh4_sched_register(int tag, sh4_sched_callback* ssc)
 {
+	//VanguardClientUnmanaged::CORE_STEP();
 	sched_list t={ssc,tag,-1,-1};
 
 	sch_list.push_back(t);
@@ -142,7 +144,6 @@ void sh4_sched_tick(int cycles)
 	Sh4cntx.sh4_sched_time+=cycles;
 	Sh4cntx.sh4_sched_next-=cycles;
 	*/
-
 	if (Sh4cntx.sh4_sched_next<0)
 	{
 		u32 fztime=sh4_sched_now()-cycles;

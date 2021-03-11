@@ -15,9 +15,9 @@
 
 #define SHIL_MODE 2
 #include "hw/sh4/dyna/shil_canonical.h"
-
 #include <algorithm>
 #include <map>
+#include "Vanguard/VanguardClient.h"
 
 struct DynaRBI : RuntimeBlockInfo
 {
@@ -41,6 +41,7 @@ void ngen_mainloop(void* v_cntx)
 
 	while (sh4_int_bCpuRun)
 	{
+		//VanguardClientUnmanaged::CORE_STEP();
 		cycle_counter = SH4_TIMESLICE;
 		do {
 			DynarecCodeEntryPtr rcb = bm_GetCodeByVAddr(ctx->cntx.pc);

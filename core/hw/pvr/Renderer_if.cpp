@@ -8,6 +8,7 @@
 
 #include <mutex>
 #include <zlib.h>
+#include <Vanguard/VanguardClient.h>
 
 u32 VertexCount=0;
 u32 FrameCount=1;

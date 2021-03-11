@@ -1,0 +1,1379 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="M:\sourcecode\flycast\core\nullDC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\sdl\sdl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdpsr\cdipsr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\bitstream.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\cdrom.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\chd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\flac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\huffman.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\coreio\coreio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\md5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\sha1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\sha256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\bitmath.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\bitreader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\cpu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\crc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed_intrin_sse2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed_intrin_ssse3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\float.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\format.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_avx2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse41.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\md5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\memory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\metadata_iterators.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\metadata_object.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\stream_decoder.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\window.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\windows_unicode_filenames.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zArcIn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zBuf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zCrc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zCrcOpt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zDec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zFile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zStream.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Alloc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Bcj2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Bra86.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Bra.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\BraIA64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\CpuArch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Delta.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzFind.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Lzma2Dec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Lzma86Dec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Lzma86Enc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzmaDec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzmaEnc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzmaLib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Sort.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\libelf\elf32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\libelf\elf64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\libelf\elf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui_demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui_widgets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\xbrz\xbrz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\archive\7zArchive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\archive\archive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\archive\rzip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\cfg\cfg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\cfg\cl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\cfg\ini.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\emitter\x86_emitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\aica.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\aica_if.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\aica_mem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_arm64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_interp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_x64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\sgc_if.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm7.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm_mem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\vbaARM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\virt_arm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\bba\bba.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\bba\rtl8139c.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\gdrom\gdrom_response.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\gdrom\gdromv3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\holly\holly_intc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\holly\sb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\holly\sb_mem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_cfg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_devs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_if.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_jvs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\vmem32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\_vmem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\modem\modem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\awcartridge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\decrypt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\gdcartridge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\m1cartridge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\m4cartridge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_cart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_flashrom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_m3comm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_roms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\drkPvr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr_mem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr_regs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr_sb_regs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\Renderer_if.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\spg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\ta.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\ta_ctx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\ta_vtx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\blockmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\decoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\driver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\shil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ssa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_fpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_interpreter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_opcodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\bsc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\ccn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\cpg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\dmac.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\fastmmu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\intc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\rtc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\serial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\tmu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\ubc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_core_regs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_interrupts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mmr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode_list.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_rom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_sched.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\cdi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\chd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\cue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\gdi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\ImgReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\ioctl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\input\gamepad_device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\input\keyboard_device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\input\mapping.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\linux\common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\dispmanx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\evdev.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\joystick.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\x11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\log\ConsoleListenerDroid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\log\ConsoleListenerNix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\log\ConsoleListenerWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\log\LogManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\network\dns.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\network\miniupnp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\network\naomi_network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\network\picoppp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_alsa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_coreaudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_directsound.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_libao.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_null.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_omx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_oss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_pulseaudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_sdl2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiostream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\profiler\profiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rec-cpp\rec_cpp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\descrambl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\gdrom_hle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\reios.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\reios_elf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\egl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl4funcs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl_context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\osx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\sdl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\switcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\wgl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\xgl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl32funcs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\cheats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\dispframe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\serialize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\stdclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gldraw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gltex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\imgui_impl_opengl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\CustomTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_android.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\mainui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\osd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\sorter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\TexCache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\abuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gldraw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gltex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_drawer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_renderpass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_shaders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\drawer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\quad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\shaders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vmallocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vmu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rec-x64\rec_x64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\windows\win_vmem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\windows\winmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\ManagedWrapper.cpp">
+      <Filter>Vanguard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\UnmanagedWrapper.cpp">
+      <Filter>Vanguard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\VanguardClient.cpp">
+      <Filter>Vanguard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\VanguardConfigLoader.cpp">
+      <Filter>Vanguard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\VanguardSettings.cpp">
+      <Filter>Vanguard</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="M:\sourcecode\flycast\core\sdl\sdl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\sdl\sdl_gamepad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\sdl\sdl_keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdpsr\cdipsr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\bitstream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\cdrom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\chd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\coretypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\flac.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\huffman.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\coreio\coreio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\sha1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\sha256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\archive\7zArchive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\archive\archive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\archive\rzip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_coding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_disasm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_emitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_registers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Branches.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_DataOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Extend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_LoadStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Multiply.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Parallel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Special.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Status.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VDataOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VLoadStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VRegXfer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_Branches.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_fp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_LoadStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_psuedo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_state.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\cfg\cfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\cfg\ini.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_class_names.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_class_names_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_descriptors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_indexes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_emitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_matcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_classes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\aica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\aica_if.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\aica_mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\dsp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\sgc_if.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm7.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm_mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm-new.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\virt_arm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\bba\bba.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\bba\rtl8139c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\flashrom\flashrom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\gdrom\gdrom_if.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\gdrom\gdromv3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\holly\holly_intc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\holly\sb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\holly\sb_mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_cfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_devs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_if.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\vmem32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\_vmem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\modem\modem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\modem\modem_regs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\awave_regs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\awcartridge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\decrypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\gdcartridge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\m1cartridge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\m4cartridge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_cart.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_flashrom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_m3comm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_regs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_roms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_roms_input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\helper_classes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr_mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr_regs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr_sb_regs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\Renderer_if.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\spg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta_const_df.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta_ctx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta_structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\blockmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\decoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\decoder_opcodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ngen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\regalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\shil_canonical.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\shil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ssa.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ssa_regalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\fsca-table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_opcodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\ccn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\dmac.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\modules.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\wince.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_cache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_if.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_interpreter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_interrupts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mmr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_rom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_sched.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\imgread\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\imgread\gd_driver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\input\gamepad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\input\gamepad_device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\input\keyboard_device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\input\mapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\dispmanx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\evdev.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\icon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\joystick.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\x11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\x11_keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\log\BitSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\log\ConsoleListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\log\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\log\LogManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\log\StringUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\network\miniupnp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\network\naomi_network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\network\net_platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\network\picoppp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\oslib\audiostream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\oslib\oslib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\profiler\profiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\descrambl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\gdrom_hle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\iso9660.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\reios.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\reios_elf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\egl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\gl_context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\osx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\sdl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\wgl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\xgl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\gl32funcs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\build.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\cheats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\stdclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\glcache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\gles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\imgui_impl_opengl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\CustomTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\game_scanner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_android.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\osd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\sorter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\tileclip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\TexCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gl4\gl4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_drawer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_renderpass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_shaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\commandpool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\drawer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\shaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vk_mem_alloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vmallocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vmu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rec-x64\x64_regalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\windows\win_keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\windows\xinput_gamepad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\Helpers.hpp">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\ManagedWrapper.h">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\ThreadLocalHelper.h">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\UnmanagedWrapper.h">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\VanguardClient.h">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\VanguardClientInitializer.h">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\VanguardConfigLoader.h">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vanguard\VanguardSettingsWrapper.h">
+      <Filter>Vanguard</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="M:\sourcecode\flycast\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="M:\sourcecode\flycast\core\rec-x64\msvc.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="M:\sourcecode\flycast\core\hw\sh4\dyna" />
+    <None Include="M:\sourcecode\flycast\core\hw\sh4\interpr" />
+    <None Include="M:\sourcecode\flycast\core\hw\sh4\modules" />
+    <None Include="M:\sourcecode\flycast\core\imgread\SCSIDEFS.H" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="M:\sourcecode\flycast\shell\windows\reicast.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{2720FD23-D4D0-3BB2-A573-46542C86B973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{73862D8B-E6EA-3DFB-B754-A7DB76F6159E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vanguard">
+      <UniqueIdentifier>{277dbf0c-ae85-40fe-9e53-efbb4c8a6cb4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

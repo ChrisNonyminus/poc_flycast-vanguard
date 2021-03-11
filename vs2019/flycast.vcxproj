@@ -1,0 +1,1012 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{24A72216-6666-3119-92AA-29D4D6B8CA07}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>flycast</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">M:\sourcecode\flycast\vs2019\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">flycast.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">flycast</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">M:\sourcecode\flycast\vs2019\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">flycast.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">flycast</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">M:\sourcecode\flycast\vs2019\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">flycast.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">flycast</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">M:\sourcecode\flycast\vs2019\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">flycast.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">flycast</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>..\core\hw\mem;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IncludePaths>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(IncludePaths)</IncludePaths>
+    </MASM>
+    <Midl>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>core\deps\xxHash\cmake_unofficial\Debug\xxhash.lib;core\deps\glslang\SPIRV\Debug\SPIRVd.lib;..\core\deps\SDL2-2.0.12\MSVC\lib\x64\SDL2.lib;core\deps\zlib\Debug\zlibstaticd.lib;core\deps\miniupnpc\Debug\libminiupnpc.lib;core\deps\volk\Debug\volk.lib;dsound.lib;opengl32.lib;winmm.lib;ws2_32.lib;wsock32.lib;xinput9_1_0.lib;core\deps\glslang\glslang\Debug\glslangd.lib;core\deps\glslang\OGLCompilersDLL\Debug\OGLCompilerd.lib;core\deps\glslang\glslang\OSDependent\Windows\Debug\OSDependentd.lib;core\deps\glslang\hlsl\Debug\HLSLd.lib;iphlpapi.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>M:/sourcecode/flycast/vs2019/Debug/flycast.lib</ImportLibrary>
+      <ProgramDataBaseFile>M:/sourcecode/flycast/vs2019/Debug/flycast.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IncludePaths>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(IncludePaths)</IncludePaths>
+    </MASM>
+    <Midl>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>core\deps\xxHash\cmake_unofficial\Release\xxhash.lib;core\deps\glslang\SPIRV\Release\SPIRV.lib;..\core\deps\SDL2-2.0.12\MSVC\lib\x64\SDL2.lib;core\deps\zlib\Release\zlibstatic.lib;core\deps\miniupnpc\Release\libminiupnpc.lib;core\deps\volk\Release\volk.lib;dsound.lib;opengl32.lib;winmm.lib;ws2_32.lib;wsock32.lib;xinput9_1_0.lib;core\deps\glslang\glslang\Release\glslang.lib;core\deps\glslang\OGLCompilersDLL\Release\OGLCompiler.lib;core\deps\glslang\glslang\OSDependent\Windows\Release\OSDependent.lib;core\deps\glslang\hlsl\Release\HLSL.lib;iphlpapi.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>M:/sourcecode/flycast/vs2019/Release/flycast.lib</ImportLibrary>
+      <ProgramDataBaseFile>M:/sourcecode/flycast/vs2019/Release/flycast.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IncludePaths>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(IncludePaths)</IncludePaths>
+    </MASM>
+    <Midl>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>core\deps\xxHash\cmake_unofficial\MinSizeRel\xxhash.lib;core\deps\glslang\SPIRV\MinSizeRel\SPIRV.lib;..\core\deps\SDL2-2.0.12\MSVC\lib\x64\SDL2.lib;core\deps\zlib\MinSizeRel\zlibstatic.lib;core\deps\miniupnpc\MinSizeRel\libminiupnpc.lib;core\deps\volk\MinSizeRel\volk.lib;dsound.lib;opengl32.lib;winmm.lib;ws2_32.lib;wsock32.lib;xinput9_1_0.lib;core\deps\glslang\glslang\MinSizeRel\glslang.lib;core\deps\glslang\OGLCompilersDLL\MinSizeRel\OGLCompiler.lib;core\deps\glslang\glslang\OSDependent\Windows\MinSizeRel\OSDependent.lib;core\deps\glslang\hlsl\MinSizeRel\HLSL.lib;iphlpapi.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>M:/sourcecode/flycast/vs2019/MinSizeRel/flycast.lib</ImportLibrary>
+      <ProgramDataBaseFile>M:/sourcecode/flycast/vs2019/MinSizeRel/flycast.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;CHD5_FLAC;CHD5_LZMA;HAVE_CONFIG_H;HAVE_FSEEKO;_7ZIP_ST;USE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IncludePaths>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(IncludePaths)</IncludePaths>
+    </MASM>
+    <Midl>
+      <AdditionalIncludeDirectories>M:\sourcecode\flycast\core;M:\sourcecode\flycast\core\deps;M:\sourcecode\flycast\core\deps\stb;M:\sourcecode\flycast\core\deps\xbyak;M:\sourcecode\flycast\core\khronos;\..;M:\sourcecode\flycast\core\deps\zlib;M:\sourcecode\flycast\vs2019\core\deps\zlib;M:\sourcecode\flycast\core\deps\flac\include;M:\sourcecode\flycast\core\deps\flac\src\libFLAC\include;M:\sourcecode\flycast\core\deps\miniupnpc;M:\sourcecode\flycast\core\deps\dirent;M:\sourcecode\flycast\core\deps\xxHash\cmake_unofficial\..;M:\sourcecode\flycast\core\deps\glm\glm\..;M:\sourcecode\flycast\core\deps\glslang\SPIRV\..;M:\sourcecode\flycast\core\deps\glslang\glslang\..;M:\sourcecode\flycast\core\deps\volk;M:\sourcecode\flycast\core\deps\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>core\deps\xxHash\cmake_unofficial\RelWithDebInfo\xxhash.lib;core\deps\glslang\SPIRV\RelWithDebInfo\SPIRV.lib;..\core\deps\SDL2-2.0.12\MSVC\lib\x64\SDL2.lib;core\deps\zlib\RelWithDebInfo\zlibstatic.lib;core\deps\miniupnpc\RelWithDebInfo\libminiupnpc.lib;core\deps\volk\RelWithDebInfo\volk.lib;dsound.lib;opengl32.lib;winmm.lib;ws2_32.lib;wsock32.lib;xinput9_1_0.lib;core\deps\glslang\glslang\RelWithDebInfo\glslang.lib;core\deps\glslang\OGLCompilersDLL\RelWithDebInfo\OGLCompiler.lib;core\deps\glslang\glslang\OSDependent\Windows\RelWithDebInfo\OSDependent.lib;core\deps\glslang\hlsl\RelWithDebInfo\HLSL.lib;iphlpapi.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>M:/sourcecode/flycast/vs2019/RelWithDebInfo/flycast.lib</ImportLibrary>
+      <ProgramDataBaseFile>M:/sourcecode/flycast/vs2019/RelWithDebInfo/flycast.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="M:\sourcecode\flycast\CMakeLists.txt">
+      <StdOutEncoding>UTF-8</StdOutEncoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule M:/sourcecode/flycast/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SM:/sourcecode/flycast -BM:/sourcecode/flycast/vs2019 --check-stamp-file M:/sourcecode/flycast/vs2019/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelDPCPP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.19\Modules\FindALSA.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindOpenMP.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\SelectLibraryConfigurations.cmake;M:\sourcecode\flycast\core\version.h.in;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeASM_MASMCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCXXCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeRCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeSystem.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.cpp;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.cpp;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">M:\sourcecode\flycast\vs2019\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule M:/sourcecode/flycast/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SM:/sourcecode/flycast -BM:/sourcecode/flycast/vs2019 --check-stamp-file M:/sourcecode/flycast/vs2019/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelDPCPP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.19\Modules\FindALSA.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindOpenMP.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\SelectLibraryConfigurations.cmake;M:\sourcecode\flycast\core\version.h.in;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeASM_MASMCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCXXCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeRCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeSystem.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.cpp;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.cpp;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">M:\sourcecode\flycast\vs2019\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule M:/sourcecode/flycast/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SM:/sourcecode/flycast -BM:/sourcecode/flycast/vs2019 --check-stamp-file M:/sourcecode/flycast/vs2019/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelDPCPP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.19\Modules\FindALSA.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindOpenMP.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\SelectLibraryConfigurations.cmake;M:\sourcecode\flycast\core\version.h.in;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeASM_MASMCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCXXCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeRCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeSystem.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.cpp;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.cpp;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">M:\sourcecode\flycast\vs2019\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule M:/sourcecode/flycast/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SM:/sourcecode/flycast -BM:/sourcecode/flycast/vs2019 --check-stamp-file M:/sourcecode/flycast/vs2019/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\IntelDPCPP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.19\Modules\FindALSA.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindOpenMP.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.19\Modules\SelectLibraryConfigurations.cmake;M:\sourcecode\flycast\core\version.h.in;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeASM_MASMCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeCXXCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeRCCompiler.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\3.19.0\CMakeSystem.cmake;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPCheckVersion.cpp;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.c;M:\sourcecode\flycast\vs2019\CMakeFiles\FindOpenMP\OpenMPTryFlag.cpp;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">M:\sourcecode\flycast\vs2019\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\core\Vanguard\ManagedWrapper.cpp" />
+    <ClCompile Include="..\core\Vanguard\UnmanagedWrapper.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExceptionHandling>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</RuntimeTypeInfo>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\VanguardClient.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExceptionHandling>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</RuntimeTypeInfo>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\VanguardConfigLoader.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExceptionHandling>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</RuntimeTypeInfo>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="..\core\Vanguard\VanguardSettings.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExceptionHandling>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\core\hw\mem;..\core\hw\mem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">..\core\hw\mem;%(AdditionalIncludeDirectories);$(VcpkgCurrentInstalledDir)include</AdditionalIncludeDirectories>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+      </BasicRuntimeChecks>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</RuntimeTypeInfo>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\nullDC.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\sdl\sdl.cpp">
+      <ObjectFileName>$(IntDir)/core/sdl/sdl.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="..\core\Vanguard\Helpers.hpp" />
+    <ClInclude Include="..\core\Vanguard\ManagedWrapper.h" />
+    <ClInclude Include="..\core\Vanguard\ThreadLocalHelper.h" />
+    <ClInclude Include="..\core\Vanguard\UnmanagedWrapper.h" />
+    <ClInclude Include="..\core\Vanguard\VanguardClient.h" />
+    <ClInclude Include="..\core\Vanguard\VanguardClientInitializer.h" />
+    <ClInclude Include="..\core\Vanguard\VanguardConfigLoader.h" />
+    <ClInclude Include="..\core\Vanguard\VanguardSettingsWrapper.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\sdl\sdl.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\sdl\sdl_gamepad.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\sdl\sdl_keyboard.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdpsr\cdipsr.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdpsr\cdipsr.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\bitstream.c" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\bitstream.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\cdrom.c" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\cdrom.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\chd.c">
+      <ObjectFileName>$(IntDir)/core/deps/chdr/chd.c.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\chd.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\coretypes.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\flac.c" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\flac.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\huffman.c" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\huffman.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\coreio\coreio.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\coreio\coreio.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\md5.cpp">
+      <ObjectFileName>$(IntDir)/core/deps/crypto/md5.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\md5.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\sha1.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\sha1.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\sha256.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\sha256.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\bitmath.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\bitreader.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\cpu.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\crc.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed_intrin_sse2.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed_intrin_ssse3.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\float.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\format.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_avx2.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse2.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse41.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\md5.c">
+      <ObjectFileName>$(IntDir)/core/deps/flac/src/libFLAC/md5.c.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\memory.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\metadata_iterators.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\metadata_object.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\stream_decoder.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\window.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\windows_unicode_filenames.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zArcIn.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zBuf.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zCrc.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zCrcOpt.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zDec.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zFile.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zStream.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Alloc.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Bcj2.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Bra86.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Bra.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\BraIA64.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\CpuArch.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Delta.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzFind.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Lzma2Dec.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Lzma86Dec.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Lzma86Enc.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzmaDec.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzmaEnc.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\LzmaLib.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\Sort.c" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\libelf\elf32.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\libelf\elf64.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\libelf\elf.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui_demo.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui_draw.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\xbrz\xbrz.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\archive\7zArchive.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\archive\7zArchive.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\archive\archive.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\archive\archive.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\archive\rzip.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\archive\rzip.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_coding.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_disasm.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_emitter.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_registers.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Branches.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_DataOp.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Extend.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_LoadStore.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Misc.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Multiply.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Parallel.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Special.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Status.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VDataOp.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VLoadStore.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VRegXfer.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_Branches.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_fp.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_LoadStore.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_psuedo.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_state.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\cfg\cfg.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\cfg\cfg.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\cfg\cl.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\cfg\ini.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\cfg\ini.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_class_names.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_class_names_string.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_descriptors.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_indexes.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\emitter\x86_emitter.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_emitter.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_matcher.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_classes.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_encoder.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_table.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\aica.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\aica.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\aica_if.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\aica_if.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\aica_mem.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\aica_mem.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\dsp.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_arm64.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_interp.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_x64.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\sgc_if.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\sgc_if.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm64.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm7.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm7.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm_mem.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm_mem.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm-new.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\vbaARM.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\virt_arm.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\virt_arm.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\bba\bba.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\bba\bba.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\bba\rtl8139c.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\bba\rtl8139c.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\flashrom\flashrom.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\gdrom\gdrom_if.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\gdrom\gdrom_response.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\gdrom\gdromv3.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\gdrom\gdromv3.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\holly\holly_intc.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\holly\holly_intc.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\holly\sb.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\holly\sb.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\holly\sb_mem.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\holly\sb_mem.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_cfg.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_cfg.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_devs.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_devs.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_helper.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_helper.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_if.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_if.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_jvs.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\vmem32.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\vmem32.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\_vmem.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\_vmem.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\modem\modem.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\modem\modem.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\modem\modem_regs.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\awave_regs.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\awcartridge.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\awcartridge.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\decrypt.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\decrypt.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\gdcartridge.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\gdcartridge.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\m1cartridge.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\m1cartridge.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\m4cartridge.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\m4cartridge.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_cart.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_cart.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_flashrom.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_flashrom.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_m3comm.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_m3comm.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_regs.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_roms.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_roms.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\naomi\naomi_roms_input.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\drkPvr.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\helper_classes.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr_mem.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr_mem.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr_regs.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr_regs.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr_sb_regs.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr_sb_regs.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\Renderer_if.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\Renderer_if.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\spg.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\spg.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta_const_df.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\ta.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\ta_ctx.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta_ctx.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\ta_structs.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\ta_vtx.cpp" />
+    <None Include="M:\sourcecode\flycast\core\hw\sh4\dyna">
+    </None>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\blockmanager.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\blockmanager.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\decoder.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\decoder.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\decoder_opcodes.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\driver.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ngen.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\regalloc.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\shil_canonical.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\shil.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\shil.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ssa.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ssa.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ssa_regalloc.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\fsca-table.h" />
+    <None Include="M:\sourcecode\flycast\core\hw\sh4\interpr">
+    </None>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_fpu.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_interpreter.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_opcodes.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\interpr\sh4_opcodes.h" />
+    <None Include="M:\sourcecode\flycast\core\hw\sh4\modules">
+    </None>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\bsc.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\ccn.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\ccn.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\cpg.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\dmac.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\dmac.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\fastmmu.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\intc.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu_impl.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\modules.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\rtc.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\serial.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\tmu.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\modules\ubc.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\wince.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_cache.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_core.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_core_regs.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_if.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_interpreter.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_interrupts.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_interrupts.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mem.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mem.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mmr.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mmr.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode_list.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode_list.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_rom.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_rom.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\sh4\sh4_sched.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_sched.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\cdi.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\chd.cpp">
+      <ObjectFileName>$(IntDir)/core/imgread/chd.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\common.cpp">
+      <ObjectFileName>$(IntDir)/core/imgread/common.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="M:\sourcecode\flycast\core\imgread\common.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\cue.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\imgread\gd_driver.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\gdi.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\ImgReader.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\imgread\ioctl.cpp" />
+    <None Include="M:\sourcecode\flycast\core\imgread\SCSIDEFS.H">
+    </None>
+    <ClInclude Include="M:\sourcecode\flycast\core\input\gamepad.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\input\gamepad_device.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\input\gamepad_device.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\input\keyboard_device.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\input\keyboard_device.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\input\mapping.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\input\mapping.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\linux\common.cpp">
+      <ObjectFileName>$(IntDir)/core/linux/common.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\dispmanx.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\dispmanx.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\evdev.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\evdev.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\icon.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\joystick.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\joystick.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\x11.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\x11.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\x11_keyboard.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\log\BitSet.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\log\ConsoleListener.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\log\ConsoleListenerDroid.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\log\ConsoleListenerNix.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\log\ConsoleListenerWin.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\log\Log.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\log\LogManager.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\log\LogManager.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\log\StringUtil.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\network\dns.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\network\miniupnp.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\network\miniupnp.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\network\naomi_network.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\network\naomi_network.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\network\net_platform.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\network\picoppp.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\network\picoppp.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_alsa.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_coreaudio.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_directsound.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_libao.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_null.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_omx.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_oss.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_pulseaudio.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_sdl2.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiostream.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\oslib\audiostream.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\oslib\oslib.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\profiler\profiler.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\profiler\profiler.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rec-cpp\rec_cpp.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\descrambl.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\descrambl.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\font.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\gdrom_hle.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\gdrom_hle.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\iso9660.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\reios.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\reios.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\reios\reios_elf.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\reios\reios_elf.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\context.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\egl.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\egl.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl4funcs.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl_context.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\gl_context.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\osx.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\osx.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\sdl.cpp">
+      <ObjectFileName>$(IntDir)/core/wsi/sdl.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\sdl.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\switcher.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\wgl.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\wgl.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\xgl.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\xgl.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl32funcs.c" />
+    <ClInclude Include="M:\sourcecode\flycast\core\wsi\gl32funcs.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\build.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\cheats.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\cheats.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\dispframe.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\emulator.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\serialize.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\stdclass.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\stdclass.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\types.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\glcache.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gldraw.cpp">
+      <ObjectFileName>$(IntDir)/core/rend/gles/gldraw.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gles.cpp">
+      <ObjectFileName>$(IntDir)/core/rend/gles/gles.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\gles.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gltex.cpp">
+      <ObjectFileName>$(IntDir)/core/rend/gles/gltex.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\imgui_impl_opengl3.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\imgui_impl_opengl3.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\CustomTexture.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\CustomTexture.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\game_scanner.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_android.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_android.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_util.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_util.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\mainui.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\osd.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\osd.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\sorter.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\sorter.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\tileclip.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\TexCache.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\TexCache.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\abuffer.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gl4\gl4.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gldraw.cpp">
+      <ObjectFileName>$(IntDir)/core/rend/gl4/gldraw.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gles.cpp">
+      <ObjectFileName>$(IntDir)/core/rend/gl4/gles.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gltex.cpp">
+      <ObjectFileName>$(IntDir)/core/rend/gl4/gltex.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_buffer.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_drawer.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_drawer.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_pipeline.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_pipeline.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_renderer.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_renderpass.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_renderpass.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_shaders.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_shaders.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\buffer.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\buffer.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\commandpool.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\compiler.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\compiler.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\drawer.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\drawer.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\pipeline.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\pipeline.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\quad.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\quad.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\shaders.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\shaders.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\texture.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\texture.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\utils.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vk_mem_alloc.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vmallocator.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vmallocator.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vmu.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vmu.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_context.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_context.h" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_renderer.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\rec-x64\rec_x64.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\rec-x64\x64_regalloc.h" />
+    <MASM Include="M:\sourcecode\flycast\core\rec-x64\msvc.asm" />
+    <ClInclude Include="M:\sourcecode\flycast\core\windows\win_keyboard.h" />
+    <ClCompile Include="M:\sourcecode\flycast\core\windows\win_vmem.cpp" />
+    <ClCompile Include="M:\sourcecode\flycast\core\windows\winmain.cpp" />
+    <ClInclude Include="M:\sourcecode\flycast\core\windows\xinput_gamepad.h" />
+    <ResourceCompile Include="M:\sourcecode\flycast\shell\windows\reicast.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\RTCV\Source\Libraries\Common\Common.csproj">
+      <Project>{467959cb-fbff-49ab-a26f-f8ff004a0408}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RTCV\Source\Libraries\CorruptCore\CorruptCore.csproj">
+      <Project>{e18e5cf4-8827-432e-91c7-dff9ae15ccf6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RTCV\Source\Libraries\NetCore\NetCore.csproj">
+      <Project>{f41aed5d-1da5-44d8-82ed-8fd38c274627}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RTCV\Source\Libraries\Vanguard\Vanguard.csproj">
+      <Project>{e0943f3f-886f-4b60-ad92-7293e3e83531}</Project>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\ZERO_CHECK.vcxproj">
+      <Project>{4A985F1E-7ECF-3E8C-A243-4214B930AF4B}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\glslang\hlsl\HLSL.vcxproj">
+      <Project>{1DF9914E-93F6-3D5B-B29F-27936A372E26}</Project>
+      <Name>HLSL</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\glslang\OGLCompilersDLL\OGLCompiler.vcxproj">
+      <Project>{DF6F7D33-6E2F-35AA-9B5D-0AB7EDFA15D7}</Project>
+      <Name>OGLCompiler</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\glslang\glslang\OSDependent\Windows\OSDependent.vcxproj">
+      <Project>{88EC43D0-1323-3B86-87C8-FDA8E3858907}</Project>
+      <Name>OSDependent</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\glslang\SPIRV\SPIRV.vcxproj">
+      <Project>{90FF5BCE-4954-31C5-938A-53CEDC2B6D5D}</Project>
+      <Name>SPIRV</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\glslang\glslang\glslang.vcxproj">
+      <Project>{56F03963-D0A3-344C-947C-67EDE24BC2A7}</Project>
+      <Name>glslang</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\miniupnpc\libminiupnpc-static.vcxproj">
+      <Project>{27AE822D-DB4A-3FC1-97A0-DBE00E5C7893}</Project>
+      <Name>libminiupnpc-static</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\volk\volk.vcxproj">
+      <Project>{FF770069-2146-3AD2-A798-C487C79C12B0}</Project>
+      <Name>volk</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\xxHash\cmake_unofficial\xxhash.vcxproj">
+      <Project>{F36B27FF-711F-351A-893F-D468EEE561E0}</Project>
+      <Name>xxhash</Name>
+    </ProjectReference>
+    <ProjectReference Include="M:\sourcecode\flycast\vs2019\core\deps\zlib\zlibstatic.vcxproj">
+      <Project>{2E1E81DF-3A31-3577-873C-AC0BBC70A002}</Project>
+      <Name>zlibstatic</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>

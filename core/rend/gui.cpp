@@ -42,6 +42,8 @@
 #include "emulator.h"
 #include "rend/mainui.h"
 
+#include "Vanguard/VanguardClientInitializer.h"
+
 extern void UpdateInputState();
 extern bool game_started;
 
@@ -242,6 +244,7 @@ void ImGui_Impl_NewFrame()
 
 #if 0
 #include "oslib/timeseries.h"
+#include <nullDC.cpp>
 TimeSeries renderTimes;
 TimeSeries vblankTimes;
 
@@ -296,6 +299,7 @@ void gui_open_settings()
 
 static void gui_start_game(const std::string& path)
 {
+	VanguardClientInitializer::Initialize();
 	scanner.stop();
 	gui_state = Loading;
 	static std::string path_copy;

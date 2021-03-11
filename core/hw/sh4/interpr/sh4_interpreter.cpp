@@ -12,6 +12,7 @@
 #include "../sh4_sched.h"
 #include "hw/holly/sb.h"
 #include "../sh4_cache.h"
+#include <Vanguard/VanguardClient.h>
 
 #define CPU_RATIO      (8)
 
@@ -44,11 +45,13 @@ void Sh4_int_Run()
 
 	do
 	{
+		//VanguardClientUnmanaged::CORE_STEP();
 #if !defined(NO_MMU)
 		try {
 #endif
 			do
 			{
+				//VanguardClientUnmanaged::CORE_STEP();
 				u32 op = ReadNexOp();
 
 				ExecuteOpcode(op);

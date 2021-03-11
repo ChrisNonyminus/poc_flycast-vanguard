@@ -1,6 +1,7 @@
 #include "ta_ctx.h"
 #include "spg.h"
 #include "oslib/oslib.h"
+#include <Vanguard/VanguardClient.h>
 
 extern u32 fskip;
 extern u32 FrameCount;
@@ -74,7 +75,8 @@ cResetEvent frame_finished;
 bool QueueRender(TA_context* ctx)
 {
 	verify(ctx != 0);
-	
+
+	//VanguardClientUnmanaged::CORE_STEP();
 	bool skipFrame = false;
 	RenderCount++;
 	if (RenderCount % (settings.pvr.ta_skip + 1) != 0)

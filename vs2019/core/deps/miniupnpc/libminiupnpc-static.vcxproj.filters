@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\igd_desc_parse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\miniupnpc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\minixml.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\minisoap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\minissdpc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\miniwget.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnpcommands.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnpdev.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnpreplyparse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnperrors.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\connecthostport.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\portlistingparse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\receivedata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\miniupnpc\addr_is_reserved.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\connecthostport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\igd_desc_parse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\minisoap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\minissdpc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\miniupnpc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\miniupnpctypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\miniwget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\minixml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\portlistingparse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\receivedata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnpcommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnpdev.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnperrors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\upnpreplyparse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\miniupnpc\addr_is_reserved.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\vs2019\core\deps\miniupnpc\miniupnpcstrings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="M:\sourcecode\flycast\core\deps\miniupnpc\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{2720FD23-D4D0-3BB2-A573-46542C86B973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{73862D8B-E6EA-3DFB-B754-A7DB76F6159E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

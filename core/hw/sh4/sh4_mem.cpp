@@ -13,6 +13,8 @@
 #include "hw/mem/_vmem.h"
 #include "modules/mmu.h"
 #include "sh4_cache.h"
+#include <Vanguard/VanguardClientInitializer.h>
+#include <Vanguard/VanguardClient.h>
 
 //main system mem
 VArray2 mem_b;

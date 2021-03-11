@@ -37,6 +37,9 @@
 #include "rend/mainui.h"
 #include "archive/rzip.h"
 
+#include "Vanguard/VanguardClient.h"
+#include "Vanguard/VanguardClientInitializer.h"
+
 void FlushCache();
 static void LoadCustom();
 
@@ -542,6 +545,7 @@ static int get_game_platform(const char *path)
 
 static void dc_start_game(const char *path)
 {
+	//VanguardClientUnmanaged::LOAD_GAME_START(path);
 	DEBUG_LOG(BOOT, "Loading game %s", path == nullptr ? "(nil)" : path);
 	bool forced_bios_file = false;
 
@@ -561,6 +565,7 @@ static void dc_start_game(const char *path)
 	set_platform(get_game_platform(path));
 	mem_map_default();
 
+	VanguardClientUnmanaged::LOAD_GAME_DONE();
 	InitSettings();
 	dc_reset(true);
 	LoadSettings(false);
@@ -641,6 +646,7 @@ static void dc_start_game(const char *path)
 			saved_screen_stretching = -1;
 		}
 	}
+	//VanguardClientUnmanaged::LOAD_GAME_START(path);
 	fast_forward_mode = false;
 }
 
@@ -654,6 +660,7 @@ void* dc_run(void*)
 {
 	InitAudio();
 
+	//VanguardClientUnmanaged::CORE_STEP();
 	if (settings.dynarec.Enable)
 	{
 		Get_Sh4Recompiler(&sh4_cpu);
@@ -668,7 +675,7 @@ void* dc_run(void*)
 		reset_requested = false;
 
 		sh4_cpu.Run();
-
+		//VanguardClientUnmanaged::CORE_STEP();
    		SaveRomFiles();
    		if (reset_requested)
    		{
@@ -1101,7 +1108,7 @@ static std::string get_savestate_file_path(bool writable)
 	lastindex = state_file.find_last_of('.');
 	if (lastindex != std::string::npos)
 		state_file = state_file.substr(0, lastindex);
-	state_file = state_file + ".state";
+	state_file = state_file + "savestate.state"; //RTC_Hijack: RTCV doesn't like using empty filenames
 	if (writable)
 		return get_writable_data_path(state_file);
 	else
@@ -1179,6 +1186,7 @@ void dc_savestate()
 	cleanup_serialize(data) ;
 	INFO_LOG(SAVESTATE, "Saved state to %s size %d", filename.c_str(), total_size) ;
 	gui_display_notification("State saved", 1000);
+	VanguardClientUnmanaged::SAVE_STATE_DONE();
 }
 
 void dc_loadstate()
@@ -1283,9 +1291,14 @@ void dc_load_game(const char *path)
 bool dc_is_load_done()
 {
 	if (!loading_done.valid())
+	{
+		//VanguardClientUnmanaged::LOAD_GAME_DONE();
 		return true;
+	}
 	if (loading_done.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+	{
 		return true;
+	}
 	return false;
 }
 

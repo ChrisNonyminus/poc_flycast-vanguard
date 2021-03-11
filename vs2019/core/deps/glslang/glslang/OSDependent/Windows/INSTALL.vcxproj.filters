@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="M:\sourcecode\flycast\vs2019\CMakeFiles\5e0626cd5d906b32c76f03774815299a\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{DEFB9F8F-FA05-3D05-9E21-015D56865EA8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

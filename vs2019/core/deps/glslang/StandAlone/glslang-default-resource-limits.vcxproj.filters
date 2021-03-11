@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\glslang\StandAlone\ResourceLimits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\glslang\StandAlone\resource_limits_c.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="M:\sourcecode\flycast\core\deps\glslang\StandAlone\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{73862D8B-E6EA-3DFB-B754-A7DB76F6159E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

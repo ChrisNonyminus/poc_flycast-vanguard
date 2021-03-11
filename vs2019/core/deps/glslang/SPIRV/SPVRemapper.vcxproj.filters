@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\glslang\SPIRV\SPVRemapper.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\glslang\SPIRV\doc.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\glslang\SPIRV\SPVRemapper.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\glslang\SPIRV\doc.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="M:\sourcecode\flycast\core\deps\glslang\SPIRV\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{6F005592-19FC-3BF2-8F7E-9DBF12F4A51C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
