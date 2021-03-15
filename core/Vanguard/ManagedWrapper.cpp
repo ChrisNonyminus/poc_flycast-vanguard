@@ -19,7 +19,14 @@ void ManagedWrapper::savesavestate()
 	dc_resume();
 	
 }
-
+int ManagedWrapper::GetMemSize()
+{
+	return /*RAM_SIZE*/0x04000000;
+}
+int ManagedWrapper::GetVRAMSize()
+{
+	return /*VRAM_SIZE*/0x01000000;
+}
 void ManagedWrapper::loadsavestate()
 {
 	dc_loadstate();

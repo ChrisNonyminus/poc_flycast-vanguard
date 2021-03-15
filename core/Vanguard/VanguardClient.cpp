@@ -329,6 +329,17 @@ public:
     virtual cli::array<unsigned char>^ PeekBytes(long long address, int length);
     virtual void PokeByte(long long addr, unsigned char val);
 };
+public
+ref class ARAM : RTCV::CorruptCore::IMemoryDomain {
+public:
+    property System::String^ Name { virtual System::String^ get(); }
+    property long long Size { virtual long long get(); }
+    property int WordSize { virtual int get(); }
+    property bool BigEndian { virtual bool get(); }
+    virtual unsigned char PeekByte(long long addr);
+    virtual cli::array<unsigned char>^ PeekBytes(long long address, int length);
+    virtual void PokeByte(long long addr, unsigned char val);
+};
 //
 //public
 //    ref class DSP : RTCV::CorruptCore::IMemoryDomain {
@@ -363,8 +374,10 @@ String ^ SDRAM::Name::get() {
     return "SDRAM";
 }
 
-long long SDRAM::Size::get() {
-    return 0x4000000;
+long long SDRAM::Size::get() 
+{
+    int ramsize = ManagedWrapper::GetMemSize();
+    return ramsize;
 }
 
 int SDRAM::WordSize::get() {
@@ -409,7 +422,7 @@ String^ VRAM::Name::get() {
 }
 
 long long VRAM::Size::get() {
-    return 0x1000000;
+    return ManagedWrapper::GetVRAMSize();
 }
 
 int VRAM::WordSize::get() {
@@ -441,6 +454,51 @@ void VRAM::PokeByte(long long addr, unsigned char val) {
 }
 
 cli::array<unsigned char>^ VRAM::PeekBytes(long long address, int length) {
+    cli::array<unsigned char>^ bytes = gcnew cli::array<unsigned char>(length);
+    for (int i = 0; i < length; i++) {
+        bytes[i] = PeekByte(address + i);
+    }
+    return bytes;
+}
+#pragma endregion
+#pragma region ARAM
+String^ ARAM::Name::get() {
+    return "ARAM";
+}
+
+long long ARAM::Size::get() {
+    return 0x00800000;
+}
+
+int ARAM::WordSize::get() {
+    return WORD_SIZE;
+}
+
+bool ARAM::BigEndian::get() {
+    return BIG_ENDIAN;
+}
+
+unsigned char ARAM::PeekByte(long long addr) {
+    //return ReadMem8(static_cast<u32>(addr));
+    if (addr < ARAM::Size)
+    {
+        return _vmem_readt<u8, u8>(static_cast<u32>(addr + 0x00800000));
+        //return ManagedWrapper::peekbyte(addr);
+    }
+    else return 0;
+}
+
+void ARAM::PokeByte(long long addr, unsigned char val) {
+    //WriteMem8(static_cast<u32>(addr), val);
+    if (addr < ARAM::Size)
+    {
+        _vmem_writet<u8>(static_cast<u32>(addr + 0x00800000), val);
+        //ManagedWrapper::pokebyte(addr, val);
+    }
+    else return;
+}
+
+cli::array<unsigned char>^ ARAM::PeekBytes(long long address, int length) {
     cli::array<unsigned char>^ bytes = gcnew cli::array<unsigned char>(length);
     for (int i = 0; i < length; i++) {
         bytes[i] = PeekByte(address + i);
@@ -554,9 +612,10 @@ static cli::array<MemoryDomainProxy^>^ GetInterfaces() {
     if (String::IsNullOrWhiteSpace(AllSpec::VanguardSpec->Get<String^>(VSPEC::OPENROMFILENAME)))
         return gcnew cli::array<MemoryDomainProxy^>(0);
 
-    cli::array<MemoryDomainProxy ^> ^ interfaces = gcnew cli::array<MemoryDomainProxy ^>(2);
+    cli::array<MemoryDomainProxy ^> ^ interfaces = gcnew cli::array<MemoryDomainProxy ^>(3);
     interfaces[0] = (gcnew MemoryDomainProxy(gcnew SDRAM));
     interfaces[1] = (gcnew MemoryDomainProxy(gcnew VRAM));
+    interfaces[2] = (gcnew MemoryDomainProxy(gcnew ARAM));
     return interfaces;
 }
 

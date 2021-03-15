@@ -157,3 +157,4 @@ cmake-build-*/
 /vs2019/core/deps/zlib/minigzip.dir
 /vs2019/core/deps/zlib/example.dir
 /vs2019/core/deps/zlib/Debug
+vs2019/flycast.log
