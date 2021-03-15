@@ -307,7 +307,7 @@ void VanguardClient::SetSyncSettings(String^ ss) {
 
 //For some reason if we do these in another class, melon won't build
 public
-    ref class RAM : RTCV::CorruptCore::IMemoryDomain {
+    ref class SDRAM : RTCV::CorruptCore::IMemoryDomain {
 public:
     property System::String^ Name { virtual System::String^ get(); }
     property long long Size { virtual long long get(); }
@@ -358,26 +358,26 @@ public:
 #define BIG_ENDIAN false
 
 delegate void MessageDelegate(Object ^);
-#pragma region RAM
-String ^ RAM::Name::get() {
-    return "RAM";
+#pragma region SDRAM
+String ^ SDRAM::Name::get() {
+    return "SDRAM";
 }
 
-long long RAM::Size::get() {
+long long SDRAM::Size::get() {
     return 0x4000000;
 }
 
-int RAM::WordSize::get() {
+int SDRAM::WordSize::get() {
     return WORD_SIZE;
 }
 
-bool RAM::BigEndian::get() {
+bool SDRAM::BigEndian::get() {
     return BIG_ENDIAN;
 }
 
-unsigned char RAM::PeekByte(long long addr) {
+unsigned char SDRAM::PeekByte(long long addr) {
     //return ReadMem8(static_cast<u32>(addr));
-    if (addr < RAM::Size)
+    if (addr < SDRAM::Size)
     {
         return _vmem_readt<u8,u8>(static_cast<u32>(addr + 0x0C000000));
         //return ManagedWrapper::peekbyte(addr);
@@ -385,9 +385,9 @@ unsigned char RAM::PeekByte(long long addr) {
     else return 0;
 }
 
-void RAM::PokeByte(long long addr, unsigned char val) {
+void SDRAM::PokeByte(long long addr, unsigned char val) {
     //WriteMem8(static_cast<u32>(addr), val);
-    if (addr < RAM::Size)
+    if (addr < SDRAM::Size)
     {
         _vmem_writet<u8>(static_cast<u32>(addr + 0x0C000000), val);
         //ManagedWrapper::pokebyte(addr, val);
@@ -395,7 +395,7 @@ void RAM::PokeByte(long long addr, unsigned char val) {
     else return;
 }
 
-cli::array<unsigned char> ^ RAM::PeekBytes(long long address, int length) {
+cli::array<unsigned char> ^ SDRAM::PeekBytes(long long address, int length) {
     cli::array<unsigned char> ^ bytes = gcnew cli::array<unsigned char>(length);
     for (int i = 0; i < length; i++) {
         bytes[i] = PeekByte(address + i);
@@ -555,7 +555,7 @@ static cli::array<MemoryDomainProxy^>^ GetInterfaces() {
         return gcnew cli::array<MemoryDomainProxy^>(0);
 
     cli::array<MemoryDomainProxy ^> ^ interfaces = gcnew cli::array<MemoryDomainProxy ^>(2);
-    interfaces[0] = (gcnew MemoryDomainProxy(gcnew RAM));
+    interfaces[0] = (gcnew MemoryDomainProxy(gcnew SDRAM));
     interfaces[1] = (gcnew MemoryDomainProxy(gcnew VRAM));
     return interfaces;
 }
