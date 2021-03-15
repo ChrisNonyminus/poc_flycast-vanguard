@@ -364,7 +364,7 @@ String ^ RAM::Name::get() {
 }
 
 long long RAM::Size::get() {
-    return 16*1024*1024;
+    return 0x4000000;
 }
 
 int RAM::WordSize::get() {
