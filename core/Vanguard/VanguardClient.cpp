@@ -392,7 +392,7 @@ unsigned char SDRAM::PeekByte(long long addr) {
     //return ReadMem8(static_cast<u32>(addr));
     if (addr < SDRAM::Size)
     {
-        return _vmem_readt<u8,u8>(static_cast<u32>(addr + 0x0C000000));
+        return _vmem_readt<u8,u8>(static_cast<u32>(addr + 0x8C000000));
         //return ManagedWrapper::peekbyte(addr);
     }
     else return 0;
@@ -402,7 +402,7 @@ void SDRAM::PokeByte(long long addr, unsigned char val) {
     //WriteMem8(static_cast<u32>(addr), val);
     if (addr < SDRAM::Size)
     {
-        _vmem_writet<u8>(static_cast<u32>(addr + 0x0C000000), val);
+        _vmem_writet<u8>(static_cast<u32>(addr + 0x8C000000), val);
         //ManagedWrapper::pokebyte(addr, val);
     }
     else return;
@@ -437,7 +437,7 @@ unsigned char VRAM::PeekByte(long long addr) {
     //return ReadMem8(static_cast<u32>(addr));
     if (addr < VRAM::Size)
     {
-        return _vmem_readt<u8, u8>(static_cast<u32>(addr+ 0x04000000));
+        return _vmem_readt<u8, u8>(static_cast<u32>(addr+ 0x84000000));
         //return ManagedWrapper::peekbyte(addr);
     }
     else return 0;
@@ -447,7 +447,7 @@ void VRAM::PokeByte(long long addr, unsigned char val) {
     //WriteMem8(static_cast<u32>(addr), val);
     if (addr < VRAM::Size)
     {
-        _vmem_writet<u8>(static_cast<u32>(addr + 0x04000000), val);
+        _vmem_writet<u8>(static_cast<u32>(addr + 0x84000000), val);
         //ManagedWrapper::pokebyte(addr, val);
     }
     else return;
@@ -467,7 +467,7 @@ String^ ARAM::Name::get() {
 }
 
 long long ARAM::Size::get() {
-    return 0x00800000;
+    return 0x0800000;
 }
 
 int ARAM::WordSize::get() {
@@ -482,7 +482,7 @@ unsigned char ARAM::PeekByte(long long addr) {
     //return ReadMem8(static_cast<u32>(addr));
     if (addr < ARAM::Size)
     {
-        return _vmem_readt<u8, u8>(static_cast<u32>(addr + 0x00800000));
+        return _vmem_readt<u8, u8>(static_cast<u32>(addr + 0x80800000));
         //return ManagedWrapper::peekbyte(addr);
     }
     else return 0;
@@ -492,7 +492,7 @@ void ARAM::PokeByte(long long addr, unsigned char val) {
     //WriteMem8(static_cast<u32>(addr), val);
     if (addr < ARAM::Size)
     {
-        _vmem_writet<u8>(static_cast<u32>(addr + 0x00800000), val);
+        _vmem_writet<u8>(static_cast<u32>(addr + 0x80800000), val);
         //ManagedWrapper::pokebyte(addr, val);
     }
     else return;
