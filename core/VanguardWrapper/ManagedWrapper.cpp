@@ -1,16 +1,19 @@
 #include "ManagedWrapper.h"
-#include "../core/hw/sh4/sh4_mem.h"
-#include "emulator.h"
-#include <Vanguard/VanguardClient.h>
+#include "../../core/hw/sh4/sh4_mem.h"
+#include "../../core/hw/mem/_vmem.h"
+#include "../../core/emulator.h"
+#include "../Vanguard/VanguardClient.h"
 #include <string>
+#include "../types.h"
+#include "../stdclass.h"
 unsigned char ManagedWrapper::peekbyte(long long addr)
 {
-	return ReadMem8(static_cast<u32>(addr));
+	return _vmem_readt<u8, u8>(static_cast<u32>(addr));
 }
 
 void ManagedWrapper::pokebyte(long long addr, unsigned char val)
 {
-	WriteMem8(static_cast<u32>(addr), val);
+	_vmem_writet<u8>(static_cast<u32>(addr), val);
 }
 
 void ManagedWrapper::savesavestate()
@@ -21,11 +24,19 @@ void ManagedWrapper::savesavestate()
 }
 int ManagedWrapper::GetMemSize()
 {
-	return /*RAM_SIZE*/0x04000000;
+	return RAM_SIZE;
 }
 int ManagedWrapper::GetVRAMSize()
 {
-	return /*VRAM_SIZE*/0x01000000;
+	return VRAM_SIZE;
+}
+int ManagedWrapper::GetARAMSize()
+{
+	return ARAM_SIZE;
+}
+int ManagedWrapper::GetBIOSSize()
+{
+	return BIOS_SIZE;
 }
 void ManagedWrapper::loadsavestate()
 {
@@ -34,7 +45,7 @@ void ManagedWrapper::loadsavestate()
 }
 void ManagedWrapper::RelayToFlycastLog(std::string string)
 {
-	ERROR_LOG(COMMON, string.c_str());
+	//ERROR_LOG(COMMON, string.c_str());
 }
 std::string ManagedWrapper::getstatepath()
 {

@@ -694,21 +694,6 @@
     <ClCompile Include="M:\sourcecode\flycast\core\windows\winmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\Vanguard\ManagedWrapper.cpp">
-      <Filter>Vanguard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\Vanguard\UnmanagedWrapper.cpp">
-      <Filter>Vanguard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\Vanguard\VanguardClient.cpp">
-      <Filter>Vanguard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\Vanguard\VanguardConfigLoader.cpp">
-      <Filter>Vanguard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\Vanguard\VanguardSettings.cpp">
-      <Filter>Vanguard</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="M:\sourcecode\flycast\core\sdl\sdl.h">
@@ -1323,30 +1308,6 @@
     <ClInclude Include="M:\sourcecode\flycast\core\windows\xinput_gamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\Vanguard\Helpers.hpp">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\Vanguard\ManagedWrapper.h">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\Vanguard\ThreadLocalHelper.h">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\Vanguard\UnmanagedWrapper.h">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\Vanguard\VanguardClient.h">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\Vanguard\VanguardClientInitializer.h">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\Vanguard\VanguardConfigLoader.h">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\Vanguard\VanguardSettingsWrapper.h">
-      <Filter>Vanguard</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="M:\sourcecode\flycast\CMakeLists.txt" />
@@ -1371,9 +1332,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{73862D8B-E6EA-3DFB-B754-A7DB76F6159E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vanguard">
-      <UniqueIdentifier>{277dbf0c-ae85-40fe-9e53-efbb4c8a6cb4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

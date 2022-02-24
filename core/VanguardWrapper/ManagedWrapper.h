@@ -7,6 +7,8 @@ public:
 	static void savesavestate();
 	static int GetMemSize();
 	static int GetVRAMSize();
+	static int GetARAMSize();
+	static int GetBIOSSize();
 	static void loadsavestate();
 	static void RelayToFlycastLog(std::string string);
 	static std::string getstatepath();

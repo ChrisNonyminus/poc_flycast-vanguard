@@ -5546,3 +5546,12 @@
 01:15:272 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 000000001195A9E4
 01:15:299 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 000000001195A9E4
 01:15:326 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 000000001195A9E4
+00:00:000 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:00:165 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:00:268 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 0000000000000000
+00:00:269 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 0000000000000000
+00:03:354 nullDC.cpp:109 N[BOOT]: Game ID is [MK-51000]
+00:00:000 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:00:071 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:00:210 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 0000000000000000
+00:00:211 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 0000000000000000

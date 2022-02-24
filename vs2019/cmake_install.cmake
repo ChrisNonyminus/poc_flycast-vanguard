@@ -36,6 +36,8 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("M:/sourcecode/flycast/vs2019/core/deps/xxHash/cmake_unofficial/cmake_install.cmake")
   include("M:/sourcecode/flycast/vs2019/core/deps/glm/cmake_install.cmake")
+  include("M:/sourcecode/flycast/vs2019/core/Vanguard/cmake_install.cmake")
+  include("M:/sourcecode/flycast/vs2019/core/VanguardWrapper/cmake_install.cmake")
   include("M:/sourcecode/flycast/vs2019/core/deps/glslang/cmake_install.cmake")
   include("M:/sourcecode/flycast/vs2019/core/deps/zlib/cmake_install.cmake")
   include("M:/sourcecode/flycast/vs2019/core/deps/miniupnpc/cmake_install.cmake")

@@ -109,6 +109,10 @@ option(BUILD_SHARED_LIBS "Build shared library" OFF)
 add_subdirectory(core/deps/glm)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
+add_subdirectory(core/Vanguard)
+add_subdirectory(core/VanguardWrapper)
+target_link_libraries(${PROJECT_NAME} PRIVATE Vanguard VanguardWrapper)
+
 if(NOT APPLE)
 	add_subdirectory(core/deps/glslang)
 	target_link_libraries(${PROJECT_NAME} PRIVATE SPIRV)

@@ -8,13 +8,12 @@
 #include "VanguardClient.h"
 #include "VanguardClientInitializer.h"
 #include "Helpers.hpp"
-#include "_vmem.h"
 //#include "../core/emulator.h"
 #include <msclr/marshal_cppstd.h>
 //#include <../core/hw/sh4/sh4_mem.h>
-#include "UnmanagedWrapper.h"
+#include "../VanguardWrapper/UnmanagedWrapper.h"
 #include "VanguardSettingsWrapper.h"
-#include <Vanguard/ManagedWrapper.h>
+#include "../VanguardWrapper/ManagedWrapper.h"
 
 //#include "core/core.h"
 #using < system.dll>
@@ -22,10 +21,10 @@
 #using < system.collections.dll>
 
 //If we provide just the dll name and then compile with /AI it works, but intellisense doesn't pick up on it, so we use a full relative path
-#using <../../RTCV/Build/NetCore.dll>
-#using <../../RTCV/Build/Vanguard.dll>
-#using <../../RTCV/Build/CorruptCore.dll>
-#using <../../RTCV/Build/RTCV.Common.dll>
+#using <../../../../RTCV/Build/NetCore.dll>
+#using <../../../../RTCV/Build/Vanguard.dll>
+#using <../../../../RTCV/Build/CorruptCore.dll>
+#using <../../../../RTCV/Build/RTCV.Common.dll>
 
 
 using namespace cli;
@@ -293,13 +292,13 @@ String^ VanguardClient::GetSyncSettings() {
 void VanguardClient::SetSyncSettings(String^ ss) {
     VanguardSettingsWrapper^ wrapper = nullptr;
     //Hack for now to maintain compatibility.
-    if (ss == "N3DS") {
+    /*if (ss == "N3DS") {
         wrapper = gcnew VanguardSettingsWrapper();
         wrapper->is_new_3ds = true;
     }
-    else {
+    else {*/
      wrapper = GetConfigFromJson(ss);
-    }
+    //}
     VanguardSettingsWrapper::SetSettingsFromWrapper(wrapper);
 }
 
@@ -340,6 +339,16 @@ public:
     virtual cli::array<unsigned char>^ PeekBytes(long long address, int length);
     virtual void PokeByte(long long addr, unsigned char val);
 };
+public ref class BIOS : RTCV::CorruptCore::IMemoryDomain {
+public:
+    property System::String^ Name { virtual System::String^ get(); }
+    property long long Size { virtual long long get(); }
+    property int WordSize { virtual int get(); }
+    property bool BigEndian { virtual bool get(); }
+    virtual unsigned char PeekByte(long long addr);
+    virtual cli::array<unsigned char>^ PeekBytes(long long address, int length);
+    virtual void PokeByte(long long addr, unsigned char val);
+};
 //
 //public
 //    ref class DSP : RTCV::CorruptCore::IMemoryDomain {
@@ -369,6 +378,52 @@ public:
 #define BIG_ENDIAN false
 
 delegate void MessageDelegate(Object ^);
+#pragma region BIOS
+String^ BIOS::Name::get() {
+    return "BIOS";
+}
+
+long long BIOS::Size::get()
+{
+    return ManagedWrapper::GetBIOSSize();
+}
+
+int BIOS::WordSize::get() {
+    return WORD_SIZE;
+}
+
+bool BIOS::BigEndian::get() {
+    return BIG_ENDIAN;
+}
+
+unsigned char BIOS::PeekByte(long long addr) {
+    //return ReadMem8(static_cast<u32>(addr));
+    if (addr < BIOS::Size)
+    {
+        return ManagedWrapper::peekbyte(addr + 0x80000000);
+        //return ManagedWrapper::peekbyte(addr);
+    }
+    else return 0;
+}
+
+void BIOS::PokeByte(long long addr, unsigned char val) {
+    //WriteMem8(static_cast<u32>(addr), val);
+    if (addr < BIOS::Size)
+    {
+        ManagedWrapper::pokebyte(addr + 0x80000000, val);
+        //ManagedWrapper::pokebyte(addr, val);
+    }
+    else return;
+}
+
+cli::array<unsigned char>^ BIOS::PeekBytes(long long address, int length) {
+    cli::array<unsigned char>^ bytes = gcnew cli::array<unsigned char>(length);
+    for (int i = 0; i < length; i++) {
+        bytes[i] = PeekByte(address + i);
+    }
+    return bytes;
+}
+#pragma endregion
 #pragma region SDRAM
 String ^ SDRAM::Name::get() {
     return "SDRAM";
@@ -392,7 +447,7 @@ unsigned char SDRAM::PeekByte(long long addr) {
     //return ReadMem8(static_cast<u32>(addr));
     if (addr < SDRAM::Size)
     {
-        return _vmem_readt<u8,u8>(static_cast<u32>(addr + 0x8C000000));
+        return ManagedWrapper::peekbyte(addr + 0x8C000000);
         //return ManagedWrapper::peekbyte(addr);
     }
     else return 0;
@@ -402,7 +457,7 @@ void SDRAM::PokeByte(long long addr, unsigned char val) {
     //WriteMem8(static_cast<u32>(addr), val);
     if (addr < SDRAM::Size)
     {
-        _vmem_writet<u8>(static_cast<u32>(addr + 0x8C000000), val);
+        ManagedWrapper::pokebyte(addr + 0x8C000000, val);
         //ManagedWrapper::pokebyte(addr, val);
     }
     else return;
@@ -437,7 +492,7 @@ unsigned char VRAM::PeekByte(long long addr) {
     //return ReadMem8(static_cast<u32>(addr));
     if (addr < VRAM::Size)
     {
-        return _vmem_readt<u8, u8>(static_cast<u32>(addr+ 0x84000000));
+        return ManagedWrapper::peekbyte(addr+ 0x84000000);
         //return ManagedWrapper::peekbyte(addr);
     }
     else return 0;
@@ -447,7 +502,7 @@ void VRAM::PokeByte(long long addr, unsigned char val) {
     //WriteMem8(static_cast<u32>(addr), val);
     if (addr < VRAM::Size)
     {
-        _vmem_writet<u8>(static_cast<u32>(addr + 0x84000000), val);
+        ManagedWrapper::pokebyte(addr + 0x84000000, val);
         //ManagedWrapper::pokebyte(addr, val);
     }
     else return;
@@ -467,7 +522,7 @@ String^ ARAM::Name::get() {
 }
 
 long long ARAM::Size::get() {
-    return 0x0800000;
+    return ManagedWrapper::GetARAMSize();
 }
 
 int ARAM::WordSize::get() {
@@ -482,7 +537,7 @@ unsigned char ARAM::PeekByte(long long addr) {
     //return ReadMem8(static_cast<u32>(addr));
     if (addr < ARAM::Size)
     {
-        return _vmem_readt<u8, u8>(static_cast<u32>(addr + 0x80800000));
+        return ManagedWrapper::peekbyte(addr + 0x80800000);
         //return ManagedWrapper::peekbyte(addr);
     }
     else return 0;
@@ -492,7 +547,7 @@ void ARAM::PokeByte(long long addr, unsigned char val) {
     //WriteMem8(static_cast<u32>(addr), val);
     if (addr < ARAM::Size)
     {
-        _vmem_writet<u8>(static_cast<u32>(addr + 0x80800000), val);
+        ManagedWrapper::pokebyte(addr + 0x80800000, val);
         //ManagedWrapper::pokebyte(addr, val);
     }
     else return;
@@ -612,10 +667,11 @@ static cli::array<MemoryDomainProxy^>^ GetInterfaces() {
     if (String::IsNullOrWhiteSpace(AllSpec::VanguardSpec->Get<String^>(VSPEC::OPENROMFILENAME)))
         return gcnew cli::array<MemoryDomainProxy^>(0);
 
-    cli::array<MemoryDomainProxy ^> ^ interfaces = gcnew cli::array<MemoryDomainProxy ^>(3);
+    cli::array<MemoryDomainProxy ^> ^ interfaces = gcnew cli::array<MemoryDomainProxy ^>(4);
     interfaces[0] = (gcnew MemoryDomainProxy(gcnew SDRAM));
     interfaces[1] = (gcnew MemoryDomainProxy(gcnew VRAM));
     interfaces[2] = (gcnew MemoryDomainProxy(gcnew ARAM));
+    interfaces[3] = gcnew MemoryDomainProxy(gcnew BIOS);
     return interfaces;
 }
 

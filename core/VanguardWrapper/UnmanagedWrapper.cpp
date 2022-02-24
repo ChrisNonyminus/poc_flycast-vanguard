@@ -1,8 +1,8 @@
 #pragma once
 
 #include "UnmanagedWrapper.h"
-#include "../core/hw/mem/_vmem.h"
-#include "Vanguard/VanguardClient.h"
+#include "../hw/mem/_vmem.h"
+#include "../Vanguard/VanguardClient.h"
 #include <chrono>
 
 //#include "video_core/renderer_base.h"
