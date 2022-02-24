@@ -34,7 +34,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("M:/sourcecode/flycast/vs2019/core/deps/glslang/External/cmake_install.cmake")
   include("M:/sourcecode/flycast/vs2019/core/deps/glslang/glslang/cmake_install.cmake")
   include("M:/sourcecode/flycast/vs2019/core/deps/glslang/OGLCompilersDLL/cmake_install.cmake")
   include("M:/sourcecode/flycast/vs2019/core/deps/glslang/StandAlone/cmake_install.cmake")

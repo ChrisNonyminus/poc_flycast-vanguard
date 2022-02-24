@@ -52,7 +52,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -98,10 +97,6 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <MASM>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
-      <IncludePaths>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(IncludePaths)</IncludePaths>
-    </MASM>
     <Midl>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
@@ -135,10 +130,6 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <MASM>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
-      <IncludePaths>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(IncludePaths)</IncludePaths>
-    </MASM>
     <Midl>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
@@ -172,10 +163,6 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <MASM>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
-      <IncludePaths>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(IncludePaths)</IncludePaths>
-    </MASM>
     <Midl>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
@@ -208,10 +195,6 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <MASM>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIUPNP_STATICLIB;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
-      <IncludePaths>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(IncludePaths)</IncludePaths>
-    </MASM>
     <Midl>
       <AdditionalIncludeDirectories>M:\sourcecode\flycast\vs2019\core\deps\miniupnpc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
@@ -323,6 +306,5 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>
