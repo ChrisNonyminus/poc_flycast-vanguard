@@ -65,6 +65,6 @@ std::string ManagedWrapper::getstatepath()
 	lastindex = state_file.find_last_of('.');
 	if (lastindex != std::string::npos)
 		state_file = state_file.substr(0, lastindex);
-	state_file = state_file;
+	state_file = state_file + ".state";
 	return get_writable_data_path(state_file);
 }
