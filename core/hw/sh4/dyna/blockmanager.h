@@ -1,6 +1,3 @@
-/*
-	In case you wonder, the extern "C" stuff are for the assembly code on beagleboard/pandora
-*/
 #pragma once
 
 #include "types.h"
@@ -10,6 +7,7 @@
 #include <memory>
 
 typedef void (*DynarecCodeEntryPtr)();
+struct RuntimeBlockInfo;
 typedef std::shared_ptr<RuntimeBlockInfo> RuntimeBlockInfoPtr;
 
 struct RuntimeBlockInfo_Core
@@ -35,7 +33,7 @@ struct RuntimeBlockInfo: RuntimeBlockInfo_Core
 	fpscr_t fpu_cfg;
 	u32 guest_cycles;
 	u32 guest_opcodes;
-	u32 host_opcodes;
+	u32 host_opcodes;	// set by host code generator, optional
 	bool has_fpu_op;
 	u32 blockcheck_failures;
 	bool temp_block;
@@ -49,16 +47,15 @@ struct RuntimeBlockInfo: RuntimeBlockInfo_Core
 
 	u32 relink_offset;
 	u32 relink_data;
-	u32 csc_RetCache; //only for stats for now
 
 	BlockEndType BlockType;
 	bool has_jcond;
 
 	std::vector<shil_opcode> oplist;
 
-	bool contains_code(u8* ptr)
+	bool containsCode(const void *ptr)
 	{
-		return ((unat)(ptr-(u8*)code))<host_code_size;
+		return (u32)((const u8 *)ptr - (const u8 *)code) < host_code_size;
 	}
 
 	virtual ~RuntimeBlockInfo();
@@ -69,26 +66,18 @@ struct RuntimeBlockInfo: RuntimeBlockInfo_Core
 	//predecessors references
 	std::vector<RuntimeBlockInfoPtr> pre_refs;
 
-	void AddRef(RuntimeBlockInfoPtr other);
-	void RemRef(RuntimeBlockInfoPtr other);
+	void AddRef(const RuntimeBlockInfoPtr& other);
+	void RemRef(const RuntimeBlockInfoPtr& other);
 
 	void Discard();
-	void UpdateRefs();
 	void SetProtectedFlags();
 
-	u32 memops;
-	u32 linkedmemops;
-	std::map<void*, u32> memory_accesses;	// key is host pc when access is made, value is opcode id
 	bool read_only;
 };
 
 void bm_WriteBlockMap(const std::string& file);
 
-
-extern "C" {
-ATTR_USED DynarecCodeEntryPtr DYNACALL bm_GetCodeByVAddr(u32 addr);
-}
-
+DynarecCodeEntryPtr DYNACALL bm_GetCodeByVAddr(u32 addr);
 RuntimeBlockInfoPtr bm_GetBlock(void* dynarec_code);
 RuntimeBlockInfoPtr bm_GetStaleBlock(void* dynarec_code);
 RuntimeBlockInfoPtr DYNACALL bm_GetBlock(u32 addr);
@@ -103,7 +92,7 @@ void bm_Periodical_1s();
 void bm_Init();
 void bm_Term();
 
-void bm_vmem_pagefill(void** ptr,u32 PAGE_SZ);
+void bm_vmem_pagefill(void** ptr,u32 size_bytes);
 bool bm_RamWriteAccess(void *p);
 void bm_RamWriteAccess(u32 addr);
 static inline bool bm_IsRamPageProtected(u32 addr)
@@ -112,3 +101,7 @@ static inline bool bm_IsRamPageProtected(u32 addr)
 	addr &= RAM_MASK;
 	return !unprotected_pages[addr / PAGE_SIZE];
 }
+void bm_LockPage(u32 addr, u32 size = PAGE_SIZE);
+void bm_UnlockPage(u32 addr, u32 size = PAGE_SIZE);
+u32 bm_getRamOffset(void *p);
+

@@ -3,7 +3,6 @@
 #include "deps/xbrz/xbrz.h"
 #include "hw/pvr/pvr_mem.h"
 #include "hw/mem/_vmem.h"
-#include "hw/mem/vmem32.h"
 #include "hw/sh4/modules/mmu.h"
 
 #include <algorithm>
@@ -22,6 +21,7 @@ u32 palette32_ram[1024];
 u32 pal_hash_256[4];
 u32 pal_hash_16[64];
 bool palette_updated;
+extern bool pal_needs_update;
 float fb_scale_x, fb_scale_y;
 
 // Rough approximation of LoD bias from D adjust param, only used to increase LoD
@@ -92,39 +92,74 @@ void palette_update()
 	pal_needs_update = false;
 	palette_updated = true;
 
-	switch(PAL_RAM_CTRL&3)
+	if (!isDirectX(config::RendererType))
 	{
-	case 0:
-		for (int i=0;i<1024;i++)
+		switch(PAL_RAM_CTRL&3)
 		{
-			palette16_ram[i] = ARGB1555(PALETTE_RAM[i]);
-			palette32_ram[i] = ARGB1555_32(PALETTE_RAM[i]);
-		}
-		break;
+		case 0:
+			for (int i=0;i<1024;i++)
+			{
+				palette16_ram[i] = Unpacker1555::unpack(PALETTE_RAM[i]);
+				palette32_ram[i] = Unpacker1555_32<RGBAPacker>::unpack(PALETTE_RAM[i]);
+			}
+			break;
 
-	case 1:
-		for (int i=0;i<1024;i++)
-		{
-			palette16_ram[i] = ARGB565(PALETTE_RAM[i]);
-			palette32_ram[i] = ARGB565_32(PALETTE_RAM[i]);
-		}
-		break;
+		case 1:
+			for (int i=0;i<1024;i++)
+			{
+				palette16_ram[i] = UnpackerNop<u16>::unpack(PALETTE_RAM[i]);
+				palette32_ram[i] = Unpacker565_32<RGBAPacker>::unpack(PALETTE_RAM[i]);
+			}
+			break;
 
-	case 2:
-		for (int i=0;i<1024;i++)
-		{
-			palette16_ram[i] = ARGB4444(PALETTE_RAM[i]);
-			palette32_ram[i] = ARGB4444_32(PALETTE_RAM[i]);
-		}
-		break;
+		case 2:
+			for (int i=0;i<1024;i++)
+			{
+				palette16_ram[i] = Unpacker4444::unpack(PALETTE_RAM[i]);
+				palette32_ram[i] = Unpacker4444_32<RGBAPacker>::unpack(PALETTE_RAM[i]);
+			}
+			break;
 
-	case 3:
-		for (int i=0;i<1024;i++)
-		{
-			palette16_ram[i] = ARGB8888(PALETTE_RAM[i]);
-			palette32_ram[i] = ARGB8888_32(PALETTE_RAM[i]);
+		case 3:
+			for (int i=0;i<1024;i++)
+				palette32_ram[i] = Unpacker8888<RGBAPacker>::unpack(PALETTE_RAM[i]);
+			break;
 		}
-		break;
+	}
+	else
+	{
+		switch(PAL_RAM_CTRL&3)
+		{
+
+		case 0:
+			for (int i=0;i<1024;i++)
+			{
+				palette16_ram[i] = UnpackerNop<u16>::unpack(PALETTE_RAM[i]);
+				palette32_ram[i] = Unpacker1555_32<BGRAPacker>::unpack(PALETTE_RAM[i]);
+			}
+			break;
+
+		case 1:
+			for (int i=0;i<1024;i++)
+			{
+				palette16_ram[i] = UnpackerNop<u16>::unpack(PALETTE_RAM[i]);
+				palette32_ram[i] = Unpacker565_32<BGRAPacker>::unpack(PALETTE_RAM[i]);
+			}
+			break;
+
+		case 2:
+			for (int i=0;i<1024;i++)
+			{
+				palette16_ram[i] = UnpackerNop<u16>::unpack(PALETTE_RAM[i]);
+				palette32_ram[i] = Unpacker4444_32<BGRAPacker>::unpack(PALETTE_RAM[i]);
+			}
+			break;
+
+		case 3:
+			for (int i=0;i<1024;i++)
+				palette32_ram[i] = UnpackerNop<u32>::unpack(PALETTE_RAM[i]);
+			break;
+		}
 	}
 	for (int i = 0; i < 64; i++)
 		pal_hash_16[i] = XXH32(&PALETTE_RAM[i << 4], 16 * 4, 7);
@@ -132,8 +167,13 @@ void palette_update()
 		pal_hash_256[i] = XXH32(&PALETTE_RAM[i << 8], 256 * 4, 7);
 }
 
+void forcePaletteUpdate()
+{
+	pal_needs_update = true;
+}
+
+
 static std::vector<vram_block*> VramLocks[VRAM_SIZE_MAX / PAGE_SIZE];
-VArray2 vram;  // vram 32-64b
 
 //List functions
 //
@@ -174,38 +214,37 @@ void vramlock_list_add(vram_block* block)
  
 std::mutex vramlist_lock;
 
-vram_block* libCore_vramlock_Lock(u32 start_offset64,u32 end_offset64,void* userdata)
+void libCore_vramlock_Lock(u32 start_offset64, u32 end_offset64, BaseTextureCacheData *texture)
 {
-	vram_block* block=(vram_block* )malloc(sizeof(vram_block));
- 
-	if (end_offset64>(VRAM_SIZE-1))
+	if (end_offset64 > VRAM_SIZE - 1)
 	{
 		WARN_LOG(PVR, "vramlock_Lock_64: end_offset64>(VRAM_SIZE-1) \n Tried to lock area out of vram , possibly bug on the pvr plugin");
-		end_offset64=(VRAM_SIZE-1);
+		end_offset64 = VRAM_SIZE - 1;
 	}
 
-	if (start_offset64>end_offset64)
+	if (start_offset64 > end_offset64)
 	{
 		WARN_LOG(PVR, "vramlock_Lock_64: start_offset64>end_offset64 \n Tried to lock negative block , possibly bug on the pvr plugin");
-		start_offset64=0;
+		return;
 	}
 
-	
-
-	block->end=end_offset64;
-	block->start=start_offset64;
-	block->len=end_offset64-start_offset64+1;
-	block->userdata=userdata;
-	block->type=64;
+	vram_block *block = new vram_block();
+	block->end = end_offset64;
+	block->start = start_offset64;
+	block->texture = texture;
 
 	{
 		std::lock_guard<std::mutex> lock(vramlist_lock);
 
-		// This also protects vram if needed
-		vramlock_list_add(block);
+		if (texture->lock_block == nullptr)
+		{
+			// This also protects vram if needed
+			vramlock_list_add(block);
+			texture->lock_block = block;
+		}
+		else
+			delete block;
 	}
-
-	return block;
 }
 
 bool VramLockedWriteOffset(size_t offset)
@@ -217,7 +256,7 @@ bool VramLockedWriteOffset(size_t offset)
 	std::vector<vram_block *>& list = VramLocks[addr_hash];
 
 	{
-		std::lock_guard<std::mutex> lock(vramlist_lock);
+		std::lock_guard<std::mutex> lockguard(vramlist_lock);
 
 		for (auto& lock : list)
 		{
@@ -252,16 +291,8 @@ bool VramLockedWrite(u8* address)
 //also frees the handle
 static void libCore_vramlock_Unlock_block_wb(vram_block* block)
 {
-	if (mmu_enabled())
-		vmem32_unprotect_vram(block->start, block->len);
 	vramlock_list_remove(block);
-	free(block);
-}
-
-void libCore_vramlock_Unlock_block(vram_block* block)
-{
-	std::lock_guard<std::mutex> lock(vramlist_lock);
-	libCore_vramlock_Unlock_block_wb(block);
+	delete block;
 }
 
 #ifndef TARGET_NO_OPENMP
@@ -270,7 +301,7 @@ static inline int getThreadCount()
 	int tcount = omp_get_num_procs() - 1;
 	if (tcount < 1)
 		tcount = 1;
-	return std::min(tcount, (int)settings.pvr.MaxThreads);
+	return std::min(tcount, (int)config::MaxThreads);
 }
 
 template<typename Func>
@@ -309,28 +340,38 @@ struct PvrTexInfo
 	int bpp;        //4/8 for pal. 16 for yuv, rgb, argb
 	TextureType type;
 	// Conversion to 16 bpp
-	TexConvFP *PL;
-	TexConvFP *TW;
-	TexConvFP *VQ;
+	TexConvFP PL;
+	TexConvFP TW;
+	TexConvFP VQ;
 	// Conversion to 32 bpp
-	TexConvFP32 *PL32;
-	TexConvFP32 *TW32;
-	TexConvFP32 *VQ32;
+	TexConvFP32 PL32;
+	TexConvFP32 TW32;
+	TexConvFP32 VQ32;
 	// Conversion to 8 bpp (palette)
-	TexConvFP8 *TW8;
+	TexConvFP8 TW8;
 };
 
-static const PvrTexInfo format[8] =
-{	// name     bpp Final format			   Planar		Twiddled	 VQ				Planar(32b)    Twiddled(32b)  VQ (32b)      Palette (8b)
-	{"1555", 	16,	TextureType::_5551,        tex1555_PL,  tex1555_TW,  tex1555_VQ,    tex1555_PL32,  tex1555_TW32,  tex1555_VQ32, nullptr },	    //1555
-	{"565", 	16, TextureType::_565,         tex565_PL,   tex565_TW,   tex565_VQ,     tex565_PL32,   tex565_TW32,   tex565_VQ32,  nullptr },	    //565
-	{"4444", 	16, TextureType::_4444,        tex4444_PL,  tex4444_TW,  tex4444_VQ,    tex4444_PL32,  tex4444_TW32,  tex4444_VQ32, nullptr },	    //4444
-	{"yuv", 	16, TextureType::_8888,        nullptr,     nullptr,     nullptr,       texYUV422_PL,  texYUV422_TW,  texYUV422_VQ, nullptr },	    //yuv
-	{"bumpmap", 16, TextureType::_4444,        texBMP_PL,   texBMP_TW,	 texBMP_VQ,     tex4444_PL32,  tex4444_TW32,  tex4444_VQ32, nullptr },      //bump map
-	{"pal4", 	4,	TextureType::_5551,		   nullptr,     texPAL4_TW,  texPAL4_VQ,    nullptr,       texPAL4_TW32,  texPAL4_VQ32, texPAL4PT_TW },	//pal4
-	{"pal8", 	8,	TextureType::_5551,		   nullptr,     texPAL8_TW,  texPAL8_VQ,    nullptr,       texPAL8_TW32,  texPAL8_VQ32, texPAL8PT_TW },	//pal8
-	{"ns/1555", 0},	                                                                                                                                // Not supported (1555)
-};
+#define TEX_CONV_TABLE \
+const PvrTexInfo pvrTexInfo[8] = \
+{	/* name     bpp Final format			   Planar		Twiddled	 VQ				Planar(32b)    Twiddled(32b)  VQ (32b)      Palette (8b)	*/	\
+	{"1555", 	16,	TextureType::_5551,        tex1555_PL,  tex1555_TW,  tex1555_VQ,    tex1555_PL32,  tex1555_TW32,  tex1555_VQ32, nullptr },			\
+	{"565", 	16, TextureType::_565,         tex565_PL,   tex565_TW,   tex565_VQ,     tex565_PL32,   tex565_TW32,   tex565_VQ32,  nullptr },	    	\
+	{"4444", 	16, TextureType::_4444,        tex4444_PL,  tex4444_TW,  tex4444_VQ,    tex4444_PL32,  tex4444_TW32,  tex4444_VQ32, nullptr },	    	\
+	{"yuv", 	16, TextureType::_8888,        nullptr,     nullptr,     nullptr,       texYUV422_PL,  texYUV422_TW,  texYUV422_VQ, nullptr },			\
+	{"bumpmap", 16, TextureType::_4444,        texBMP_PL,   texBMP_TW,	 texBMP_VQ,     tex4444_PL32,  tex4444_TW32,  tex4444_VQ32, nullptr },			\
+	{"pal4", 	4,	TextureType::_5551,		   nullptr,     texPAL4_TW,  texPAL4_VQ,    nullptr,       texPAL4_TW32,  texPAL4_VQ32, texPAL4PT_TW },		\
+	{"pal8", 	8,	TextureType::_5551,		   nullptr,     texPAL8_TW,  texPAL8_VQ,    nullptr,       texPAL8_TW32,  texPAL8_VQ32, texPAL8PT_TW },		\
+	{"ns/1555", 0},	                                                                                                                                    \
+}
+
+namespace opengl {
+	TEX_CONV_TABLE;
+}
+namespace directx {
+	TEX_CONV_TABLE;
+}
+#undef TEX_CONV_TABLE
+static const PvrTexInfo *pvrTexInfo = opengl::pvrTexInfo;
 
 static const u32 VQMipPoint[11] =
 {
@@ -427,20 +468,15 @@ void BaseTextureCacheData::Create()
 	lock_block = nullptr;
 	custom_image_data = nullptr;
 	custom_load_in_progress = 0;
+	gpuPalette = false;
 
 	//decode info from tsp/tcw into the texture struct
-	tex = &format[tcw.PixelFmt == PixelReserved ? Pixel1555 : tcw.PixelFmt];	//texture format table entry
+	tex = &pvrTexInfo[tcw.PixelFmt == PixelReserved ? Pixel1555 : tcw.PixelFmt];	//texture format table entry
 
 	sa_tex = (tcw.TexAddr << 3) & VRAM_MASK;	//texture start address
 	sa = sa_tex;								//data texture start address (modified for MIPs, as needed)
-	w = 8 << tsp.TexU;							//tex width
-	h = 8 << tsp.TexV;							//tex height
-
-	//PAL texture
-	if (tex->bpp == 4)
-		palette_index = tcw.PalSelect << 4;
-	else if (tex->bpp == 8)
-		palette_index = (tcw.PalSelect >> 4) << 8;
+	width = 8 << tsp.TexU;						//tex width
+	height = 8 << tsp.TexV;						//tex height
 
 	texconv8 = nullptr;
 
@@ -460,7 +496,7 @@ void BaseTextureCacheData::Create()
 		}
 
 		//Planar textures support stride selection, mostly used for non power of 2 textures (videos)
-		int stride = w;
+		int stride = width;
 		if (tcw.StrideSel)
 			stride = (TEXT_CONTROL & 31) * 32;
 
@@ -468,26 +504,28 @@ void BaseTextureCacheData::Create()
 		texconv = tex->PL;
 		texconv32 = tex->PL32;
 		//calculate the size, in bytes, for the locking
-		size = stride * h * tex->bpp / 8;
+		size = stride * height * tex->bpp / 8;
 	}
 	else
 	{
-		tcw.ScanOrder = 0;
-		tcw.StrideSel = 0;
+		if (!IsPaletted())
+		{
+			tcw.ScanOrder = 0;
+			tcw.StrideSel = 0;
+		}
 		// Quake 3 Arena uses one
 		if (tcw.MipMapped)
 			// Mipmapped texture must be square and TexV is ignored
-			h = w;
+			height = width;
 
 		if (tcw.VQ_Comp)
 		{
 			verify(tex->VQ != NULL || tex->VQ32 != NULL);
-			vq_codebook = sa;
 			if (tcw.MipMapped)
 				sa += VQMipPoint[tsp.TexU + 3];
 			texconv = tex->VQ;
 			texconv32 = tex->VQ32;
-			size = w * h / 8;
+			size = width * height / 8 + 256 * 8;
 		}
 		else
 		{
@@ -496,7 +534,7 @@ void BaseTextureCacheData::Create()
 				sa += OtherMipPoint[tsp.TexU + 3] * tex->bpp / 8;
 			texconv = tex->TW;
 			texconv32 = tex->TW32;
-			size = w * h * tex->bpp / 8;
+			size = width * height * tex->bpp / 8;
 			texconv8 = tex->TW8;
 		}
 	}
@@ -504,26 +542,39 @@ void BaseTextureCacheData::Create()
 
 void BaseTextureCacheData::ComputeHash()
 {
-	texture_hash = XXH32(&vram[sa], size, 7);
+	u32 hashSize = size;
+	if (tcw.VQ_Comp)
+	{
+		// The size for VQ textures wasn't correctly calculated.
+		// We use the old size to compute the hash for backward-compatibility
+		// with existing custom texture packs.
+		hashSize = size - 256 * 8;
+	}
+	texture_hash = XXH32(&vram[sa], hashSize, 7);
 	if (IsPaletted())
 		texture_hash ^= palette_hash;
 	old_texture_hash = texture_hash;
-	texture_hash ^= tcw.full & 0xFC000000;	// everything but texaddr, reserved and stride
+	// Include everything but texaddr, reserved and stride. Palette textures don't have ScanOrder
+	const u32 tcwMask = IsPaletted() ? 0xF8000000 : 0xFC000000;
+	texture_hash ^= tcw.full & tcwMask;
 }
 
 void BaseTextureCacheData::Update()
 {
 	//texture state tracking stuff
 	Updates++;
-	dirty=0;
-
+	dirty = 0;
+	gpuPalette = false;
 	tex_type = tex->type;
 
 	bool has_alpha = false;
 	if (IsPaletted())
 	{
 		if (IsGpuHandledPaletted(tsp, tcw))
+		{
 			tex_type = TextureType::_8;
+			gpuPalette = true;
+		}
 		else
 		{
 			tex_type = PAL_TYPE[PAL_RAM_CTRL&3];
@@ -532,30 +583,37 @@ void BaseTextureCacheData::Update()
 		}
 
 		// Get the palette hash to check for future updates
+		// TODO get rid of ::palette_index and ::vq_codebook
 		if (tcw.PixelFmt == PixelPal4)
+		{
 			palette_hash = pal_hash_16[tcw.PalSelect];
+			::palette_index = tcw.PalSelect << 4;
+		}
 		else
+		{
 			palette_hash = pal_hash_256[tcw.PalSelect >> 4];
+			::palette_index = (tcw.PalSelect >> 4) << 8;
+		}
 	}
 
-	::palette_index = this->palette_index; // might be used if pal. tex
-	::vq_codebook = &vram[vq_codebook];    // might be used if VQ tex
+	if (tcw.VQ_Comp)
+		::vq_codebook = &vram[sa_tex];    // might be used if VQ tex
 
 	//texture conversion work
-	u32 stride = w;
+	u32 stride = width;
 
 	if (tcw.StrideSel && tcw.ScanOrder && (tex->PL || tex->PL32))
 		stride = (TEXT_CONTROL & 31) * 32;
 
-	u32 original_h = h;
+	u32 original_h = height;
 	if (sa_tex > VRAM_SIZE || size == 0 || sa + size > VRAM_SIZE)
 	{
 		if (sa < VRAM_SIZE && sa + size > VRAM_SIZE && tcw.ScanOrder && stride > 0)
 		{
 			// Shenmue Space Harrier mini-arcade loads a texture that goes beyond the end of VRAM
 			// but only uses the top portion of it
-			h = (VRAM_SIZE - sa) * 8 / stride / tex->bpp;
-			size = stride * h * tex->bpp/8;
+			height = (VRAM_SIZE - sa) * 8 / stride / tex->bpp;
+			size = stride * height * tex->bpp/8;
 		}
 		else
 		{
@@ -563,21 +621,21 @@ void BaseTextureCacheData::Update()
 			return;
 		}
 	}
-	if (settings.rend.CustomTextures)
+	if (config::CustomTextures)
 		custom_texture.LoadCustomTextureAsync(this);
 
 	void *temp_tex_buffer = NULL;
-	u32 upscaled_w = w;
-	u32 upscaled_h = h;
+	u32 upscaled_w = width;
+	u32 upscaled_h = height;
 
 	PixelBuffer<u16> pb16;
 	PixelBuffer<u32> pb32;
 	PixelBuffer<u8> pb8;
 
 	// Figure out if we really need to use a 32-bit pixel buffer
-	bool textureUpscaling = settings.rend.TextureUpscale > 1
+	bool textureUpscaling = config::TextureUpscale > 1
 			// Don't process textures that are too big
-			&& (int)(w * h) <= settings.rend.MaxFilteredTextureSize * settings.rend.MaxFilteredTextureSize
+			&& (int)(width * height) <= config::MaxFilteredTextureSize * config::MaxFilteredTextureSize
 			// Don't process YUV textures
 			&& tcw.PixelFmt != PixelYUV;
 	bool need_32bit_buffer = true;
@@ -588,7 +646,7 @@ void BaseTextureCacheData::Update()
 		need_32bit_buffer = false;
 	// TODO avoid upscaling/depost. textures that change too often
 
-	bool mipmapped = IsMipmapped() && !settings.rend.DumpTextures;
+	bool mipmapped = IsMipmapped() && !config::DumpTextures;
 
 	if (texconv32 != NULL && need_32bit_buffer)
 	{
@@ -600,7 +658,7 @@ void BaseTextureCacheData::Update()
 
 		if (mipmapped)
 		{
-			pb32.init(w, h, true);
+			pb32.init(width, height, true);
 			for (u32 i = 0; i <= tsp.TexU + 3u; i++)
 			{
 				pb32.set_mipmap(i);
@@ -621,7 +679,7 @@ void BaseTextureCacheData::Update()
 					vram_addr = sa_tex + OtherMipPoint[i] * tex->bpp / 8;
 				if (tcw.PixelFmt == PixelYUV && i == 0)
 					// Special case for YUV at 1x1 LoD
-					format[Pixel565].TW32(&pb32, &vram[vram_addr], 1, 1);
+					pvrTexInfo[Pixel565].TW32(&pb32, &vram[vram_addr], 1, 1);
 				else
 					texconv32(&pb32, &vram[vram_addr], 1 << i, 1 << i);
 			}
@@ -629,22 +687,22 @@ void BaseTextureCacheData::Update()
 		}
 		else
 		{
-			pb32.init(w, h);
-			texconv32(&pb32, (u8*)&vram[sa], stride, h);
+			pb32.init(width, height);
+			texconv32(&pb32, (u8*)&vram[sa], stride, height);
 
 			// xBRZ scaling
 			if (textureUpscaling)
 			{
 				PixelBuffer<u32> tmp_buf;
-				tmp_buf.init(w * settings.rend.TextureUpscale, h * settings.rend.TextureUpscale);
+				tmp_buf.init(width * config::TextureUpscale, height * config::TextureUpscale);
 
 				if (tcw.PixelFmt == Pixel1555 || tcw.PixelFmt == Pixel4444)
 					// Alpha channel formats. Palettes with alpha are already handled
 					has_alpha = true;
-				UpscalexBRZ(settings.rend.TextureUpscale, pb32.data(), tmp_buf.data(), w, h, has_alpha);
+				UpscalexBRZ(config::TextureUpscale, pb32.data(), tmp_buf.data(), width, height, has_alpha);
 				pb32.steal_data(tmp_buf);
-				upscaled_w *= settings.rend.TextureUpscale;
-				upscaled_h *= settings.rend.TextureUpscale;
+				upscaled_w *= config::TextureUpscale;
+				upscaled_h *= config::TextureUpscale;
 			}
 		}
 		temp_tex_buffer = pb32.data();
@@ -653,7 +711,8 @@ void BaseTextureCacheData::Update()
 	{
 		if (mipmapped)
 		{
-			pb8.init(w, h, true);
+			// This shouldn't happen since mipmapped palette textures are converted to rgba
+			pb8.init(width, height, true);
 			for (u32 i = 0; i <= tsp.TexU + 3u; i++)
 			{
 				pb8.set_mipmap(i);
@@ -664,8 +723,8 @@ void BaseTextureCacheData::Update()
 		}
 		else
 		{
-			pb8.init(w, h);
-			texconv8(&pb8, &vram[sa], stride, h);
+			pb8.init(width, height);
+			texconv8(&pb8, &vram[sa], stride, height);
 		}
 		temp_tex_buffer = pb8.data();
 	}
@@ -673,7 +732,7 @@ void BaseTextureCacheData::Update()
 	{
 		if (mipmapped)
 		{
-			pb16.init(w, h, true);
+			pb16.init(width, height, true);
 			for (u32 i = 0; i <= tsp.TexU + 3u; i++)
 			{
 				pb16.set_mipmap(i);
@@ -698,8 +757,8 @@ void BaseTextureCacheData::Update()
 		}
 		else
 		{
-			pb16.init(w, h);
-			texconv(&pb16,(u8*)&vram[sa],stride,h);
+			pb16.init(width, height);
+			texconv(&pb16,(u8*)&vram[sa],stride,height);
 		}
 		temp_tex_buffer = pb16.data();
 	}
@@ -707,20 +766,19 @@ void BaseTextureCacheData::Update()
 	{
 		//fill it in with a temp color
 		WARN_LOG(RENDERER, "UNHANDLED TEXTURE");
-		pb16.init(w, h);
-		memset(pb16.data(), 0x80, w * h * 2);
+		pb16.init(width, height);
+		memset(pb16.data(), 0x80, width * height * 2);
 		temp_tex_buffer = pb16.data();
 		mipmapped = false;
 	}
 	// Restore the original texture height if it was constrained to VRAM limits above
-	h = original_h;
+	height = original_h;
 
 	//lock the texture to detect changes in it
-	if (lock_block == nullptr)
-		lock_block = libCore_vramlock_Lock(sa_tex,sa+size-1,this);
+	libCore_vramlock_Lock(sa_tex, sa + size - 1, this);
 
 	UploadToGPU(upscaled_w, upscaled_h, (u8*)temp_tex_buffer, IsMipmapped(), mipmapped);
-	if (settings.rend.DumpTextures)
+	if (config::DumpTextures)
 	{
 		ComputeHash();
 		custom_texture.DumpTexture(texture_hash, upscaled_w, upscaled_h, tex_type, temp_tex_buffer);
@@ -734,12 +792,18 @@ void BaseTextureCacheData::CheckCustomTexture()
 	if (IsCustomTextureAvailable())
 	{
 		tex_type = TextureType::_8888;
+		gpuPalette = false;
 		UploadToGPU(custom_width, custom_height, custom_image_data, IsMipmapped(), false);
 		free(custom_image_data);
-		custom_image_data = NULL;
+		custom_image_data = nullptr;
 	}
 }
 
+void BaseTextureCacheData::SetDirectXColorOrder(bool enabled) {
+	pvrTexInfo = enabled ? directx::pvrTexInfo : opengl::pvrTexInfo;
+}
+
+template<typename Packer>
 void ReadFramebuffer(PixelBuffer<u32>& pb, int& width, int& height)
 {
 	width = (FB_R_SIZE.fb_x_size + 1) << 1;     // in 16-bit words
@@ -785,7 +849,7 @@ void ReadFramebuffer(PixelBuffer<u32>& pb, int& width, int& height)
 	}
 
 	pb.init(width, height);
-	u8 *dst = (u8*)pb.data();
+	u32 *dst = (u32 *)pb.data();
 
 	switch (FB_R_CTRL.fb_depth)
 	{
@@ -794,11 +858,12 @@ void ReadFramebuffer(PixelBuffer<u32>& pb, int& width, int& height)
 			{
 				for (int i = 0; i < width; i++)
 				{
-					u16 src = pvr_read_area1<u16>(addr);
-					*dst++ = (((src >> 10) & 0x1F) << 3) + FB_R_CTRL.fb_concat;
-					*dst++ = (((src >> 5) & 0x1F) << 3) + FB_R_CTRL.fb_concat;
-					*dst++ = (((src >> 0) & 0x1F) << 3) + FB_R_CTRL.fb_concat;
-					*dst++ = 0xFF;
+					u16 src = pvr_read32p<u16>(addr);
+					*dst++ = Packer::pack(
+							(((src >> 10) & 0x1F) << 3) + FB_R_CTRL.fb_concat,
+							(((src >> 5) & 0x1F) << 3) + FB_R_CTRL.fb_concat,
+							(((src >> 0) & 0x1F) << 3) + FB_R_CTRL.fb_concat,
+							0xff);
 					addr += bpp;
 				}
 				addr += modulus * bpp;
@@ -810,11 +875,12 @@ void ReadFramebuffer(PixelBuffer<u32>& pb, int& width, int& height)
 			{
 				for (int i = 0; i < width; i++)
 				{
-					u16 src = pvr_read_area1<u16>(addr);
-					*dst++ = (((src >> 11) & 0x1F) << 3) + FB_R_CTRL.fb_concat;
-					*dst++ = (((src >> 5) & 0x3F) << 2) + (FB_R_CTRL.fb_concat & 3);
-					*dst++ = (((src >> 0) & 0x1F) << 3) + FB_R_CTRL.fb_concat;
-					*dst++ = 0xFF;
+					u16 src = pvr_read32p<u16>(addr);
+					*dst++ = Packer::pack(
+							(((src >> 11) & 0x1F) << 3) + FB_R_CTRL.fb_concat,
+							(((src >> 5) & 0x3F) << 2) + (FB_R_CTRL.fb_concat & 3),
+							(((src >> 0) & 0x1F) << 3) + FB_R_CTRL.fb_concat,
+							0xFF);
 					addr += bpp;
 				}
 				addr += modulus * bpp;
@@ -825,34 +891,22 @@ void ReadFramebuffer(PixelBuffer<u32>& pb, int& width, int& height)
 			{
 				for (int i = 0; i < width; i += 4)
 				{
-					u32 src = pvr_read_area1<u32>(addr);
-					*dst++ = src >> 16;
-					*dst++ = src >> 8;
-					*dst++ = src;
-					*dst++ = 0xFF;
+					u32 src = pvr_read32p<u32>(addr);
+					*dst++ = Packer::pack(src >> 16, src >> 8, src, 0xff);
 					addr += 4;
 					if (i + 1 >= width)
 						break;
-					u32 src2 = pvr_read_area1<u32>(addr);
-					*dst++ = src2 >> 8;
-					*dst++ = src2;
-					*dst++ = src >> 24;
-					*dst++ = 0xFF;
+					u32 src2 = pvr_read32p<u32>(addr);
+					*dst++ = Packer::pack(src2 >> 8, src2, src >> 24, 0xff);
 					addr += 4;
 					if (i + 2 >= width)
 						break;
-					u32 src3 = pvr_read_area1<u32>(addr);
-					*dst++ = src3;
-					*dst++ = src2 >> 24;
-					*dst++ = src2 >> 16;
-					*dst++ = 0xFF;
+					u32 src3 = pvr_read32p<u32>(addr);
+					*dst++ = Packer::pack(src3, src2 >> 24, src2 >> 16, 0xff);
 					addr += 4;
 					if (i + 3 >= width)
 						break;
-					*dst++ = src3 >> 24;
-					*dst++ = src3 >> 16;
-					*dst++ = src3 >> 8;
-					*dst++ = 0xFF;
+					*dst++ = Packer::pack(src3 >> 24, src3 >> 16, src3 >> 8, 0xff);
 				}
 				addr += modulus * bpp;
 			}
@@ -862,11 +916,8 @@ void ReadFramebuffer(PixelBuffer<u32>& pb, int& width, int& height)
 			{
 				for (int i = 0; i < width; i++)
 				{
-					u32 src = pvr_read_area1<u32>(addr);
-					*dst++ = src >> 16;
-					*dst++ = src >> 8;
-					*dst++ = src;
-					*dst++ = 0xFF;
+					u32 src = pvr_read32p<u32>(addr);
+					*dst++ = Packer::pack(src >> 16, src >> 8, src, 0xff);
 					addr += bpp;
 				}
 				addr += modulus * bpp;
@@ -874,59 +925,65 @@ void ReadFramebuffer(PixelBuffer<u32>& pb, int& width, int& height)
 			break;
 	}
 }
+template void ReadFramebuffer<RGBAPacker>(PixelBuffer<u32>& pb, int& width, int& height);
+template void ReadFramebuffer<BGRAPacker>(PixelBuffer<u32>& pb, int& width, int& height);
 
-void WriteTextureToVRam(u32 width, u32 height, u8 *data, u16 *dst)
+template<int Red, int Green, int Blue, int Alpha>
+void WriteTextureToVRam(u32 width, u32 height, u8 *data, u16 *dst, u32 fb_w_ctrl_in, u32 linestride)
 {
-	u32 stride = FB_W_LINESTRIDE.stride * 8;
-	if (stride == 0)
-		stride = width * 2;
-	else if (width * 2 > stride) {
-    	// Happens for Virtua Tennis
-		width = stride / 2;
-    }
+	FB_W_CTRL_type fb_w_ctrl;
+	if (fb_w_ctrl_in != ~0u)
+		fb_w_ctrl.full = fb_w_ctrl_in;
+	else
+		fb_w_ctrl = FB_W_CTRL;
+	u32 padding = (linestride == ~0u ? FB_W_LINESTRIDE.stride * 8 : linestride);
+	if (padding != 0)
+		padding = padding / 2 - width;
 
-	const u16 kval_bit = (FB_W_CTRL.fb_kval & 0x80) << 8;
-	const u8 fb_alpha_threshold = FB_W_CTRL.fb_alpha_threshold;
+	const u16 kval_bit = (fb_w_ctrl.fb_kval & 0x80) << 8;
+	const u8 fb_alpha_threshold = fb_w_ctrl.fb_alpha_threshold;
 
 	u8 *p = data;
 
 	for (u32 l = 0; l < height; l++) {
-		switch(FB_W_CTRL.fb_packmode)
+		switch(fb_w_ctrl.fb_packmode)
 		{
 		case 0: //0x0   0555 KRGB 16 bit  (default)	Bit 15 is the value of fb_kval[7].
 			for (u32 c = 0; c < width; c++) {
-				*dst++ = (((p[0] >> 3) & 0x1F) << 10) | (((p[1] >> 3) & 0x1F) << 5) | ((p[2] >> 3) & 0x1F) | kval_bit;
+				*dst++ = (((p[Red] >> 3) & 0x1F) << 10) | (((p[Green] >> 3) & 0x1F) << 5) | ((p[Blue] >> 3) & 0x1F) | kval_bit;
 				p += 4;
 			}
 			break;
 		case 1: //0x1   565 RGB 16 bit
 			for (u32 c = 0; c < width; c++) {
-				*dst++ = (((p[0] >> 3) & 0x1F) << 11) | (((p[1] >> 2) & 0x3F) << 5) | ((p[2] >> 3) & 0x1F);
+				*dst++ = (((p[Red] >> 3) & 0x1F) << 11) | (((p[Green] >> 2) & 0x3F) << 5) | ((p[Blue] >> 3) & 0x1F);
 				p += 4;
 			}
 			break;
 		case 2: //0x2   4444 ARGB 16 bit
 			for (u32 c = 0; c < width; c++) {
-				*dst++ = (((p[0] >> 4) & 0xF) << 8) | (((p[1] >> 4) & 0xF) << 4) | ((p[2] >> 4) & 0xF) | (((p[3] >> 4) & 0xF) << 12);
+				*dst++ = (((p[Red] >> 4) & 0xF) << 8) | (((p[Green] >> 4) & 0xF) << 4) | ((p[Blue] >> 4) & 0xF) | (((p[Alpha] >> 4) & 0xF) << 12);
 				p += 4;
 			}
 			break;
 		case 3://0x3    1555 ARGB 16 bit    The alpha value is determined by comparison with the value of fb_alpha_threshold.
 			for (u32 c = 0; c < width; c++) {
-				*dst++ = (((p[0] >> 3) & 0x1F) << 10) | (((p[1] >> 3) & 0x1F) << 5) | ((p[2] >> 3) & 0x1F) | (p[3] > fb_alpha_threshold ? 0x8000 : 0);
+				*dst++ = (((p[Red] >> 3) & 0x1F) << 10) | (((p[Green] >> 3) & 0x1F) << 5) | ((p[Blue] >> 3) & 0x1F) | (p[Alpha] > fb_alpha_threshold ? 0x8000 : 0);
 				p += 4;
 			}
 			break;
 		}
-		dst += (stride - width * 2) / 2;
+		dst += padding;
 	}
 }
+template void WriteTextureToVRam<0, 1, 2, 3>(u32 width, u32 height, u8 *data, u16 *dst, u32 fb_w_ctrl_in, u32 linestride);
+template void WriteTextureToVRam<2, 1, 0, 3>(u32 width, u32 height, u8 *data, u16 *dst, u32 fb_w_ctrl_in, u32 linestride);
 
 static void rend_text_invl(vram_block* bl)
 {
-	BaseTextureCacheData* tcd = (BaseTextureCacheData*)bl->userdata;
-	tcd->dirty = FrameCount;
-	tcd->lock_block = nullptr;
+	BaseTextureCacheData* texture = bl->texture;
+	texture->dirty = FrameCount;
+	texture->lock_block = nullptr;
 
 	libCore_vramlock_Unlock_block_wb(bl);
 }
@@ -940,4 +997,3 @@ void dump_screenshot(u8 *buffer, u32 width, u32 height, bool alpha, u32 rowPitch
 	stbi_write_png("screenshot.png", width, height, alpha ? 4 : 3, buffer, rowPitch);
 }
 #endif
-

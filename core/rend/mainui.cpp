@@ -23,30 +23,39 @@
 #include "gui.h"
 #include "oslib/oslib.h"
 #include "wsi/context.h"
+#include "cfg/option.h"
+#include "emulator.h"
+#include "imgui_driver.h"
 
-bool mainui_enabled;
-int renderer_changed = -1;	// Signals the renderer thread to switch renderer
+static bool mainui_enabled;
 u32 MainFrameCount;
+static bool forceReinit;
 
 void UpdateInputState();
 
 bool mainui_rend_frame()
 {
 	os_DoEvents();
+	UpdateInputState();
 
-	if (gui_is_open() || gui_state == VJoyEdit)
+	if (gui_is_open() || gui_state == GuiState::VJoyEdit)
 	{
 		gui_display_ui();
 		// TODO refactor android vjoy out of renderer
-		if (gui_state == VJoyEdit && renderer != NULL)
+		if (gui_state == GuiState::VJoyEdit && renderer != NULL)
 			renderer->DrawOSD(true);
+#ifndef TARGET_IPHONE
 		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+#endif
 	}
 	else
 	{
-		if (!rend_single_frame(mainui_enabled))
-		{
-			UpdateInputState();
+		try {
+			if (!emu.render())
+				return false;
+		} catch (const FlycastException& e) {
+			emu.unloadGame();
+			gui_stop_game(e.what());
 			return false;
 		}
 	}
@@ -58,6 +67,7 @@ bool mainui_rend_frame()
 void mainui_init()
 {
 	rend_init_renderer();
+	rend_resize_renderer();
 }
 
 void mainui_term()
@@ -68,36 +78,24 @@ void mainui_term()
 void mainui_loop()
 {
 	mainui_enabled = true;
-	renderer_changed = (int)settings.pvr.rend;
 	mainui_init();
+	RenderType currentRenderer = config::RendererType;
 
 	while (mainui_enabled)
 	{
-		if (mainui_rend_frame())
-		{
-			if (settings.pvr.IsOpenGL())
-				theGLContext.Swap();
-#ifdef USE_VULKAN
-			else
-				VulkanContext::Instance()->Present();
-#endif
-		}
+		mainui_rend_frame();
+		imguiDriver->present();
 
-		if (renderer_changed != (int)settings.pvr.rend)
+		if (config::RendererType != currentRenderer || forceReinit)
 		{
 			mainui_term();
-			if (renderer_changed == -1
-					|| settings.pvr.IsOpenGL() != ((RenderType)renderer_changed == RenderType::OpenGL || (RenderType)renderer_changed == RenderType::OpenGL_OIT))
-			{
-				// Switch between vulkan and opengl (or full reinit)
-				SwitchRenderApi(renderer_changed == -1 ? settings.pvr.rend : (RenderType)renderer_changed);
-			}
-			else
-			{
-				settings.pvr.rend = (RenderType)renderer_changed;
-			}
-			renderer_changed = (int)settings.pvr.rend;
+			int prevApi = isOpenGL(currentRenderer) ? 0 : isVulkan(currentRenderer) ? 1 : currentRenderer == RenderType::DirectX9 ? 2 : 3;
+			int newApi = isOpenGL(config::RendererType) ? 0 : isVulkan(config::RendererType) ? 1 : config::RendererType == RenderType::DirectX9 ? 2 : 3;
+			if (newApi != prevApi || forceReinit)
+				switchRenderApi();
 			mainui_init();
+			forceReinit = false;
+			currentRenderer = config::RendererType;
 		}
 	}
 
@@ -111,5 +109,5 @@ void mainui_stop()
 
 void mainui_reinit()
 {
-	renderer_changed = -1;
+	forceReinit = true;
 }

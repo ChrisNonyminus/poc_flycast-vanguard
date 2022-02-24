@@ -24,22 +24,51 @@
 #include "dsp.h"
 #include "aica.h"
 #include "aica_if.h"
-#include "deps/vixl/aarch64/macro-assembler-aarch64.h"
+#include "hw/mem/_vmem.h"
+#include <aarch64/macro-assembler-aarch64.h>
 using namespace vixl::aarch64;
 
-extern void vmem_platform_flush_cache(void *icache_start, void *icache_end, void *dcache_start, void *dcache_end);
+namespace dsp
+{
+
+constexpr size_t CodeSize = 4096 * 8;	//32 kb, 8 pages
+
+#if defined(__unix__) || defined(__SWITCH__)
+alignas(4096) static u8 DynCode[CodeSize] __attribute__((section(".text")));
+#elif defined(__APPLE__)
+#if defined(TARGET_IPHONE) || defined(TARGET_ARM_MAC)
+static u8 *DynCode;
+#else
+alignas(4096) static u8 DynCode[CodeSize] __attribute__((section("__TEXT, .text")));
+#endif
+#else
+#error "Unsupported platform for arm64 DSP dynarec"
+#endif
+
+static u8 *pCodeBuffer;
+static ptrdiff_t rx_offset;
+
+#ifdef TARGET_IPHONE
+#include "stdclass.h"
+
+static void JITWriteProtect(bool enable)
+{
+    if (enable)
+        mem_region_set_exec(pCodeBuffer, CodeSize);
+    else
+        mem_region_unlock(pCodeBuffer, CodeSize);
+}
+#endif
 
 class DSPAssembler : public MacroAssembler
 {
 public:
 	DSPAssembler(u8 *code_buffer, size_t size) : MacroAssembler(code_buffer, size), aica_ram_lit(NULL) {}
 
-	void Compile(struct dsp_t *DSP)
+	void Compile(DSPState *DSP)
 	{
 		this->DSP = DSP;
 		DEBUG_LOG(AICA_ARM, "DSPAssembler::DSPCompile recompiling for arm64 at %p", GetBuffer()->GetStartAddress<void*>());
-
-		Instruction* instr_start = GetBuffer()->GetStartAddress<Instruction*>();
 
 		Stp(x29, x30, MemOperand(sp, -96, PreIndex));
 		Stp(x21, x22, MemOperand(sp, 16));
@@ -65,18 +94,12 @@ public:
 		Mov(FRC_REG, 0);
 		Mov(Y_REG, 0);
 		Mov(ADRS_REG, 0);
-		Ldr(MDEC_CT, dsp_operand(&DSP->regs.MDEC_CT));
+		Ldr(MDEC_CT, dsp_operand(&DSP->MDEC_CT));
 
-#if 0
-		Instruction* instr_cur = GetBuffer()->GetEndAddress<Instruction*>();
-		DEBUG_LOG(AICA_ARM, "DSP PROLOGUE");
-		Disassemble(instr_start, instr_cur);
-		instr_start = instr_cur;
-#endif
 		for (int step = 0; step < 128; ++step)
 		{
 			u32 *mpro = &DSPData->MPRO[step * 4];
-			_INST op;
+			Instruction op;
 			DecodeInst(mpro, &op);
 			const u32 COEF = step;
 
@@ -119,7 +142,7 @@ public:
 					Mov(B, ACC);
 				else
 				{
-					//B = DSP->TEMP[(TRA + DSP->regs.MDEC_CT) & 0x7F];
+					//B = DSP->TEMP[(TRA + DSP->MDEC_CT) & 0x7F];
 					if (op.TRA)
 						Add(w1, MDEC_CT, op.TRA);
 					else
@@ -139,8 +162,8 @@ public:
 				X_alias = &INPUTS;
 			else
 			{
-				//X = DSP->TEMP[(TRA + DSP->regs.MDEC_CT) & 0x7F];
-				if (!op.ZERO && !op.BSEL)
+				//X = DSP->TEMP[(TRA + DSP->MDEC_CT) & 0x7F];
+				if (!op.ZERO && !op.BSEL && !op.NEGB)
 					X_alias = &B;
 				else
 				{
@@ -231,7 +254,7 @@ public:
 
 			if (op.TWT)
 			{
-				//DSP->TEMP[(op.TWA + DSP->regs.MDEC_CT) & 0x7F] = SHIFTED;
+				//DSP->TEMP[(op.TWA + DSP->MDEC_CT) & 0x7F] = SHIFTED;
 				if (op.TWA)
 					Add(w1, MDEC_CT, op.TWA);
 				else
@@ -295,20 +318,14 @@ public:
 				Asr(w1, SHIFTED, 8);
 				Str(w1, mem_operand);
 			}
-#if 0
-			instr_cur = GetBuffer()->GetEndAddress<Instruction*>();
-			DEBUG_LOG(AICA_ARM, "DSP STEP %d: %04x %04x %04x %04x", step, mpro[0], mpro[1], mpro[2], mpro[3]);
-			Disassemble(instr_start, instr_cur);
-			instr_start = instr_cur;
-#endif
 		}
-		// DSP->regs.MDEC_CT--
+		// DSP->MDEC_CT--
 		Subs(MDEC_CT, MDEC_CT, 1);
-		//if (dsp.regs.MDEC_CT == 0)
-		//	dsp.regs.MDEC_CT = dsp.RBL + 1;			// RBL is ring buffer length - 1
-		Mov(w0, dsp.RBL + 1);
+		//if (dsp.MDEC_CT == 0)
+		//	dsp.MDEC_CT = dsp.RBL + 1;			// RBL is ring buffer length - 1
+		Mov(w0, DSP->RBL + 1);
 		Csel(MDEC_CT, w0, MDEC_CT, eq);
-		Str(MDEC_CT, dsp_operand(&DSP->regs.MDEC_CT));
+		Str(MDEC_CT, dsp_operand(&DSP->MDEC_CT));
 
 		Ldp(x21, x22, MemOperand(sp, 16));
 		Ldp(x23, x24, MemOperand(sp, 32));
@@ -317,23 +334,18 @@ public:
 		Ldp(x19, x20, MemOperand(sp, 80));
 		Ldp(x29, x30, MemOperand(sp, 96, PostIndex));
 		Ret();
-#if 0
-		instr_cur = GetBuffer()->GetEndAddress<Instruction*>();
-		DEBUG_LOG(AICA_ARM, "DSP EPILOGUE");
-		Disassemble(instr_start, instr_cur);
-		instr_start = instr_cur;
-#endif
+
 		FinalizeCode();
 
 		vmem_platform_flush_cache(
-			GetBuffer()->GetStartAddress<void*>(), GetBuffer()->GetEndAddress<void*>(),
+			GetBuffer()->GetStartAddress<char*>() + rx_offset, GetBuffer()->GetEndAddress<char*>() + rx_offset,
 			GetBuffer()->GetStartAddress<void*>(), GetBuffer()->GetEndAddress<void*>());
 	}
 
 private:
 	MemOperand dsp_operand(void *data, int index = 0, u32 element_size = 4)
 	{
-		ptrdiff_t offset = ((u8*)data - (u8*)DSP) - offsetof(dsp_t, TEMP) + index  * element_size;
+		ptrdiff_t offset = ((u8*)data - (u8*)DSP) - offsetof(DSPState, TEMP) + index  * element_size;
 		if (offset < 16384)
 			return MemOperand(x28, offset);
 		Mov(x0, offset);
@@ -342,7 +354,7 @@ private:
 
 	MemOperand dsp_operand(void *data, const Register& offset_reg, u32 element_size = 4)
 	{
-		ptrdiff_t offset = ((u8*)data - (u8*)DSP) - offsetof(dsp_t, TEMP);
+		ptrdiff_t offset = ((u8*)data - (u8*)DSP) - offsetof(DSPState, TEMP);
 		if (offset == 0)
 			return MemOperand(x28, offset_reg, LSL, element_size == 4 ? 2 : element_size == 2 ? 1 : 0);
 
@@ -363,15 +375,22 @@ private:
 	template <typename R, typename... P>
 	void GenCallRuntime(R (*function)(P...))
 	{
-		ptrdiff_t offset = reinterpret_cast<uintptr_t>(function) - GetBuffer()->GetStartAddress<uintptr_t>();
-		verify(offset >= -128 * 1024 * 1024 && offset <= 128 * 1024 * 1024);
+		ptrdiff_t offset = reinterpret_cast<uintptr_t>(function) - GetBuffer()->GetStartAddress<uintptr_t>() - rx_offset;
 		verify((offset & 3) == 0);
-		Label function_label;
-		BindToOffset(&function_label, offset);
-		Bl(&function_label);
+		if (offset >= -128 * 1024 * 1024 && offset <= 128 * 1024 * 1024)
+		{
+			Label function_label;
+			BindToOffset(&function_label, offset);
+			Bl(&function_label);
+		}
+		else
+		{
+			Mov(x4, reinterpret_cast<uintptr_t>(function));
+			Blr(x4);
+		}
 	}
 
-	void CalculateADDR(const Register& ADDR, const _INST& op, const Register& ADRS_REG, const Register& MDEC_CT)
+	void CalculateADDR(const Register& ADDR, const Instruction& op, const Register& ADRS_REG, const Register& MDEC_CT)
 	{
 		//u32 ADDR = DSPData->MADRS[op.MASA];
 		Ldr(ADDR, dspdata_operand(DSPData->MADRS, op.MASA));
@@ -386,7 +405,7 @@ private:
 			Add(ADDR, ADDR, 1);
 		if (!op.TABLE)
 		{
-			//ADDR += DSP->regs.MDEC_CT;
+			//ADDR += DSP->MDEC_CT;
 			Add(ADDR, ADDR, MDEC_CT);
 			//ADDR &= DSP->RBL;
 			// RBL is constant for this program
@@ -417,85 +436,34 @@ private:
 		return aica_ram_lit;
 	}
 
-	void Disassemble(Instruction* instr_start, Instruction* instr_end)
-	{
-		Decoder decoder;
-		Disassembler disasm;
-		decoder.AppendVisitor(&disasm);
-		Instruction* instr;
-		for (instr = instr_start; instr < instr_end; instr += kInstructionSize) {
-			decoder.Decode(instr);
-			DEBUG_LOG(AICA_ARM, "    %p:\t%s", reinterpret_cast<void*>(instr), disasm.GetOutput());
-		}
-	}
-
-	struct dsp_t *DSP;
+	DSPState *DSP;
 	Literal<u8*> *aica_ram_lit;
 };
 
-void dsp_recompile()
+void recompile()
 {
-	dsp.Stopped = true;
-	for (int i = 127; i >= 0; --i)
-	{
-		u32 *IPtr = DSPData->MPRO + i * 4;
-
-		if (IPtr[0] != 0 || IPtr[1] != 0 || IPtr[2 ]!= 0 || IPtr[3] != 0)
-		{
-			dsp.Stopped = false;
-			break;
-		}
-	}
-	DSPAssembler assembler(&dsp.DynCode[0], sizeof(dsp.DynCode));
-	assembler.Compile(&dsp);
+	JITWriteProtect(false);
+	DSPAssembler assembler(pCodeBuffer, CodeSize);
+	assembler.Compile(&state);
+	JITWriteProtect(true);
 }
 
-void dsp_init()
+void recInit()
 {
-	memset(&dsp, 0, sizeof(dsp));
-	dsp.RBL = 0x8000 - 1;
-	dsp.RBP=0;
-	dsp.regs.MDEC_CT = 1;
-	dsp.dyndirty = true;
-
-	if (!mem_region_set_exec(dsp.DynCode, sizeof(dsp.DynCode)))
-	{
-		perror("Couldn’t mprotect DSP code");
-		die("mprotect failed in arm64 dsp");
-	}
+#ifdef FEAT_NO_RWX_PAGES
+	verify(vmem_platform_prepare_jit_block(DynCode, CodeSize, (void**)&pCodeBuffer, &rx_offset));
+#else
+	verify(vmem_platform_prepare_jit_block(DynCode, CodeSize, (void**)&pCodeBuffer));
+#endif
+#if defined(TARGET_IPHONE) || defined(TARGET_ARM_MAC)
+	DynCode = pCodeBuffer;
+#endif
 }
 
-void dsp_step()
+void runStep()
 {
-	if (dsp.dyndirty)
-	{
-		dsp.dyndirty = false;
-		dsp_recompile();
-	}
-	if (dsp.Stopped)
-		return;
-	((void (*)())&dsp.DynCode)();
+	((void (*)())DynCode)();
 }
 
-void dsp_writenmem(u32 addr)
-{
-	if (addr >= 0x3400 && addr < 0x3C00)
-	{
-		dsp.dyndirty = true;
-	}
-	else if (addr >= 0x4000 && addr < 0x4400)
-	{
-		// TODO proper sharing of memory with sh4 through DSPData
-		memset(dsp.TEMP, 0, sizeof(dsp.TEMP));
-	}
-	else if (addr >= 0x4400 && addr < 0x4500)
-	{
-		// TODO proper sharing of memory with sh4 through DSPData
-		memset(dsp.MEMS, 0, sizeof(dsp.MEMS));
-	}
-}
-
-void dsp_term()
-{
 }
 #endif

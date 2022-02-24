@@ -22,6 +22,7 @@
 #include "sh4_mem.h"
 #include "modules/mmu.h"
 #include "hw/sh4/sh4_core.h"
+#include "serialize.h"
 
 static bool cachedArea(u32 area)
 {
@@ -101,24 +102,17 @@ public:
 			memset(&lines[0], 0, sizeof(lines));
 	}
 
-	bool Serialize(void **data, unsigned int *total_size)
-	{
-		REICAST_S(lines);
-
-		return true;
+	void Serialize(Serializer& ser) {
+		ser << lines;
 	}
-
-	bool Unserialize(void **data, unsigned int *total_size)
-	{
-		REICAST_US(lines);
-
-		return true;
+	void Deserialize(Deserializer& deser) {
+		deser >> lines;
 	}
 
 	u32 ReadAddressArray(u32 addr)
 	{
 		u32 index = (addr >> 5) & 0xFF;
-		return lines[index].valid | (lines[index].address << 10);
+		return (u32)lines[index].valid | (lines[index].address << 10);
 	}
 
 	void WriteAddressArray(u32 addr, u32 data)
@@ -198,8 +192,8 @@ private:
 		cached = CCN_CCR.ICE == 1 && cachedArea(area);
 
 		if (CCN_MMUCR.AT == 0 || !translatedArea(area)
-				// 7C000000 to 7FFFFFFF in P0 not translated in supervisor mode
-				|| (!userMode && (address & 0xFC000000) == 0x7C000000))
+				// 7C000000 to 7FFFFFFF in P0/U0 not translated
+				|| (address & 0xFC000000) == 0x7C000000)
 		{
 			physAddr = address;
 		}
@@ -373,24 +367,17 @@ public:
 			memset(&lines[0], 0, sizeof(lines));
 	}
 
-	bool Serialize(void **data, unsigned int *total_size)
-	{
-		REICAST_S(lines);
-
-		return true;
+	void Serialize(Serializer& ser) {
+		ser << lines;
 	}
-
-	bool Unserialize(void **data, unsigned int *total_size)
-	{
-		REICAST_US(lines);
-
-		return true;
+	void Deserialize(Deserializer& deser) {
+		deser >> lines;
 	}
 
 	u32 ReadAddressArray(u32 addr)
 	{
 		u32 index = (addr >> 5) & 0x1FF;
-		return lines[index].valid | (lines[index].dirty << 1) | (lines[index].address << 10);
+		return (u32)lines[index].valid | ((u32)lines[index].dirty << 1) | (lines[index].address << 10);
 	}
 
 	void WriteAddressArray(u32 addr, u32 data)
@@ -531,8 +518,8 @@ private:
 			copyBack = area == 4 ? CCN_CCR.CB : !CCN_CCR.WT;
 
 		if (CCN_MMUCR.AT == 0 || !translatedArea(area)
-				// 7C000000 to 7FFFFFFF in P0 not translated in supervisor mode
-				|| (!userMode && (address & 0xFC000000) == 0x7C000000))
+				// 7C000000 to 7FFFFFFF in P0/U0 not translated
+				|| (address & 0xFC000000) == 0x7C000000)
 		{
 			physAddr = address;
 		}
@@ -563,6 +550,10 @@ private:
 				copyBack = copyBack && entry->Data.WT == 0;
 			}
 			cached = cached && entry->Data.C == 1;
+			if ((physAddr & 0x1C000000) == 0x1C000000)
+				// map 1C000000-1FFFFFFF to P4 memory-mapped registers
+				physAddr |= 0xF0000000;
+
 		}
 		return MMU_ERROR_NONE;
 	}

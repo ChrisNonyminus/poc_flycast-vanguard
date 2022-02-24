@@ -15,19 +15,20 @@
 #include "naomi_regs.h"
 #include "naomi_m3comm.h"
 #include "network/naomi_network.h"
+#include "serialize.h"
 
 //#define NAOMI_COMM
 
 static NaomiM3Comm m3comm;
 
-static const u32 BoardID=0x980055AA;
-u32 GSerialBuffer=0,BSerialBuffer=0;
-int GBufPos=0,BBufPos=0;
-int GState=0,BState=0;
-int GOldClk=0,BOldClk=0;
-int BControl=0,BCmd=0,BLastCmd=0;
-int GControl=0,GCmd=0,GLastCmd=0;
-int SerStep=0,SerStep2=0;
+static const u32 BoardID = 0x980055AA;
+static u32 GSerialBuffer, BSerialBuffer;
+static int GBufPos, BBufPos;
+static int GState, BState;
+static int GOldClk, BOldClk;
+static int BControl, BCmd, BLastCmd;
+static int GControl, GCmd, GLastCmd;
+static int SerStep, SerStep2;
 
 #ifdef NAOMI_COMM
 	u32 CommOffset;
@@ -42,10 +43,10 @@ A-H		(0x41-0x48)
 J-N		(0x4A-0x4E)
 P-Z		(0x50-0x5A)
 */
-unsigned char BSerial[]="\xB7"/*CRC1*/"\x19"/*CRC2*/"0123234437897584372973927387463782196719782697849162342198671923649";
-unsigned char GSerial[]="\xB7"/*CRC1*/"\x19"/*CRC2*/"0123234437897584372973927387463782196719782697849162342198671923649";
+static u8 BSerial[]="\xB7"/*CRC1*/"\x19"/*CRC2*/"0123234437897584372973927387463782196719782697849162342198671923649";
+static u8 GSerial[]="\xB7"/*CRC1*/"\x19"/*CRC2*/"0123234437897584372973927387463782196719782697849162342198671923649";
 
-unsigned int ShiftCRC(unsigned int CRC,unsigned int rounds)
+static unsigned int ShiftCRC(unsigned int CRC,unsigned int rounds)
 {
 	const unsigned int Magic=0x10210000;
 	unsigned int i;
@@ -59,7 +60,7 @@ unsigned int ShiftCRC(unsigned int CRC,unsigned int rounds)
 	return CRC;
 }
 
-unsigned short CRCSerial(const u8 *Serial,unsigned int len)
+static unsigned short CRCSerial(const u8 *Serial,unsigned int len)
 {
 	unsigned int CRC=0xDEBDEB00;
 	unsigned int i;
@@ -75,7 +76,6 @@ unsigned short CRCSerial(const u8 *Serial,unsigned int len)
 	return (u16)(CRC>>16);
 }
 
-
 void NaomiInit()
 {
 	u16 CRC;
@@ -88,9 +88,6 @@ void NaomiInit()
 	GSerial[1]=(u8)(CRC);
 }
 
-
-
-
 void NaomiBoardIDWrite(const u16 Data)
 {
 	int Dat=Data&8;
@@ -98,13 +95,11 @@ void NaomiBoardIDWrite(const u16 Data)
 	int Rst=Data&0x20;
 	int Sta=Data&0x10;
 	
-
 	if(Rst)
 	{
 		BState=0;
 		BBufPos=0;
 	}
-
 	
 	if(Clk!=BOldClk && !Clk)	//Falling Edge clock
 	{
@@ -213,7 +208,7 @@ void NaomiBoardIDWriteControl(const u16 Data)
 	BControl=Data;
 }
 
-void NaomiGameIDProcessCmd()
+static void NaomiGameIDProcessCmd()
 {
 	if(GCmd!=GLastCmd)
 	{
@@ -285,13 +280,11 @@ void NaomiGameIDWrite(const u16 Data)
 	int Sta=Data&0x08;
 	int Cmd=Data&0x10;
 	
-
 	if(Rst)
 	{
 		GState=0;
 		GBufPos=0;
 	}
-
 	
 	if(Clk!=GOldClk && !Clk)	//Falling Edge clock
 	{
@@ -300,10 +293,6 @@ void NaomiGameIDWrite(const u16 Data)
 			GState=1;		
 		if(GState==1 && !Sta)
 			GState=2;
-		
-		
-		
-		
 
 		//State processing
 		if(GState==1)		//LoadBoardID
@@ -331,11 +320,8 @@ void NaomiGameIDWrite(const u16 Data)
 				GCmd&=0xfffffffe;
 			GControl=Cmd;
 		}
-		
 	}
-
 	GOldClk=Clk;
-
 }
 
 u16 NaomiGameIDRead()
@@ -580,6 +566,8 @@ void naomi_reg_Reset(bool hard)
 	reg_dimm_status = 0x11;
 	m3comm.closeNetwork();
 	naomiNetwork.terminate();
+	if (hard)
+		naomi_cart_Close();
 }
 
 static u8 aw_maple_devs;
@@ -663,4 +651,75 @@ void libExtDevice_WriteMem_A0_006(u32 addr,u32 data,u32 size) {
 		break;
 	}
 	INFO_LOG(NAOMI, "Unhandled write @ %x (%d): %x", addr, size, data);
+}
+
+void naomi_Serialize(Serializer& ser)
+{
+	ser << GSerialBuffer;
+	ser << BSerialBuffer;
+	ser << GBufPos;
+	ser << BBufPos;
+	ser << GState;
+	ser << BState;
+	ser << GOldClk;
+	ser << BOldClk;
+	ser << BControl;
+	ser << BCmd;
+	ser << BLastCmd;
+	ser << GControl;
+	ser << GCmd;
+	ser << GLastCmd;
+	ser << SerStep;
+	ser << SerStep2;
+	ser.serialize(BSerial, 69);
+	ser.serialize(GSerial, 69);
+	ser << reg_dimm_command;
+	ser << reg_dimm_offsetl;
+	ser << reg_dimm_parameterl;
+	ser << reg_dimm_parameterh;
+	ser << reg_dimm_status;
+	ser << aw_maple_devs;
+	ser << coin_chute_time;
+	ser << aw_ram_test_skipped;
+	// TODO serialize m3comm?
+}
+void naomi_Deserialize(Deserializer& deser)
+{
+	if (deser.version() < Deserializer::V9_LIBRETRO)
+	{
+		deser.skip<u32>();		// naomi_updates
+		deser.skip<u32>();		// BoardID
+	}
+	deser >> GSerialBuffer;
+	deser >> BSerialBuffer;
+	deser >> GBufPos;
+	deser >> BBufPos;
+	deser >> GState;
+	deser >> BState;
+	deser >> GOldClk;
+	deser >> BOldClk;
+	deser >> BControl;
+	deser >> BCmd;
+	deser >> BLastCmd;
+	deser >> GControl;
+	deser >> GCmd;
+	deser >> GLastCmd;
+	deser >> SerStep;
+	deser >> SerStep2;
+	deser.deserialize(BSerial, 69);
+	deser.deserialize(GSerial, 69);
+	deser >> reg_dimm_command;
+	deser >> reg_dimm_offsetl;
+	deser >> reg_dimm_parameterl;
+	deser >> reg_dimm_parameterh;
+	deser >> reg_dimm_status;
+	if (deser.version() < Deserializer::V11)
+		deser.skip<u8>();
+	else if (deser.version() >= Deserializer::V14)
+		deser >> aw_maple_devs;
+	if (deser.version() >= Deserializer::V20)
+	{
+		deser >> coin_chute_time;
+		deser >> aw_ram_test_skipped;
+	}
 }

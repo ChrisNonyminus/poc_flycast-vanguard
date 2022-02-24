@@ -27,6 +27,8 @@
 #include "rend/gui.h"
 #include "hw/naomi/naomi_cart.h"
 #include "hw/naomi/naomi_flashrom.h"
+#include "cfg/option.h"
+#include "emulator.h"
 
 #ifdef _MSC_VER
 #if defined(_WIN64)
@@ -67,7 +69,7 @@ sock_t NaomiNetwork::createAndBind(int protocol)
 
 bool NaomiNetwork::init()
 {
-	if (!settings.network.Enable)
+	if (!config::NetworkEnable)
 		return false;
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -77,7 +79,7 @@ bool NaomiNetwork::init()
 		return false;
 	}
 #endif
-	if (settings.network.ActAsServer)
+	if (config::ActAsServer)
 	{
 		miniupnp.Init();
 		miniupnp.AddPortMapping(SERVER_PORT, true);
@@ -130,7 +132,7 @@ void NaomiNetwork::processBeacon()
 		}
 		else
 		{
-			DEBUG_LOG(NETWORK, "NaomiServer: beacon received %ld bytes", n);
+			DEBUG_LOG(NETWORK, "NaomiServer: beacon received %ld bytes", (long)n);
 			if (n == sizeof(buf) && !strncmp(buf, "flycast", n))
 				sendto(beacon_sock, buf, n, 0, (const struct sockaddr *)&addr, addrlen);
 		}
@@ -223,7 +225,7 @@ bool NaomiNetwork::startNetwork()
 	using namespace std::chrono;
 	const auto timeout = seconds(20);
 
-	if (settings.network.ActAsServer)
+	if (config::ActAsServer)
 	{
 		NOTICE_LOG(NETWORK, "Waiting for slave connections");
 		steady_clock::time_point start_time = steady_clock::now();
@@ -338,11 +340,11 @@ bool NaomiNetwork::startNetwork()
 	}
 	else
 	{
-		if (!settings.network.server.empty())
+		if (!config::NetworkServer.get().empty())
 		{
 			struct addrinfo *resultAddr;
-			if (getaddrinfo(settings.network.server.c_str(), 0, nullptr, &resultAddr))
-				WARN_LOG(NETWORK, "Server %s is unknown", settings.network.server.c_str());
+			if (getaddrinfo(config::NetworkServer.get().c_str(), 0, nullptr, &resultAddr))
+				WARN_LOG(NETWORK, "Server %s is unknown", config::NetworkServer.get().c_str());
 			else
 				for (struct addrinfo *ptr = resultAddr; ptr != nullptr; ptr = ptr->ai_next)
 					if (ptr->ai_family == AF_INET)
@@ -408,7 +410,7 @@ bool NaomiNetwork::syncNetwork()
 	using namespace std::chrono;
 	const auto timeout = seconds(10);
 
-	if (settings.network.ActAsServer)
+	if (config::ActAsServer)
 	{
 		steady_clock::time_point start_time = steady_clock::now();
 
@@ -617,12 +619,13 @@ void NaomiNetwork::shutdown()
 	}
 	if (VALID(client_sock))
 		closeSocket(client_sock);
+	emu.setNetworkState(false);
 }
 
 void NaomiNetwork::terminate()
 {
 	shutdown();
-	if (settings.network.ActAsServer)
+	if (config::ActAsServer)
 		miniupnp.Term();
 	if (VALID(beacon_sock))
 		closeSocket(beacon_sock);
@@ -635,7 +638,9 @@ std::future<bool> NaomiNetwork::startNetworkAsync()
 	network_stopping = false;
 	start_now = false;
 	return std::async(std::launch::async, [this] {
-		return startNetwork();
+		bool res = startNetwork();
+		emu.setNetworkState(res);
+		return res;
 	});
 }
 
@@ -713,7 +718,7 @@ bool NaomiNetworkSupported()
 		"HEAVY METAL JAPAN", "OUTTRIGGER     JAPAN", "SLASHOUT JAPAN VERSION", "SPAWN JAPAN",
 		"SPIKERS BATTLE JAPAN VERSION", "VIRTUAL-ON ORATORIO TANGRAM", "WAVE RUNNER GP", "WORLD KICKS"
 	};
-	if (!settings.network.Enable)
+	if (!config::NetworkEnable)
 		return false;
 	for (auto game : games)
 		if (!strcmp(game, naomi_game_id))

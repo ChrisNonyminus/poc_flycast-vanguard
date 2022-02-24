@@ -6,24 +6,24 @@
 
 bool reios_loadElf(const std::string& elf) {
 
-	FILE* f = fopen(elf.c_str(), "rb");
-	if (!f) {
+	FILE* f = nowide::fopen(elf.c_str(), "rb");
+	if (!f)
 		return false;
-	}
-	fseek(f, 0, SEEK_END);
-	size_t size = ftell(f);
+
+	std::fseek(f, 0, SEEK_END);
+	size_t size = std::ftell(f);
 
 	if (size > 16 * 1024 * 1024) {
-		fclose(f);
+		std::fclose(f);
 		return false;
 	}
 
 	void* elfFile = malloc(size);
 	memset(elfFile, 0, size);
 
-	fseek(f, 0, SEEK_SET);
-	size_t nread = fread(elfFile, 1, size, f);
-	fclose(f);
+	std::fseek(f, 0, SEEK_SET);
+	size_t nread = std::fread(elfFile, 1, size, f);
+	std::fclose(f);
 
 	if (nread != size || elf_checkFile(elfFile) != 0)
 	{
@@ -45,10 +45,10 @@ bool reios_loadElf(const std::string& elf) {
 		u8* ptr = GetMemPtr(dest, len);
 		if (ptr == NULL)
 		{
-			WARN_LOG(REIOS, "Invalid load address for section %d: %08lx", i, dest);
+			WARN_LOG(REIOS, "Invalid load address for section %d: %08lx", i, (long)dest);
 			continue;
 		}
-		DEBUG_LOG(REIOS, "Loading section %d to %08lx - %08lx", i, dest, dest + len - 1);
+		DEBUG_LOG(REIOS, "Loading section %d to %08lx - %08lx", i, (long)dest, (long)(dest + len - 1));
 		memcpy(ptr, src, len);
 		ptr += len;
 		memset(ptr, 0, elf_getProgramHeaderMemorySize(elfFile, i) - len);

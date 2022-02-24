@@ -68,6 +68,7 @@
 
 #include "wsi/gl_context.h"
 #include "glcache.h"
+#include "hw/pvr/Renderer_if.h"
 
 // OpenGL Data
 static char         g_GlslVersionString[32] = "";
@@ -76,26 +77,27 @@ static GLuint       g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
 static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_ElementsHandle = 0;
-static GLuint g_BackgroundTexture = 0;
 
 // Functions
-bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
+static bool ImGui_ImplOpenGL3_CreateDeviceObjects();
+static void ImGui_ImplOpenGL3_DestroyDeviceObjects();
+static void ImGui_ImplOpenGL3_DrawBackground();
+
+bool    ImGui_ImplOpenGL3_Init()
 {
     ImGuiIO& io = ImGui::GetIO();
     io.BackendRendererName = "imgui_impl_opengl3";
 
     // Store GLSL version string so we can refer to it later in case we recreate shaders. Note: GLSL version is NOT the same as GL version. Leave this to NULL if unsure.
-    if (glsl_version == NULL)
-    {
-    	if (theGLContext.IsGLES())
-            glsl_version = "#version 100";		// OpenGL ES 2.0
-    	else
+    const char* glsl_version;
+    if (theGLContext.isGLES())
+    	glsl_version = "#version 100";		// OpenGL ES 2.0
+    else
 #if defined(__APPLE__)
-    		glsl_version = "#version 140";		// OpenGL 3.1
+    	glsl_version = "#version 140";		// OpenGL 3.1
 #else
-    		glsl_version = "#version 130";		// OpenGL 3.0
+    	glsl_version = "#version 130";		// OpenGL 3.0
 #endif
-    }
     IM_ASSERT((int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(g_GlslVersionString));
     strcpy(g_GlslVersionString, glsl_version);
     strcat(g_GlslVersionString, "\n");
@@ -112,12 +114,13 @@ void    ImGui_ImplOpenGL3_NewFrame()
 {
     if (!g_FontTexture)
         ImGui_ImplOpenGL3_CreateDeviceObjects();
+    ImGui_ImplOpenGL3_DrawBackground();
 }
 
 // OpenGL3 Render function.
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
-void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data, bool save_background)
+void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
@@ -131,35 +134,13 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data, bool save_backgr
     glActiveTexture(GL_TEXTURE0);
     bool clip_origin_lower_left = true;
 #ifdef GL_CLIP_ORIGIN
-    if (theGLContext.GetMajorVersion() >= 4 && glClipControl != NULL)
+    if (theGLContext.getMajorVersion() >= 4 && glClipControl != NULL)
     {
 		GLenum last_clip_origin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
 		if (last_clip_origin == GL_UPPER_LEFT)
 			clip_origin_lower_left = false;
     }
 #endif
-
-    if (save_background)
-    {
-#ifndef GLES2
-    	if (!theGLContext.IsGLES() && glReadBuffer != NULL)
-    		glReadBuffer(GL_FRONT);
-
-		// (Re-)create the background texture and reserve space for it
-		if (g_BackgroundTexture != 0)
-			glcache.DeleteTextures(1, &g_BackgroundTexture);
-		g_BackgroundTexture = glcache.GenTexture();
-		glcache.BindTexture(GL_TEXTURE_2D, g_BackgroundTexture);
-		glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fb_width, fb_height, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)NULL);
-
-		// Copy the current framebuffer into it
-		glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, fb_width, fb_height);
-#endif
-    }
 
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     glcache.Enable(GL_BLEND);
@@ -192,12 +173,12 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data, bool save_backgr
     glUniform1i(g_AttribLocationTex, 0);
     glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
 #ifndef GLES2
-    if (theGLContext.GetMajorVersion() >= 3 && glBindSampler != NULL)
+    if (theGLContext.getMajorVersion() >= 3 && glBindSampler != NULL)
     	glBindSampler(0, 0); // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
 #endif
     GLuint vao_handle = 0;
 #ifndef GLES2
-    if (theGLContext.GetMajorVersion() >= 3)
+    if (theGLContext.getMajorVersion() >= 3)
     {
 		// Recreate the VAO every time
 		// (This is to easily allow multiple GL contexts. VAO are not shared among GL contexts, and we don't track creation/deletion of windows so we don't have an obvious key to use to cache them.)
@@ -259,7 +240,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data, bool save_backgr
 #endif
 }
 
-bool ImGui_ImplOpenGL3_CreateFontsTexture()
+static bool ImGui_ImplOpenGL3_CreateFontsTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
@@ -272,7 +253,7 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
     glcache.BindTexture(GL_TEXTURE_2D, g_FontTexture);
     glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    if (theGLContext.GetMajorVersion() >= 3)
+    if (theGLContext.getMajorVersion() >= 3)
     	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -282,7 +263,7 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
     return true;
 }
 
-void ImGui_ImplOpenGL3_DestroyFontsTexture()
+static void ImGui_ImplOpenGL3_DestroyFontsTexture()
 {
     if (g_FontTexture)
     {
@@ -329,7 +310,7 @@ static bool CheckProgram(GLuint handle, const char* desc)
     return (GLboolean)status == GL_TRUE;
 }
 
-bool ImGui_ImplOpenGL3_CreateDeviceObjects()
+static bool ImGui_ImplOpenGL3_CreateDeviceObjects()
 {
     // Parse GLSL version string
     int glsl_version = 130;
@@ -493,7 +474,7 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects()
     return true;
 }
 
-void ImGui_ImplOpenGL3_DestroyDeviceObjects()
+static void ImGui_ImplOpenGL3_DestroyDeviceObjects()
 {
     if (g_VboHandle) glDeleteBuffers(1, &g_VboHandle);
     if (g_ElementsHandle) glDeleteBuffers(1, &g_ElementsHandle);
@@ -505,41 +486,43 @@ void ImGui_ImplOpenGL3_DestroyDeviceObjects()
     g_ShaderHandle = 0;
 
     ImGui_ImplOpenGL3_DestroyFontsTexture();
-
-    if (g_BackgroundTexture != 0)
-    	glcache.DeleteTextures(1, &g_BackgroundTexture);
-    g_BackgroundTexture = 0;
 }
 
-void ImGui_ImplOpenGL3_DrawBackground()
+static void ImGui_ImplOpenGL3_DrawBackground()
 {
+#ifndef TARGET_IPHONE
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
 	glcache.Disable(GL_SCISSOR_TEST);
 	glcache.ClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	if (g_BackgroundTexture != 0)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::SetNextWindowSize(io.DisplaySize);
-		ImGui::Begin("background", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing
-				| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoBackground);
-		ImGui::GetWindowDrawList()->AddImage((ImTextureID)(uintptr_t)g_BackgroundTexture, ImVec2(0, 0), io.DisplaySize, ImVec2(0, 1), ImVec2(1, 0), 0xffffffff);
-		ImGui::End();
-	}
+	if (renderer != nullptr)
+		renderer->RenderLastFrame();
 }
 
-ImTextureID ImGui_ImplOpenGL3_CreateVmuTexture(const unsigned int *data)
+static ImTextureID createSimpleTexture(const unsigned int *data, u32 width, u32 height)
 {
 	GLuint tex_id = glcache.GenTexture();
     glcache.BindTexture(GL_TEXTURE_2D, tex_id);
     glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glcache.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 48, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     return reinterpret_cast<ImTextureID>(tex_id);
 }
 
-void ImGui_ImplOpenGL3_DeleteVmuTexture(ImTextureID tex_id)
+ImTextureID ImGui_ImplOpenGL3_CreateVmuTexture(const unsigned int *data)
+{
+	return createSimpleTexture(data, 48, 32);
+}
+
+void ImGui_ImplOpenGL3_DeleteTexture(ImTextureID tex_id)
 {
 	glcache.DeleteTextures(1, &(GLuint &)tex_id);
 }
+
+ImTextureID ImGui_ImplOpenGL3_CreateCrosshairTexture(const unsigned int *data)
+{
+	return createSimpleTexture(data, 16, 16);
+}
+

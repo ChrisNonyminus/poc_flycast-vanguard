@@ -1,25 +1,27 @@
 #include "common.h"
+#include "stdclass.h"
 
 #include "deps/chdpsr/cdipsr.h"
 
-Disc* cdi_parse(const char* file)
+Disc* cdi_parse(const char* file, std::vector<u8> *digest)
 {
-	// Only try to open .cdi files
-	size_t len = strlen(file);
-	if (len > 4 && stricmp( &file[len - 4], ".cdi"))
+	if (get_file_extension(file) != "cdi")
 		return nullptr;
 
-	core_file* fsource=core_fopen(file);
+	FILE *fsource = nowide::fopen(file, "rb");
 
-	if (!fsource)
-		return nullptr;
+	if (fsource == nullptr)
+	{
+		WARN_LOG(COMMON, "Cannot open file '%s' errno %d", file, errno);
+		throw FlycastException(std::string("Cannot open CDI file ") + file);
+	}
 
 	image_s image = { 0 };
 	track_s track = { 0 };
 	if (!CDI_init(fsource, &image, file))
 	{
-		core_fclose(fsource);
-		return nullptr;
+		std::fclose(fsource);
+		throw FlycastException(std::string("Invalid CDI file ") + file);
 	}
 
 	CDI_get_sessions(fsource,&image);
@@ -39,9 +41,7 @@ Disc* cdi_parse(const char* file)
 
 		CDI_get_tracks (fsource, &image);
 
-		image.header_position = core_ftell(fsource);
-
-		//printf("\nSession %d has %d track(s)\n",image.global_current_session,image.tracks);
+		image.header_position = std::ftell(fsource);
 
 		if (image.tracks == 0)
 			INFO_LOG(GDROM, "Open session");
@@ -59,7 +59,7 @@ Disc* cdi_parse(const char* file)
 
 				CDI_read_track (fsource, &image, &track);
 
-				image.header_position = core_ftell(fsource);
+				image.header_position = std::ftell(fsource);
 
 				// Show info
 #if 0
@@ -81,10 +81,10 @@ Disc* cdi_parse(const char* file)
 #endif
 				if (ft)
 				{
-					ft=false;
+					ft = false;
 					Session s;
-					s.StartFAD=track.pregap_length + track.start_lba;
-					s.FirstTrack=track.global_current_track;
+					s.StartFAD = track.pregap_length + track.start_lba;
+					s.FirstTrack = (u8)track.global_current_track;
 					rv->sessions.push_back(s);
 				}
 
@@ -96,78 +96,51 @@ Disc* cdi_parse(const char* file)
 				if (track.mode==0)
 					CD_DA=true;
 
-
-
 				t.ADDR=1;//hmm is that ok ?
 
 				t.CTRL=track.mode==0?0:4;
 				t.StartFAD=track.start_lba+track.pregap_length;
 				t.EndFAD=t.StartFAD+track.length-1;
-				t.file = new RawTrackFile(core_fopen(file),track.position + track.pregap_length * track.sector_size,t.StartFAD,track.sector_size);
+				t.file = new RawTrackFile(nowide::fopen(file, "rb"), track.position + track.pregap_length * track.sector_size, t.StartFAD, track.sector_size);
 
 				rv->tracks.push_back(t);
-
-				//printf("\n");
-
-				//       if (track.pregap_length != 150) printf("Warning! This track seems to have a non-standard pregap...\n");
 
 				if (track.length < 0)
 					WARN_LOG(GDROM, "Negative track size found. You must extract image with /pregap option");
 
-				//if (!opts.showinfo)
+				std::fseek(fsource, track.position, SEEK_SET);
+				if (track.total_length < track.length + track.pregap_length)
 				{
-					if (track.total_length < track.length + track.pregap_length)
-					{
-						WARN_LOG(GDROM, "This track seems truncated. Skipping...");
-						core_fseek(fsource, track.position, SEEK_SET);
-						core_fseek(fsource, track.total_length, SEEK_CUR);
-						track.position = core_ftell(fsource);
-					}
-					else
-					{
-						
-						//printf("Track position: %lu\n",track.position + track.pregap_length * track.sector_size);
-						core_fseek(fsource, track.position, SEEK_SET);
-						//     fseek(fsource, track->pregap_length * track->sector_size, SEEK_CUR);
-						//     fseek(fsource, track->length * track->sector_size, SEEK_CUR);
-						core_fseek(fsource, track.total_length * track.sector_size, SEEK_CUR);
-
-						//savetrack(fsource, &image, &track, &opts, &flags);
-						track.position = core_ftell(fsource);
-
-						rv->EndFAD=track.start_lba +track.total_length;
-						// Generate cuesheet entries
-
-						//if (flags.create_cuesheet && !(track.mode == 2 && flags.do_convert))  // Do not generate input if converted (obsolete)
-						//	savecuesheet(fcuesheet, &image, &track, &opts, &flags);
-
-					}
+					WARN_LOG(GDROM, "This track seems truncated. Skipping...");
+					// FIXME that can't be right
+					std::fseek(fsource, track.total_length, SEEK_CUR);
 				}
+				else
+				{
+					std::fseek(fsource, track.total_length * track.sector_size, SEEK_CUR);
+					rv->EndFAD=track.start_lba +track.total_length;
+				}
+				track.position = std::ftell(fsource);
 
-				core_fseek(fsource, image.header_position, SEEK_SET);
-
-
-				// Close loops
+				std::fseek(fsource, image.header_position, SEEK_SET);
 
 				image.remaining_tracks--;
 			}
-
-			//if (flags.create_cuesheet) fclose(fcuesheet);
 		}
 
-		CDI_skip_next_session (fsource, &image);
+		CDI_skip_next_session(fsource, &image);
 
 		image.remaining_sessions--;
 	}
-	core_fclose(fsource);
+	if (digest != nullptr)
+		*digest = MD5Sum().add(fsource).getDigest();
+	std::fclose(fsource);
 
 	rv->type=GuessDiscType(CD_M1,CD_M2,CD_DA);
 
 	rv->LeadOut.StartFAD=rv->EndFAD;
 	rv->LeadOut.ADDR=0;
 	rv->LeadOut.CTRL=0;
-
-
 
 	return rv;
 }

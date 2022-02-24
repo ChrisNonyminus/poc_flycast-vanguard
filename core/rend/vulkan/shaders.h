@@ -93,17 +93,35 @@ public:
 			modVolShader = compileModVolFragmentShader();
 		return *modVolShader;
 	}
-	vk::ShaderModule GetQuadVertexShader()
+	vk::ShaderModule GetQuadVertexShader(bool rotate = false)
 	{
-		if (!quadVertexShader)
-			quadVertexShader = compileQuadVertexShader();
-		return *quadVertexShader;
+		if (rotate)
+		{
+			if (!quadRotateVertexShader)
+				quadRotateVertexShader = compileQuadVertexShader(true);
+			return *quadRotateVertexShader;
+		}
+		else
+		{
+			if (!quadVertexShader)
+				quadVertexShader = compileQuadVertexShader(false);
+			return *quadVertexShader;
+		}
 	}
-	vk::ShaderModule GetQuadFragmentShader()
+	vk::ShaderModule GetQuadFragmentShader(bool ignoreTexAlpha)
 	{
-		if (!quadFragmentShader)
-			quadFragmentShader = compileQuadFragmentShader();
-		return *quadFragmentShader;
+		if (ignoreTexAlpha)
+		{
+			if (!quadNoAlphaFragmentShader)
+				quadNoAlphaFragmentShader = compileQuadFragmentShader(true);
+			return *quadNoAlphaFragmentShader;
+		}
+		else
+		{
+			if (!quadFragmentShader)
+				quadFragmentShader = compileQuadFragmentShader(false);
+			return *quadFragmentShader;
+		}
 	}
 	vk::ShaderModule GetOSDVertexShader()
 	{
@@ -132,8 +150,8 @@ private:
 	vk::UniqueShaderModule compileShader(const FragmentShaderParams& params);
 	vk::UniqueShaderModule compileModVolVertexShader();
 	vk::UniqueShaderModule compileModVolFragmentShader();
-	vk::UniqueShaderModule compileQuadVertexShader();
-	vk::UniqueShaderModule compileQuadFragmentShader();
+	vk::UniqueShaderModule compileQuadVertexShader(bool rotate);
+	vk::UniqueShaderModule compileQuadFragmentShader(bool ignoreTexAlpha);
 	vk::UniqueShaderModule compileOSDVertexShader();
 	vk::UniqueShaderModule compileOSDFragmentShader();
 
@@ -142,7 +160,9 @@ private:
 	vk::UniqueShaderModule modVolVertexShader;
 	vk::UniqueShaderModule modVolShader;
 	vk::UniqueShaderModule quadVertexShader;
+	vk::UniqueShaderModule quadRotateVertexShader;
 	vk::UniqueShaderModule quadFragmentShader;
+	vk::UniqueShaderModule quadNoAlphaFragmentShader;
 	vk::UniqueShaderModule osdVertexShader;
 	vk::UniqueShaderModule osdFragmentShader;
 };

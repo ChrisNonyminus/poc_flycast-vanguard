@@ -194,7 +194,6 @@ public:
 		_depth_func = 0xFFFFFFFFu;
 		_depth_mask = 0xFF;
 		_program = 0xFFFFFFFFu;
-		_texture_cache_size = 0;
 		_stencil_func = 0xFFFFFFFFu;
 		_stencil_ref = -1;
 		_stencil_fmask = 0;
@@ -259,10 +258,38 @@ private:
 				return;
 			*pCap = value;
 		}
-		if (value)
-			glEnable(cap);
-		else
-			glDisable(cap);
+		switch (cap) {
+		case GL_BLEND:
+			if (value)
+				glEnable(GL_BLEND);
+			else
+				glDisable(GL_BLEND);
+			break;
+		case GL_CULL_FACE:
+			if (value)
+				glEnable(GL_CULL_FACE);
+			else
+				glDisable(GL_CULL_FACE);
+			break;
+		case GL_DEPTH_TEST:
+			if (value)
+				glEnable(GL_DEPTH_TEST);
+			else
+				glDisable(GL_DEPTH_TEST);
+			break;
+		case GL_SCISSOR_TEST:
+			if (value)
+				glEnable(GL_SCISSOR_TEST);
+			else
+				glDisable(GL_SCISSOR_TEST);
+			break;
+		case GL_STENCIL_TEST:
+			if (value)
+				glEnable(GL_STENCIL_TEST);
+			else
+				glDisable(GL_STENCIL_TEST);
+			break;
+		}
 	}
 
 	GLuint _array_buffer;
@@ -297,7 +324,7 @@ private:
 		GLsizei height;
 	} _scissor;
 	GLuint _texture_ids[TEXTURE_ID_CACHE_SIZE];
-	GLuint _texture_cache_size;
+	GLsizei _texture_cache_size = 0;
 	std::map<GLuint, TextureParameters> _texture_params;
 	bool _disable_cache;
 };

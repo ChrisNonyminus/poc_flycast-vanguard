@@ -32,10 +32,11 @@ public:
 	size_t Size() const { return size; }
 	size_t Read(void *data, size_t length);
 	size_t Write(const void *data, size_t length);
+	FILE *rawFile() const { return file; }
 
 private:
 	FILE *file = nullptr;
-	size_t size = 0;
+	u64 size = 0;
 	u32 maxChunkSize = 0;
 	u8 *chunk = nullptr;
 	u32 chunkSize = 0;

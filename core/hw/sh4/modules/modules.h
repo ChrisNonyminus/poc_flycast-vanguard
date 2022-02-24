@@ -1,10 +1,8 @@
 #pragma once
-#include "types.h"
 
 void bsc_init();
 void bsc_reset(bool hard);
 void bsc_term();
-
 
 void cpg_init();
 void cpg_reset();
@@ -37,7 +35,3 @@ void tmu_term();
 void ccn_init();
 void ccn_reset(bool hard);
 void ccn_term();
-
-void MMU_init();
-void MMU_reset();
-void MMU_term();

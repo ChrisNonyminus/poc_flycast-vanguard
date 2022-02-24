@@ -53,11 +53,6 @@ typedef size_t unat;
 typedef u64 unat;
 #endif
 
-#ifndef CDECL
-#define CDECL __cdecl
-#endif
-
-
 //intc function pointer and enums
 enum HollyInterruptType
 {
@@ -136,80 +131,45 @@ enum HollyInterruptID
 		//bit 27 = G2 : Time out in CPU accessing
 };
 
+#ifndef TARGET_UWP
+#include "nowide/cstdlib.hpp"
+#include "nowide/cstdio.hpp"
+#else
+#include "nowide/config.hpp"
+#include "nowide/convert.hpp"
+#include "nowide/stackstring.hpp"
+#include "nowide/cenv.hpp"
 
-
-struct vram_block
-{
-	u32 start;
-	u32 end;
-	u32 len;
-	u32 type;
-
-	void* userdata;
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//******************************************************
-//*********************** PowerVR **********************
-//******************************************************
-
-void libCore_vramlock_Unlock_block  (vram_block* block);
-vram_block* libCore_vramlock_Lock(u32 start_offset,u32 end_offset,void* userdata);
-
-
-
-//******************************************************
-//************************ GDRom ***********************
-//******************************************************
-enum DiscType
-{
-	CdDA=0x00,
-	CdRom=0x10,
-	CdRom_XA=0x20,
-	CdRom_Extra=0x30,
-	CdRom_CDI=0x40,
-	GdRom=0x80,
-
-	NoDisk=0x1,			//These are a bit hacky .. but work for now ...
-	Open=0x2,			//tray is open :)
-	Busy=0x3			//busy -> needs to be automatically done by gdhost
-};
-
-enum DiskArea
-{
-	SingleDensity,
-	DoubleDensity
-};
-
-//******************************************************
-//************************ AICA ************************
-//******************************************************
-void libARM_InterruptChange(u32 bits,u32 L);
-void libCore_CDDA_Sector(s16* sector);
-
-
-//includes from CRT
-#include <cstdlib>
 #include <cstdio>
+#include <stdio.h>
+namespace nowide {
+FILE *fopen(char const *file_name, char const *mode);
+}
+#endif
 
 #if defined(__APPLE__)
 int darw_printf(const char* Text,...);
-#define printf darw_printf
-#define puts(X) printf("%s\n", X)
+#endif
+
+#ifndef TARGET_IPHONE
+#if defined(__APPLE__) && defined(__MACH__) && HOST_CPU == CPU_ARM64
+#define TARGET_ARM_MAC
+#include "pthread.h"
+inline static void JITWriteProtect(bool enabled) {
+	if (__builtin_available(macOS 11.0, *))
+		pthread_jit_write_protect_np(enabled);
+}
+#else
+inline static void JITWriteProtect(bool enabled) {
+}
+#endif
 #endif
 
 //includes from c++rt
 #include <vector>
 #include <string>
 #include <map>
-
-//used for asm-olny functions
-#ifdef _M_IX86
-#define naked __declspec(naked)
-#else
-#define naked __attribute__((naked))
-#endif
+#include <stdexcept>
 
 #define INLINE __forceinline
 
@@ -223,41 +183,21 @@ int darw_printf(const char* Text,...);
 #ifdef _MSC_VER
 #define likely(x) x
 #define unlikely(x) x
+#define expected(x, y) x
 #else
-#define likely(x)       __builtin_expect((x),1)
-#define unlikely(x)       __builtin_expect((x),0)
+#define likely(x)      __builtin_expect(!!(x), 1)
+#define unlikely(x)    __builtin_expect(!!(x), 0)
+#define expected(x, y) __builtin_expect((x), (y))
 #endif
 
 #include "log/Log.h"
 
-#ifndef NO_MMU
-#define _X_x_X_MMU_VER_STR "/mmu"
-#else
-#define _X_x_X_MMU_VER_STR ""
-#endif
-
-
 #define VER_EMUNAME		"Flycast"
-
-#define VER_FULLNAME	VER_EMUNAME " git" _X_x_X_MMU_VER_STR " (built " __DATE__ "@" __TIME__ ")"
-#define VER_SHORTNAME	VER_EMUNAME " git" _X_x_X_MMU_VER_STR
-
+#define VER_FULLNAME	VER_EMUNAME " (built " __DATE__ "@" __TIME__ ")"
+#define VER_SHORTNAME	VER_EMUNAME
 
 void os_DebugBreak();
 #define dbgbreak os_DebugBreak()
-
-bool rc_serialize(const void *src, unsigned int src_size, void **dest, unsigned int *total_size) ;
-bool rc_unserialize(void *src, unsigned int src_size, void **dest, unsigned int *total_size);
-bool dc_serialize(void **data, unsigned int *total_size);
-bool dc_unserialize(void **data, unsigned int *total_size);
-
-#define REICAST_S(v) rc_serialize(&(v), sizeof(v), data, total_size)
-#define REICAST_US(v) rc_unserialize(&(v), sizeof(v), data, total_size)
-
-#define REICAST_SA(v_arr,num) rc_serialize((v_arr), sizeof((v_arr)[0])*(num), data, total_size)
-#define REICAST_USA(v_arr,num) rc_unserialize((v_arr), sizeof((v_arr)[0])*(num), data, total_size)
-
-#define REICAST_SKIP(size) do { if (*data) *(u8**)data += (size); *total_size += (size); } while (false)
 
 #ifndef _MSC_VER
 #define stricmp strcasecmp
@@ -354,7 +294,39 @@ enum class RenderType {
 	OpenGL = 0,
 	OpenGL_OIT = 3,
 	Vulkan = 4,
-	Vulkan_OIT = 5
+	Vulkan_OIT = 5,
+	DirectX9 = 1,
+	DirectX11 = 2,
+	DirectX11_OIT = 6,
+};
+
+static inline bool isOpenGL(RenderType renderType)  {
+	return renderType == RenderType::OpenGL || renderType == RenderType::OpenGL_OIT;
+}
+static inline bool isVulkan(RenderType renderType) {
+	return renderType == RenderType::Vulkan || renderType == RenderType::Vulkan_OIT;
+}
+static inline bool isDirectX(RenderType renderType) {
+	return renderType == RenderType::DirectX9 || renderType == RenderType::DirectX11 || renderType == RenderType::DirectX11_OIT;
+}
+
+enum class KeyboardLayout {
+	JP = 1,
+	US,
+	UK,
+	GE,
+	FR,
+	IT,
+	SP,
+	SW,
+	CH,
+	NL,
+	PT,
+	LATAM,
+	FR_CA,
+	RU,
+	CN,
+	KO
 };
 
 struct settings_t
@@ -369,141 +341,53 @@ struct settings_t
 		u32 aram_mask;
 		u32 bios_size;
 		u32 flash_size;
-		u32 bbsram_size;
 	} platform;
 
 	struct {
-		bool UseReios;
-	} bios;
+		int width = 640;
+		int height = 480;
+		float pointScale = 1.f;
+		float refreshRate = 0;
+	} display;
 
 	struct
 	{
-		bool UseMipmaps;
-		bool WideScreen;
-		bool ShowFPS;
-		bool RenderToTextureBuffer;
-		int RenderToTextureUpscale;
-		bool TranslucentPolygonDepthMask;
-		bool ModifierVolumes;
-		bool Clipping;
-		int TextureUpscale;
-		int MaxFilteredTextureSize;
-		f32 ExtraDepthScale;
-		bool CustomTextures;
-		bool DumpTextures;
-		int ScreenScaling;		// in percent. 50 means half the native resolution
-		int ScreenStretching;	// in percent. 150 means stretch from 4/3 to 6/3
-		bool Fog;
-		bool FloatVMUs;
-		bool Rotate90;			// Rotate the screen 90 deg CC
-		bool PerStripSorting;
-		bool DelayFrameSwapping; // Delay swapping frame until FB_R_SOF matches FB_W_SOF
-		bool WidescreenGameHacks;
-	} rend;
-
-	struct
-	{
-		bool Enable;
-		bool idleskip;
-		bool unstable_opt;
-		bool safemode;
 		bool disable_nvmem;
-		bool disable_vmem32;
 	} dynarec;
 
 	struct
 	{
-		u32 run_counts;
-	} profile;
-
-	struct
-	{
-		u32 cable;			// 0 -> VGA, 1 -> VGA, 2 -> RGB, 3 -> TV
-		u32 region;			// 0 -> JP, 1 -> USA, 2 -> EU, 3 -> default
-		u32 broadcast;		// 0 -> NTSC, 1 -> PAL, 2 -> PAL/M, 3 -> PAL/N, 4 -> default
-		u32 language;		// 0 -> JP, 1 -> EN, 2 -> DE, 3 -> FR, 4 -> SP, 5 -> IT, 6 -> default
-		std::vector<std::string> ContentPath;
-		bool FullMMU;
-		bool ForceWindowsCE;
-		bool HideLegacyNaomiRoms;
-	} dreamcast;
-
-	struct
-	{
-		u32 BufferSize;		//In samples ,*4 for bytes (1024)
-		bool LimitFPS;
-		u32 CDDAMute;
-		bool DSPEnabled;
 		bool NoBatch;
-		bool NoSound;
+		bool muteAudio;
 	} aica;
 
-	struct{
-		std::string backend;
-
-		// slug<<key, value>>
-		std::map<std::string, std::map<std::string, std::string>> options;
-	} audio;
-
-
-#if USE_OMX
 	struct
 	{
-		u32 Audio_Latency;
-		bool Audio_HDMI;
-	} omx;
-#endif
-
-#if SUPPORT_DISPMANX
-	struct
-	{
-		u32 Width;
-		u32 Height;
-		bool Keep_Aspect;
-	} dispmanx;
-#endif
-
-	struct
-	{
-		bool PatchRegion;
-		char ImagePath[512];
-	} imgread;
-
-	struct
-	{
-		u32 ta_skip;
-		RenderType rend;
-
-		u32 MaxThreads;
-		int AutoSkipFrame;		// 0: none, 1: some, 2: more
-
-		bool IsOpenGL() { return rend == RenderType::OpenGL || rend == RenderType::OpenGL_OIT; }
-	} pvr;
+		std::string path;
+		std::string gameId;
+	} content;
 
 	struct {
-		bool SerialConsole;
-		bool SerialPTY;
-	} debug;
-
-	struct {
-		bool OpenGlChecks;
-	} validate;
-
-	struct {
-		u32 MouseSensitivity;
 		JVS JammaSetup;
-		int maple_devices[4];
-		int maple_expansion_devices[4][2];
-		int VirtualGamepadVibration;
+		KeyboardLayout keyboardLangId = KeyboardLayout::US;
+		bool fastForwardMode;
 	} input;
 
-	struct {
-		bool Enable;
-		bool ActAsServer;
-		std::string dns;
-		std::string server;
-		bool EmulateBBA;
+	struct
+	{
+		bool online;
+		struct
+		{
+			u8 game[16];
+			u8 bios[16];
+			u8 savestate[16];
+			u8 nvmem[16];
+			u8 nvmem2[16];
+			u8 eeprom[16];
+			u8 vmu[16];
+		} md5;
 	} network;
+	bool disableRenderer;
 };
 
 extern settings_t settings;
@@ -515,36 +399,11 @@ extern settings_t settings;
 #define VRAM_SIZE settings.platform.vram_size
 #define VRAM_MASK settings.platform.vram_mask
 #define BIOS_SIZE settings.platform.bios_size
-#define FLASH_SIZE settings.platform.flash_size
-#define BBSRAM_SIZE settings.platform.bbsram_size
 
 inline bool is_s8(u32 v) { return (s8)v==(s32)v; }
 inline bool is_u8(u32 v) { return (u8)v==(s32)v; }
 inline bool is_s16(u32 v) { return (s16)v==(s32)v; }
 inline bool is_u16(u32 v) { return (u16)v==(u32)v; }
-
-//PVR
-s32 libPvr_Init();
-void libPvr_Reset(bool Manual);
-void libPvr_Term();
-
-void* libPvr_GetRenderTarget();
-
-//GDR
-s32 libGDR_Init();
-void libGDR_Reset(bool hard);
-void libGDR_Term();
-
-void libCore_gdrom_disc_change();
-
-//IO
-void libGDR_ReadSector(u8 * buff,u32 StartSector,u32 SectorCount,u32 secsz);
-void libGDR_ReadSubChannel(u8 * buff, u32 format, u32 len);
-void libGDR_GetToc(u32* toc,u32 area);
-u32 libGDR_GetDiscType();
-void libGDR_GetSessionInfo(u8* pout,u8 session);
-u32 libGDR_GetTrackNumber(u32 sector, u32& elapsed);
-bool libGDR_GetTrack(u32 track_num, u32& start_fad, u32& end_fad);
 
 // 0x00600000 - 0x006007FF [NAOMI] (modem area for dreamcast)
 u32  libExtDevice_ReadMem_A0_006(u32 addr,u32 size);
@@ -564,16 +423,16 @@ void libARM_Reset(bool hard);
 void libARM_Term();
 
 template<u32 sz>
-u32 ReadMemArr(u8 *array, u32 addr)
+u32 ReadMemArr(const u8 *array, u32 addr)
 {
 	switch(sz)
 	{
 	case 1:
 		return array[addr];
 	case 2:
-		return *(u16 *)&array[addr];
+		return *(const u16 *)&array[addr];
 	case 4:
-		return *(u32 *)&array[addr];
+		return *(const u32 *)&array[addr];
 	default:
 		die("invalid size");
 		return 0;
@@ -610,30 +469,17 @@ struct OnLoad
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
 
-class ReicastException
+class FlycastException : public std::runtime_error
 {
 public:
-	ReicastException(std::string reason) : reason(reason) {}
-
-	std::string reason;
+	FlycastException(const std::string& reason) : std::runtime_error(reason) {}
 };
 
-enum serialize_version_enum {
-	V1,
-	V2,
-	V3,
-	V4,
-	V11_LIBRETRO = 10,
-	VCUR_LIBRETRO = V11_LIBRETRO,
+class LoadCancelledException : public FlycastException
+{
+public:
+	LoadCancelledException() : FlycastException("") {}
+};
 
-	V5 = 800,
-	V6 = 801,
-	V7 = 802,
-	V8 = 803,
-	V9 = 804,
-	V10 = 805,
-	V11 = 806,
-	V12 = 807,
-	V13 = 808,
-	VCUR_FLYCAST = V13,
-} ;
+class Serializer;
+class Deserializer;

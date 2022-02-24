@@ -70,7 +70,10 @@ private:
 class QuadPipeline
 {
 public:
-	void Init(ShaderManager *shaderManager, vk::RenderPass renderPass);
+	QuadPipeline(bool ignoreTexAlpha, bool rotate = false)
+		: rotate(rotate), ignoreTexAlpha(ignoreTexAlpha) {}
+	void Init(ShaderManager *shaderManager, vk::RenderPass renderPass, int subpass);
+	void Init(const QuadPipeline& other) { Init(other.shaderManager, other.renderPass, other.subpass); }
 	void Term() {
 		pipeline.reset();
 		linearSampler.reset();
@@ -94,12 +97,15 @@ private:
 	void CreatePipeline();
 
 	vk::RenderPass renderPass;
+	int subpass = 0;
 	vk::UniquePipeline pipeline;
 	vk::UniqueSampler linearSampler;
 	vk::UniqueSampler nearestSampler;
 	vk::UniquePipelineLayout pipelineLayout;
 	vk::UniqueDescriptorSetLayout descSetLayout;
-	ShaderManager *shaderManager;
+	ShaderManager *shaderManager = nullptr;
+	bool rotate;
+	bool ignoreTexAlpha;
 };
 
 class QuadDrawer
@@ -112,7 +118,7 @@ public:
 	QuadDrawer& operator=(const QuadDrawer &) = delete;
 
 	void Init(QuadPipeline *pipeline);
-	void Draw(vk::CommandBuffer commandBuffer, vk::ImageView imageView, QuadVertex vertices[] = nullptr, bool nearestFilter = false);
+	void Draw(vk::CommandBuffer commandBuffer, vk::ImageView imageView, QuadVertex vertices[] = nullptr, bool nearestFilter = false, const float *color = nullptr);
 private:
 	QuadPipeline *pipeline = nullptr;
 	std::unique_ptr<QuadBuffer> buffer;

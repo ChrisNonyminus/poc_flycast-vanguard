@@ -18,40 +18,80 @@
     You should have received a copy of the GNU General Public License
     along with Flycast.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef LIBRETRO
 #include "context.h"
 #include "rend/gui.h"
+#include "cfg/option.h"
 
+#include "gl_context.h"
+#include "rend/dx9/dxcontext.h"
+#include "rend/dx11/dx11context.h"
 #ifdef USE_VULKAN
+#include "rend/vulkan/vulkan_context.h"
+
 VulkanContext theVulkanContext;
 #endif
 
-void InitRenderApi()
+GraphicsContext *GraphicsContext::instance;
+
+void initRenderApi(void *window, void *display)
 {
 #ifdef USE_VULKAN
-	if (!settings.pvr.IsOpenGL())
+	if (isVulkan(config::RendererType))
 	{
-		if (theVulkanContext.Init())
+		theVulkanContext.setWindow(window, display);
+		if (theVulkanContext.init())
 			return;
 		// Fall back to Open GL
 		WARN_LOG(RENDERER, "Vulkan init failed. Falling back to Open GL.");
-		settings.pvr.rend = RenderType::OpenGL;
+		config::RendererType = RenderType::OpenGL;
 	}
 #endif
-	if (!theGLContext.Init())
-		exit(1);
-}
-
-void SwitchRenderApi(RenderType newApi)
-{
-	TermRenderApi();
-	settings.pvr.rend = newApi;
-	InitRenderApi();
-}
-
-void TermRenderApi()
-{
-#ifdef USE_VULKAN
-	theVulkanContext.Term();
+#ifdef _WIN32
+	if (config::RendererType == RenderType::DirectX11 || config::RendererType == RenderType::DirectX11_OIT)
+	{
+		theDX11Context.setWindow(window, display);
+		if (theDX11Context.init())
+			return;
+		WARN_LOG(RENDERER, "DirectX 11 init failed. Falling back to DirectX 9.");
+		config::RendererType = RenderType::DirectX9;
+	}
 #endif
-	theGLContext.Term();
+#ifdef USE_DX9
+	if (config::RendererType == RenderType::DirectX9)
+	{
+		theDXContext.setWindow(window, display);
+		if (theDXContext.init())
+			return;
+		// Fall back to Open GL
+		WARN_LOG(RENDERER, "DirectX 9 init failed. Falling back to Open GL.");
+		config::RendererType = RenderType::OpenGL;
+	}
+#endif
+#ifdef USE_OPENGL
+	if (!isOpenGL(config::RendererType))
+		config::RendererType = RenderType::OpenGL;
+	theGLContext.setWindow(window, display);
+	if (theGLContext.init())
+		return;
+#endif
+	die("Cannot initialize the graphics API");
 }
+
+void termRenderApi()
+{
+	if (GraphicsContext::Instance() != nullptr)
+		GraphicsContext::Instance()->term();
+	verify(GraphicsContext::Instance() == nullptr);
+}
+
+void switchRenderApi()
+{
+	void *window = nullptr;
+	void *display = nullptr;
+	if (GraphicsContext::Instance() != nullptr)
+		GraphicsContext::Instance()->getWindow(&window,  &display);
+	termRenderApi();
+	initRenderApi(window, display);
+}
+#endif

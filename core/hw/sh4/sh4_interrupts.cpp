@@ -14,10 +14,7 @@
 #include "sh4_core.h"
 #include "sh4_mmr.h"
 #include "oslib/oslib.h"
-
-/*
-
-*/
+#include "debug/gdb_server.h"
 
 //these are fixed
 const u16 IRLPriority = 0x0246;
@@ -202,13 +199,15 @@ static bool Do_Interrupt(u32 intEvn)
 	sr.RB = 1;
 	UpdateSR();
 	next_pc = vbr + 0x600;
+	debugger::subroutineCall();
 
 	return true;
 }
 
 bool Do_Exception(u32 epc, u32 expEvn, u32 CallVect)
 {
-	verify(sr.BL == 0);
+	if (sr.BL != 0)
+		throw FlycastException("Fatal: SH4 exception when blocked");
 	CCN_EXPEVT = expEvn;
 
 	ssr = sh4_sr_GetFull();
@@ -220,6 +219,7 @@ bool Do_Exception(u32 epc, u32 expEvn, u32 CallVect)
 	UpdateSR();
 
 	next_pc = vbr + CallVect;
+	debugger::subroutineCall();
 
 	//printf("RaiseException: from %08X , pc errh %08X, %08X vect\n", spc, epc, next_pc);
 	return true;

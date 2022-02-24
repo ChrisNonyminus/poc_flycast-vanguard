@@ -31,13 +31,20 @@ bool SzArchive::Open(const char* path)
 {
 	SzArEx_Init(&szarchive);
 
-	if (InFile_Open(&archiveStream.file, path))
+	File_Close(&archiveStream.file);
+	File_Construct(&archiveStream.file);
+	archiveStream.file.file = nowide::fopen(path, "rb");
+	if (archiveStream.file.file == nullptr)
 		return false;
+
 	FileInStream_CreateVTable(&archiveStream);
-	LookToRead2_CreateVTable(&lookStream, false);
+	LookToRead2_CreateVTable(&lookStream, 0);
 	lookStream.buf = (Byte *)ISzAlloc_Alloc(&g_Alloc, kInputBufSize);
 	if (lookStream.buf == NULL)
+	{
+		File_Close(&archiveStream.file);
 		return false;
+	}
 	lookStream.bufSize = kInputBufSize;
 	lookStream.realStream = &archiveStream.vt;
 	LookToRead2_Init(&lookStream);

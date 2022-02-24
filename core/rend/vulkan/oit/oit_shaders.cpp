@@ -20,17 +20,9 @@
 */
 #include "oit_shaders.h"
 #include "../compiler.h"
+#include "rend/gl4/glsl.h"
 
-static const char OITVertexShaderSource[] = R"(#version 450
-
-#define pp_Gouraud %d
-
-#if pp_Gouraud == 0
-#define INTERPOLATION flat
-#else
-#define INTERPOLATION smooth
-#endif
-
+static const char OITVertexShaderSource[] = R"(
 layout (std140, set = 0, binding = 0) uniform VertexShaderUniforms
 {
 	mat4 normal_matrix;
@@ -44,30 +36,36 @@ layout (location = 4) in uvec4        in_base1;						// New for OIT, only for OP
 layout (location = 5) in uvec4        in_offs1;
 layout (location = 6) in mediump vec2 in_uv1;
 
-layout (location = 0) INTERPOLATION out lowp vec4 vtx_base;
-layout (location = 1) INTERPOLATION out lowp vec4 vtx_offs;
-layout (location = 2)               out mediump vec2 vtx_uv;
-layout (location = 3) INTERPOLATION out lowp vec4 vtx_base1;		// New for OIT, only for OP/PT with 2-volume
-layout (location = 4) INTERPOLATION out lowp vec4 vtx_offs1;
-layout (location = 5)               out mediump vec2 vtx_uv1;
+layout (location = 0) INTERPOLATION out highp vec4 vtx_base;
+layout (location = 1) INTERPOLATION out highp vec4 vtx_offs;
+layout (location = 2) noperspective out highp vec3 vtx_uv;
+layout (location = 3) INTERPOLATION out highp vec4 vtx_base1;		// New for OIT, only for OP/PT with 2-volume
+layout (location = 4) INTERPOLATION out highp vec4 vtx_offs1;
+layout (location = 5) noperspective out highp vec2 vtx_uv1;
 
 void main()
 {
+	vec4 vpos = uniformBuffer.normal_matrix * in_pos;
 	vtx_base = vec4(in_base) / 255.0;
 	vtx_offs = vec4(in_offs) / 255.0;
-	vtx_uv = in_uv;
-	vtx_base1 = vec4(in_base1) / 255.0;								// New for OIT, only for OP/PT with 2-volume
+	vtx_uv = vec3(in_uv * vpos.z, vpos.z);
+	vtx_base1 = vec4(in_base1) / 255.0;
 	vtx_offs1 = vec4(in_offs1) / 255.0;
-	vtx_uv1 = in_uv1;
-	vec4 vpos = uniformBuffer.normal_matrix * in_pos;
-	vpos.w = 1.0 / vpos.z;
-	vpos.z = vpos.w;
-	vpos.xy *= vpos.w; 
+	vtx_uv1 = in_uv1 * vpos.z;
+#if pp_Gouraud == 1
+	vtx_base *= vpos.z;
+	vtx_offs *= vpos.z;
+	vtx_base1 *= vpos.z;
+	vtx_offs1 *= vpos.z;
+#endif
+	vpos.w = 1.0;
+	vpos.z = 0.0;
 	gl_Position = vpos;
 }
 )";
 
-static const char OITShaderHeader[] = R"(#version 450
+static const char OITShaderHeader[] = R"(
+precision highp float;
 
 layout (std140, set = 0, binding = 1) uniform FragmentShaderUniforms
 {
@@ -78,164 +76,45 @@ layout (std140, set = 0, binding = 1) uniform FragmentShaderUniforms
 	float cp_AlphaTestValue;
 	float sp_FOG_DENSITY;
 	float shade_scale_factor;
+	uint pixelBufferSize;
+	uint viewportWidth;
 } uniformBuffer;
 
-layout(set = 3, binding = 2, r32ui) uniform coherent restrict uimage2D abufferPointerImg;
-struct Pixel {
-	uint color;
-	float depth;
-	uint seq_num;
-	uint next;
-};
-#define EOL 0xFFFFFFFFu
-layout (set = 3, binding = 0, std430) coherent restrict buffer PixelBuffer_ {
-	Pixel pixels[];
-} PixelBuffer;
+layout(set = 3, binding = 2) buffer abufferPointer_ {
+	uint pointers[];
+} abufferPointer;
+
 layout(set = 3, binding = 1) buffer PixelCounter_ {
 	uint buffer_index;
 } PixelCounter;
+)"
+OIT_POLY_PARAM
+R"(
 
-#define ZERO				0
-#define ONE					1
-#define OTHER_COLOR			2
-#define INVERSE_OTHER_COLOR	3
-#define SRC_ALPHA			4
-#define INVERSE_SRC_ALPHA	5
-#define DST_ALPHA			6
-#define INVERSE_DST_ALPHA	7
+layout (set = 3, binding = 0, std430) coherent restrict buffer PixelBuffer_ {
+	Pixel pixels[];
+} PixelBuffer;
 
 uint getNextPixelIndex()
 {
 	uint index = atomicAdd(PixelCounter.buffer_index, 1);
-	if (index >= PixelBuffer.pixels.length())
+	// we should be able to simply use PixelBuffer.pixels.length()
+	// but a regression in the adreno 600 driver (v502) forces us
+	// to use a uniform.
+	if (index >= uniformBuffer.pixelBufferSize)
 		// Buffer overflow
 		discard;
 	
 	return index;
 }
 
-void setFragDepth(void)
-{
-	float w = 100000.0 * gl_FragCoord.w;
-	gl_FragDepth = log2(1.0 + w) / 34.0;
-}
-struct PolyParam {
-	int tsp_isp_pcw;
-	int tsp1;
-};
 layout (set = 0, binding = 3, std430) readonly buffer TrPolyParamBuffer {
 	PolyParam tr_poly_params[];
 } TrPolyParam;
 
-#define GET_TSP_FOR_AREA int tsp = area1 ? pp.tsp1 : pp.tsp_isp_pcw;
-
-int getSrcBlendFunc(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return (tsp >> 29) & 7;
-}
-
-int getDstBlendFunc(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return (tsp >> 26) & 7;
-}
-
-bool getSrcSelect(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return ((tsp >> 25) & 1) != 0;
-}
-
-bool getDstSelect(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return ((tsp >> 24) & 1) != 0;
-}
-
-int getFogControl(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return (tsp >> 22) & 3;
-}
-
-bool getUseAlpha(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return ((tsp >> 20) & 1) != 0;
-}
-
-bool getIgnoreTexAlpha(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return ((tsp >> 19) & 1) != 0;
-}
-
-int getShadingInstruction(const PolyParam pp, bool area1)
-{
-	GET_TSP_FOR_AREA
-	return (tsp >> 6) & 3;
-}
-
-int getDepthFunc(const PolyParam pp)
-{
-	return (pp.tsp_isp_pcw >> 13) & 7;
-}
-
-bool getDepthMask(const PolyParam pp)
-{
-	return ((pp.tsp_isp_pcw >> 10) & 1) != 1;
-}
-
-bool getShadowEnable(const PolyParam pp)
-{
-	return (pp.tsp_isp_pcw & 1) != 0;
-}
-
-uint getPolyNumber(const Pixel pixel)
-{
-	return pixel.seq_num & 0x3FFFFFFFu;
-}
-
-#define SHADOW_STENCIL 0x40000000u
-#define SHADOW_ACC	   0x80000000u
-
-bool isShadowed(const Pixel pixel)
-{
-	return (pixel.seq_num & SHADOW_ACC) == SHADOW_ACC;
-}
-
-bool isTwoVolumes(const PolyParam pp)
-{
-	return pp.tsp1 != -1;
-}
-
-uint packColors(vec4 v)
-{
-	return (uint(round(v.r * 255.0)) << 24) | (uint(round(v.g * 255.0)) << 16) | (uint(round(v.b * 255.0)) << 8) | uint(round(v.a * 255.0));
-}
-
-vec4 unpackColors(uint u)
-{
-	return vec4(float((u >> 24) & 255) / 255.0, float((u >> 16) & 255) / 255.0, float((u >> 8) & 255) / 255.0, float(u & 255) / 255.0);
-}
 )";
 
 static const char OITFragmentShaderSource[] = R"(
-#define cp_AlphaTest %d
-#define pp_ClipInside %d
-#define pp_UseAlpha %d
-#define pp_Texture %d
-#define pp_IgnoreTexA %d
-#define pp_ShadInstr %d
-#define pp_Offset %d
-#define pp_FogCtrl %d
-#define pp_TwoVolumes %d
-#define pp_Gouraud %d
-#define pp_BumpMap %d
-#define ColorClamping %d
-#define pp_Palette %d
-#define PASS %d
 #define PI 3.1415926
 
 #define PASS_DEPTH 0
@@ -251,12 +130,6 @@ layout (location = 0) out vec4 FragColor;
 #define IF(x) if (x)
 #else
 #define IF(x)
-#endif
-
-#if pp_Gouraud == 0
-#define INTERPOLATION flat
-#else
-#define INTERPOLATION smooth
 #endif
 
 layout (push_constant) uniform pushBlock
@@ -297,12 +170,12 @@ layout (input_attachment_index = 0, set = 0, binding = 5) uniform subpassInput D
 #endif
 
 // Vertex input
-layout (location = 0) INTERPOLATION in lowp vec4 vtx_base;
-layout (location = 1) INTERPOLATION in lowp vec4 vtx_offs;
-layout (location = 2)               in mediump vec2 vtx_uv;
-layout (location = 3) INTERPOLATION in lowp vec4 vtx_base1;			// new for OIT. Only if 2 vol
-layout (location = 4) INTERPOLATION in lowp vec4 vtx_offs1;
-layout (location = 5)               in mediump vec2 vtx_uv1;
+layout (location = 0) INTERPOLATION in highp vec4 vtx_base;
+layout (location = 1) INTERPOLATION in highp vec4 vtx_offs;
+layout (location = 2) noperspective in highp vec3 vtx_uv;
+layout (location = 3) INTERPOLATION in highp vec4 vtx_base1;			// new for OIT. Only if 2 vol
+layout (location = 4) INTERPOLATION in highp vec4 vtx_offs1;
+layout (location = 5) noperspective in highp vec2 vtx_uv1;
 
 #if pp_FogCtrl != 2 || pp_TwoVolumes == 1
 layout (set = 0, binding = 2) uniform sampler2D fog_table;
@@ -330,9 +203,9 @@ vec4 colorClamp(vec4 col)
 
 #if pp_Palette == 1
 
-vec4 palettePixel(sampler2D tex, vec2 coords)
+vec4 palettePixel(sampler2D tex, vec3 coords)
 {
-	vec4 c = vec4(texture(tex, coords).r * 255.0 / 1023.0 + pushConstants.palette_index, 0.5, 0.0, 0.0);
+	vec4 c = vec4(textureProj(tex, coords).r * 255.0 / 1023.0 + pushConstants.palette_index, 0.5, 0.0, 0.0);
 	return texture(palette, c.xy);
 }
 
@@ -340,11 +213,11 @@ vec4 palettePixel(sampler2D tex, vec2 coords)
 
 void main()
 {
-	setFragDepth();
+	setFragDepth(vtx_uv.z);
 
 	#if PASS == PASS_OIT
 		// Manual depth testing
-		highp float frontDepth = subpassLoad(DepthTex).r;
+		float frontDepth = subpassLoad(DepthTex).r;
 		if (gl_FragDepth < frontDepth)
 			discard;
 	#endif
@@ -356,9 +229,8 @@ void main()
 			discard;
 	#endif
 	
-	highp vec4 color = vtx_base;
-	lowp vec4 offset = vtx_offs;
-	mediump vec2 uv = vtx_uv;
+	vec4 color = vtx_base;
+	vec4 offset = vtx_offs;
 	bool area1 = false;
 	ivec2 cur_blend_mode = pushConstants.blend_mode0.xy;
 	
@@ -372,7 +244,6 @@ void main()
 			if (stencil.r == 0x81u) {
 				color = vtx_base1;
 				offset = vtx_offs1;
-				uv = vtx_uv1;
 				area1 = true;
 				cur_blend_mode = pushConstants.blend_mode1.xy;
 				cur_use_alpha = pushConstants.use_alpha1 != 0;
@@ -382,6 +253,10 @@ void main()
 			}
 		#endif
 	#endif
+	#if pp_Gouraud == 1
+		color /= vtx_uv.z;
+		offset /= vtx_uv.z;
+	#endif
 
 	#if pp_UseAlpha == 0 || pp_TwoVolumes == 1
 		IF (!cur_use_alpha)
@@ -389,29 +264,29 @@ void main()
 	#endif
 	#if pp_FogCtrl == 3 || pp_TwoVolumes == 1 // LUT Mode 2
 		IF (cur_fog_control == 3)
-			color = vec4(uniformBuffer.sp_FOG_COL_RAM.rgb, fog_mode2(gl_FragCoord.w));
+			color = vec4(uniformBuffer.sp_FOG_COL_RAM.rgb, fog_mode2(vtx_uv.z));
 	#endif
 	#if pp_Texture==1
 	{
-		highp vec4 texcol;
+		vec4 texcol;
 		#if pp_TwoVolumes == 1
 			if (area1)
 				#if pp_Palette == 0
-					texcol = texture(tex1, uv);
+					texcol = textureProj(tex1, vec3(vtx_uv1, vtx_uv.z));
 				#else
-					texcol = palettePixel(tex1, uv);
+					texcol = palettePixel(tex1, vec3(vtx_uv1, vtx_uv.z));
 				#endif
 			else
 		#endif
 		#if pp_Palette == 0
-				texcol = texture(tex0, uv);
+				texcol = textureProj(tex0, vtx_uv);
 		#else
-				texcol = palettePixel(tex0, uv);
+				texcol = palettePixel(tex0, vtx_uv);
 		#endif
 		#if pp_BumpMap == 1
-			highp float s = PI / 2.0 * (texcol.a * 15.0 * 16.0 + texcol.r * 15.0) / 255.0;
-			highp float r = 2.0 * PI * (texcol.g * 15.0 * 16.0 + texcol.b * 15.0) / 255.0;
-			texcol.a = clamp(vtx_offs.a + vtx_offs.r * sin(s) + vtx_offs.g * cos(s) * cos(r - 2.0 * PI * vtx_offs.b), 0.0, 1.0);
+			float s = PI / 2.0 * (texcol.a * 15.0 * 16.0 + texcol.r * 15.0) / 255.0;
+			float r = 2.0 * PI * (texcol.g * 15.0 * 16.0 + texcol.b * 15.0) / 255.0;
+			texcol.a = clamp(offset.a + offset.r * sin(s) + offset.g * cos(s) * cos(r - 2.0 * PI * offset.b), 0.0, 1.0);
 			texcol.rgb = vec3(1.0, 1.0, 1.0);	
 		#else
 			#if pp_IgnoreTexA==1 || pp_TwoVolumes == 1
@@ -422,6 +297,7 @@ void main()
 			#if cp_AlphaTest == 1
 				if (uniformBuffer.cp_AlphaTestValue > texcol.a)
 					discard;
+				texcol.a = 1.0;
 			#endif 
 		#endif
 		#if pp_ShadInstr == 0 || pp_TwoVolumes == 1 // DECAL
@@ -468,7 +344,7 @@ void main()
 	#if pp_FogCtrl == 0 || pp_TwoVolumes == 1 // LUT
 		IF(cur_fog_control == 0)
 		{
-			color.rgb = mix(color.rgb, uniformBuffer.sp_FOG_COL_RAM.rgb, fog_mode2(gl_FragCoord.w)); 
+			color.rgb = mix(color.rgb, uniformBuffer.sp_FOG_COL_RAM.rgb, fog_mode2(vtx_uv.z)); 
 		}
 	#endif
 	#if pp_Offset==1 && pp_BumpMap == 0 && (pp_FogCtrl == 1 || pp_TwoVolumes == 1)  // Per vertex
@@ -480,11 +356,7 @@ void main()
 	
 	color *= pushConstants.trilinearAlpha;
 	
-	#if cp_AlphaTest == 1
-		color.a = 1.0;
-	#endif 
-	
-	//color.rgb=vec3(gl_FragCoord.w * uniformBuffer.sp_FOG_DENSITY / 128.0);
+	//color.rgb = vec3(vtx_uv.z * uniformBuffer.sp_FOG_DENSITY / 128.0);
 	
 	#if PASS == PASS_COLOR 
 		FragColor = color;
@@ -548,9 +420,9 @@ void main()
 		
 		Pixel pixel;
 		pixel.color = packColors(clamp(color, vec4(0.0), vec4(1.0)));
-		pixel.depth = gl_FragDepth;
+		pixel.depth = vtx_uv.z;
 		pixel.seq_num = uint(pushConstants.pp_Number);
-		pixel.next = imageAtomicExchange(abufferPointerImg, coords, idx);
+		pixel.next = atomicExchange(abufferPointer.pointers[coords.x + coords.y * uniformBuffer.viewportWidth], idx);
 		PixelBuffer.pixels[idx] = pixel;
 		
 	#endif
@@ -558,18 +430,17 @@ void main()
 )";
 
 static const char OITModifierVolumeShader[] = R"(
+layout (location = 0) noperspective in highp float depth;
 
 void main()
 {
-	setFragDepth();
+	setFragDepth(depth);
 }
 )";
 
-#define MAX_PIXELS_PER_FRAGMENT "32"
+constexpr int MAX_PIXELS_PER_FRAGMENT = 32;
 
-static const char OITFinalShaderSource[] =
-"#define MAX_PIXELS_PER_FRAGMENT " MAX_PIXELS_PER_FRAGMENT
-R"(
+static const char OITFinalShaderSource[] = R"(
 layout (input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput tex;
 
 layout (location = 0) out vec4 FragColor;
@@ -580,8 +451,12 @@ uint pixel_list[MAX_PIXELS_PER_FRAGMENT];
 int fillAndSortFragmentArray(ivec2 coords)
 {
 	// Load fragments into a local memory array for sorting
-	uint idx = imageLoad(abufferPointerImg, coords).x;
-	int count = 0;
+	uint idx = abufferPointer.pointers[coords.x + coords.y * uniformBuffer.viewportWidth];
+	if (idx == EOL)
+		return 0;
+	int count = 1;
+	pixel_list[0] = idx;
+	idx = PixelBuffer.pixels[idx].next;
 	for (; idx != EOL && count < MAX_PIXELS_PER_FRAGMENT; count++)
 	{
 		const Pixel p = PixelBuffer.pixels[idx];
@@ -593,7 +468,8 @@ int fillAndSortFragmentArray(ivec2 coords)
 		{
 			pixel_list[j + 1] = pixel_list[j];
 			j--;
-			jp = PixelBuffer.pixels[pixel_list[j]];
+			if (j >= 0)
+				jp = PixelBuffer.pixels[pixel_list[j]];
 		}
 		pixel_list[j + 1] = idx;
 		idx = p.next;
@@ -698,7 +574,7 @@ vec4 resolveAlphaBlend(ivec2 coords) {
 		else
 			finalColor = result;
 	}
-	
+
 	return finalColor;
 	
 }
@@ -719,14 +595,12 @@ void main(void)
 	ivec2 coords = ivec2(gl_FragCoord.xy);
 
 	// Reset pointers
-	imageStore(abufferPointerImg, coords, uvec4(EOL));
+	abufferPointer.pointers[coords.x + coords.y * uniformBuffer.viewportWidth] = EOL;
 }
 )";
 
-static const char OITTranslucentModvolShaderSource[] =
-"#define MAX_PIXELS_PER_FRAGMENT " MAX_PIXELS_PER_FRAGMENT
-R"(
-#define MV_MODE %d
+static const char OITTranslucentModvolShaderSource[] = R"(
+layout (location = 0) noperspective in highp float depth;
 
 // Must match ModifierVolumeMode enum values
 #define MV_XOR		 0
@@ -736,12 +610,9 @@ R"(
 
 void main()
 {
-#if MV_MODE == MV_XOR || MV_MODE == MV_OR
-	setFragDepth();
-#endif
 	ivec2 coords = ivec2(gl_FragCoord.xy);
 	
-	uint idx = imageLoad(abufferPointerImg, coords).x;
+	uint idx = abufferPointer.pointers[coords.x + coords.y * uniformBuffer.viewportWidth];
 	int list_len = 0;
 	while (idx != EOL && list_len < MAX_PIXELS_PER_FRAGMENT)
 	{
@@ -750,10 +621,10 @@ void main()
 		if (getShadowEnable(pp))
 		{
 #if MV_MODE == MV_XOR
-			if (gl_FragDepth >= pixel.depth)
+			if (depth >= pixel.depth)
 				atomicXor(PixelBuffer.pixels[idx].seq_num, SHADOW_STENCIL);
 #elif MV_MODE == MV_OR
-			if (gl_FragDepth >= pixel.depth)
+			if (depth >= pixel.depth)
 				atomicOr(PixelBuffer.pixels[idx].seq_num, SHADOW_STENCIL);
 #elif MV_MODE == MV_INCLUSION
 			uint prev_val = atomicAnd(PixelBuffer.pixels[idx].seq_num, ~(SHADOW_STENCIL));
@@ -771,8 +642,7 @@ void main()
 }
 )";
 
-static const char OITFinalVertexShaderSource[] = R"(#version 430
-
+static const char OITFinalVertexShaderSource[] = R"(
 layout (location = 0) in vec3 in_pos;
 
 void main()
@@ -785,57 +655,75 @@ extern const char ModVolVertexShaderSource[];
 
 vk::UniqueShaderModule OITShaderManager::compileShader(const VertexShaderParams& params)
 {
-	char buf[sizeof(OITVertexShaderSource) * 2];
-
-	sprintf(buf, OITVertexShaderSource, (int)params.gouraud);
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, buf);
+	VulkanSource src;
+	src.addConstant("pp_Gouraud", (int)params.gouraud)
+			.addSource(GouraudSource)
+			.addSource(OITVertexShaderSource);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, src.generate());
 }
 
 vk::UniqueShaderModule OITShaderManager::compileShader(const FragmentShaderParams& params)
 {
-	char buf[(sizeof(OITShaderHeader) + sizeof(OITFragmentShaderSource)) * 2];
-
-	strcpy(buf, OITShaderHeader);
-	sprintf(buf + strlen(buf), OITFragmentShaderSource, (int)params.alphaTest, (int)params.insideClipTest, (int)params.useAlpha,
-			(int)params.texture, (int)params.ignoreTexAlpha, params.shaderInstr, (int)params.offset, params.fog,
-			(int)params.twoVolume, (int)params.gouraud, (int)params.bumpmap, (int)params.clamping, (int)params.palette,
-			(int)params.pass);
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, buf);
+	VulkanSource src;
+	src.addConstant("cp_AlphaTest", (int)params.alphaTest)
+		.addConstant("pp_ClipInside", (int)params.insideClipTest)
+		.addConstant("pp_UseAlpha", (int)params.useAlpha)
+		.addConstant("pp_Texture", (int)params.texture)
+		.addConstant("pp_IgnoreTexA", (int)params.ignoreTexAlpha)
+		.addConstant("pp_ShadInstr", params.shaderInstr)
+		.addConstant("pp_Offset", (int)params.offset)
+		.addConstant("pp_FogCtrl", params.fog)
+		.addConstant("pp_TwoVolumes", (int)params.twoVolume)
+		.addConstant("pp_Gouraud", (int)params.gouraud)
+		.addConstant("pp_BumpMap", (int)params.bumpmap)
+		.addConstant("ColorClamping", (int)params.clamping)
+		.addConstant("pp_Palette", (int)params.palette)
+		.addConstant("PASS", (int)params.pass)
+		.addSource(GouraudSource)
+		.addSource(OITShaderHeader)
+		.addSource(OITFragmentShaderSource);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, src.generate());
 }
 
 vk::UniqueShaderModule OITShaderManager::compileFinalShader()
 {
-	std::string source = OITShaderHeader;
-	source += OITFinalShaderSource;
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, source);
+	VulkanSource src;
+	src.addConstant("MAX_PIXELS_PER_FRAGMENT", MAX_PIXELS_PER_FRAGMENT)
+		.addSource(OITShaderHeader)
+		.addSource(OITFinalShaderSource);
+
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, src.generate());
 }
 vk::UniqueShaderModule OITShaderManager::compileFinalVertexShader()
 {
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, OITFinalVertexShaderSource);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, VulkanSource().addSource(OITFinalVertexShaderSource).generate());
 }
 vk::UniqueShaderModule OITShaderManager::compileClearShader()
 {
-	std::string source = OITShaderHeader;
-	source += OITClearShaderSource;
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, source);
+	VulkanSource src;
+	src.addSource(OITShaderHeader)
+		.addSource(OITClearShaderSource);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, src.generate());
 }
 vk::UniqueShaderModule OITShaderManager::compileModVolVertexShader()
 {
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, ModVolVertexShaderSource);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, VulkanSource().addSource(ModVolVertexShaderSource).generate());
 }
 vk::UniqueShaderModule OITShaderManager::compileModVolFragmentShader()
 {
-	std::string source = OITShaderHeader;
-	source += OITModifierVolumeShader;
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, source);
+	VulkanSource src;
+	src.addSource(OITShaderHeader)
+		.addSource(OITModifierVolumeShader);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, src.generate());
 }
 void OITShaderManager::compileTrModVolFragmentShader(ModVolMode mode)
 {
 	if (trModVolShaders.empty())
 		trModVolShaders.resize((size_t)ModVolMode::Final);
-	char buf[(sizeof(OITShaderHeader) + sizeof(OITTranslucentModvolShaderSource)) * 2];
-
-	strcpy(buf, OITShaderHeader);
-	sprintf(buf + strlen(buf), OITTranslucentModvolShaderSource, (int)mode);
-	trModVolShaders[(size_t)mode] = ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, buf);
+	VulkanSource src;
+	src.addConstant("MAX_PIXELS_PER_FRAGMENT", MAX_PIXELS_PER_FRAGMENT)
+		.addConstant("MV_MODE", (int)mode)
+		.addSource(OITShaderHeader)
+		.addSource(OITTranslucentModvolShaderSource);
+	trModVolShaders[(size_t)mode] = ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, src.generate());
 }

@@ -19,6 +19,7 @@
 #pragma once
 #include <vector>
 #include <utility>
+#ifndef FEAT_NO_MINIUPNPC
 #include <miniupnpc/miniupnpc.h>
 
 class MiniUPnP
@@ -42,5 +43,19 @@ private:
 	char lanAddress[32];
 	char wanAddress[32];
 	std::vector<std::pair<std::string, bool>> mappedPorts;
+	bool initialized = false;
 };
 
+#else
+
+class MiniUPnP
+{
+public:
+	bool Init() { return true; }
+	void Term() {}
+	bool AddPortMapping(int port, bool tcp) { return true; }
+	const char *localAddress() const { return ""; }
+	const char *externalAddress() const { return ""; }
+};
+
+#endif

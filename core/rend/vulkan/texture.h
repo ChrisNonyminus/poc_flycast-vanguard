@@ -43,7 +43,7 @@ public:
 	vk::ImageView GetImageView() const { return *imageView; }
 	vk::ImageView GetReadOnlyImageView() const { return readOnlyImageView ? readOnlyImageView : *imageView; }
 	void SetCommandBuffer(vk::CommandBuffer commandBuffer) { this->commandBuffer = commandBuffer; }
-	virtual bool Force32BitTexture(TextureType type) const override { return !VulkanContext::Instance()->IsFormatSupported(type); }
+	bool Force32BitTexture(TextureType type) const override { return !VulkanContext::Instance()->IsFormatSupported(type); }
 
 	void SetPhysicalDevice(vk::PhysicalDevice physicalDevice) { this->physicalDevice = physicalDevice; }
 	void SetDevice(vk::Device device) { this->device = device; }
@@ -51,8 +51,8 @@ public:
 private:
 	void Init(u32 width, u32 height, vk::Format format ,u32 dataSize, bool mipmapped, bool mipmapsIncluded);
 	void SetImage(u32 size, void *data, bool isNew, bool genMipmaps);
-	void CreateImage(vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::ImageLayout initialLayout,
-			vk::ImageAspectFlags aspectMask);
+	void CreateImage(vk::ImageTiling tiling, const vk::ImageUsageFlags& usage, vk::ImageLayout initialLayout,
+			const vk::ImageAspectFlags& aspectMask);
 	void GenerateMipmaps();
 
 	vk::Format format = vk::Format::eUndefined;
@@ -82,7 +82,6 @@ public:
 	{
 		u32 samplerHash = tsp.full & TSP_Mask;	// MipMapD, FilterMode, ClampU, ClampV, FlipU, FlipV
 		const auto& it = samplers.find(samplerHash);
-		vk::Sampler sampler;
 		if (it != samplers.end())
 			return it->second.get();
 		vk::Filter filter = tsp.FilterMode == 0 ? vk::Filter::eNearest : vk::Filter::eLinear;
@@ -91,11 +90,19 @@ public:
 		vk::SamplerAddressMode vRepeat = tsp.ClampV ? vk::SamplerAddressMode::eClampToEdge
 				: tsp.FlipV ? vk::SamplerAddressMode::eMirroredRepeat : vk::SamplerAddressMode::eRepeat;
 
+		bool anisotropicFiltering = config::AnisotropicFiltering > 1 && VulkanContext::Instance()->SupportsSamplerAnisotropy()
+				&& filter == vk::Filter::eLinear;
+#ifndef __APPLE__
+		float mipLodBias = D_Adjust_LoD_Bias[tsp.MipMapD];
+#else
+		// not supported by metal
+		float mipLodBias = 0;
+#endif
 		return samplers.emplace(
 					std::make_pair(samplerHash, VulkanContext::Instance()->GetDevice().createSamplerUnique(
 						vk::SamplerCreateInfo(vk::SamplerCreateFlags(), filter, filter,
-							vk::SamplerMipmapMode::eNearest, uRepeat, vRepeat, vk::SamplerAddressMode::eClampToEdge, D_Adjust_LoD_Bias[tsp.MipMapD],
-							VulkanContext::Instance()->SupportsSamplerAnisotropy() && filter == vk::Filter::eLinear, 4.0f,
+							vk::SamplerMipmapMode::eNearest, uRepeat, vRepeat, vk::SamplerAddressMode::eClampToEdge, mipLodBias,
+							anisotropicFiltering, std::min((float)config::AnisotropicFiltering, VulkanContext::Instance()->GetMaxSamplerAnisotropy()),
 							false, vk::CompareOp::eNever,
 							0.0f, 256.0f, vk::BorderColor::eFloatOpaqueBlack)))).first->second.get();
 	}
@@ -111,7 +118,7 @@ public:
 	FramebufferAttachment(vk::PhysicalDevice physicalDevice, vk::Device device)
 		: format(vk::Format::eUndefined), physicalDevice(physicalDevice), device(device)
 		{}
-	void Init(u32 width, u32 height, vk::Format format, vk::ImageUsageFlags usage);
+	void Init(u32 width, u32 height, vk::Format format, const vk::ImageUsageFlags& usage);
 	void Reset() { image.reset(); imageView.reset(); }
 
 	vk::ImageView GetImageView() const { return *imageView; }
@@ -137,6 +144,9 @@ private:
 class TextureCache final : public BaseTextureCache<Texture>
 {
 public:
+	TextureCache() {
+		Texture::SetDirectXColorOrder(false);
+	}
 	void SetCurrentIndex(int index) {
 		if (currentIndex < inFlightTextures.size())
 			std::for_each(inFlightTextures[currentIndex].begin(), inFlightTextures[currentIndex].end(),

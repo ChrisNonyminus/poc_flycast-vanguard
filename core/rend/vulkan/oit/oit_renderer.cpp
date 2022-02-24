@@ -29,16 +29,16 @@ class OITVulkanRenderer final : public BaseVulkanRenderer
 public:
 	bool Init() override
 	{
-		DEBUG_LOG(RENDERER, "OITVulkanRenderer::Init");
+		NOTICE_LOG(RENDERER, "OITVulkanRenderer::Init");
 		try {
-			BaseVulkanRenderer::Init();
-
-			oitBuffers.Init(0, 0);
+			oitBuffers.Init(viewport.width, viewport.height);
 			textureDrawer.Init(&samplerManager, &oitShaderManager, &textureCache, &oitBuffers);
 			textureDrawer.SetCommandPool(&texCommandPool);
 
-			screenDrawer.Init(&samplerManager, &oitShaderManager, &oitBuffers);
+			screenDrawer.Init(&samplerManager, &oitShaderManager, &oitBuffers, viewport);
 			screenDrawer.SetCommandPool(&texCommandPool);
+			BaseInit(screenDrawer.GetRenderPass(), 2);
+
 
 			return true;
 		}
@@ -51,8 +51,10 @@ public:
 
 	void Resize(int w, int h) override
 	{
+		if ((u32)w == viewport.width && (u32)h == viewport.height)
+			return;
 		BaseVulkanRenderer::Resize(w, h);
-		screenDrawer.Init(&samplerManager, &oitShaderManager, &oitBuffers);
+		screenDrawer.Init(&samplerManager, &oitShaderManager, &oitBuffers, viewport);
 	}
 
 	void Term() override
@@ -75,6 +77,10 @@ public:
 				drawer = &screenDrawer;
 
 			drawer->Draw(fogTexture.get(), paletteTexture.get());
+#ifdef LIBRETRO
+			if (!pvrrc.isRTT)
+				overlay->Draw(screenDrawer.GetCurrentCommandBuffer(), viewport, (int)config::RenderResolution / 480.f, true, true);
+#endif
 
 			drawer->EndFrame();
 

@@ -130,7 +130,7 @@ LogManager::LogManager()
 	SetLogLevel(static_cast<LogTypes::LOG_LEVELS>(verbosity));
 	if (cfgLoadBool("log", "LogToFile", false))
 	{
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(TARGET_IOS) || defined(TARGET_UWP)
 		std::string logPath = get_writable_data_path("flycast.log");
 #else
 		std::string logPath = "flycast.log";
@@ -138,7 +138,7 @@ LogManager::LogManager()
 		FileLogListener *listener = new FileLogListener(logPath);
 		if (!listener->IsValid())
 		{
-			const char *home = getenv("HOME");
+			const char *home = nowide::getenv("HOME");
 			if (home != nullptr)
 			{
 				delete listener;
@@ -218,7 +218,8 @@ void LogManager::SetEnable(LogTypes::LOG_TYPE type, bool enable)
 
 bool LogManager::IsEnabled(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level) const
 {
-	return m_log[type].m_enable && GetLogLevel() >= level;
+	return level <= LogTypes::LOG_LEVELS::LWARNING
+			|| (m_log[type].m_enable && GetLogLevel() >= level);
 }
 
 const char* LogManager::GetShortName(LogTypes::LOG_TYPE type) const

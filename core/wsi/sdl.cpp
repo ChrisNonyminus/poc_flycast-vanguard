@@ -18,17 +18,21 @@
     You should have received a copy of the GNU General Public License
     along with Flycast.  If not, see <https://www.gnu.org/licenses/>.
 */
-#if defined(USE_SDL) && !defined(__APPLE__)
+#if defined(USE_SDL)
 #include <math.h>
 #include <algorithm>
 #include "gl_context.h"
 #include "rend/gui.h"
 #include "sdl/sdl.h"
+#include "cfg/option.h"
+
+extern "C" int eglGetError();
 
 SDLGLGraphicsContext theGLContext;
 
-bool SDLGLGraphicsContext::Init()
+bool SDLGLGraphicsContext::init()
 {
+	instance = this;
 #ifdef GLES
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -42,69 +46,109 @@ bool SDLGLGraphicsContext::Init()
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	sdl_recreate_window(SDL_WINDOW_OPENGL);
+	if (!sdl_recreate_window(SDL_WINDOW_OPENGL))
+		return false;
 
-	glcontext = SDL_GL_CreateContext(window);
-	if (!glcontext)
+	SDL_Window * const sdlWindow = (SDL_Window *)window;
+	glcontext = SDL_GL_CreateContext(sdlWindow);
+#ifndef GLES
+	if (glcontext == SDL_GLContext())
 	{
-#ifndef GLES
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+#ifdef __APPLE__
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#else
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-		glcontext = SDL_GL_CreateContext(window);
-		if (!glcontext)
-		{
 #endif
-			ERROR_LOG(RENDERER, "Error creating SDL GL context");
-			SDL_DestroyWindow(window);
-			window = nullptr;
-			return false;
-#ifndef GLES
-		}
-#endif
+		glcontext = SDL_GL_CreateContext(sdlWindow);
 	}
-	SDL_GL_MakeCurrent(window, NULL);
+#endif
+	if (glcontext == SDL_GLContext())
+	{
+		ERROR_LOG(RENDERER, "Error creating SDL GL context");
+		SDL_DestroyWindow(sdlWindow);
+		window = nullptr;
+		return false;
+	}
+	SDL_GL_MakeCurrent(sdlWindow, NULL);
 
-	SDL_GL_GetDrawableSize(window, &screen_width, &screen_height);
+	int w, h;
+	SDL_GetWindowSize(sdlWindow, &w, &h);
+	SDL_GL_GetDrawableSize(sdlWindow, &settings.display.width, &settings.display.height);
+	settings.display.pointScale = (float)settings.display.width / w;
 
-	float ddpi, hdpi, vdpi;
-	if (!SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(window), &ddpi, &hdpi, &vdpi))
+	float hdpi, vdpi;
+	if (!SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(sdlWindow), nullptr, &hdpi, &vdpi))
 		screen_dpi = (int)roundf(std::max(hdpi, vdpi));
 
 	INFO_LOG(RENDERER, "Created SDL Window and GL Context successfully");
 
-	SDL_GL_MakeCurrent(window, glcontext);
+	SDL_GL_MakeCurrent(sdlWindow, glcontext);
+	// Swap at vsync
+	swapOnVSync = config::VSync;
+	if (settings.display.refreshRate > 60.f)
+		swapInterval = settings.display.refreshRate / 60.f;
+	else
+		swapInterval = 1;
+
+	SDL_GL_SetSwapInterval(swapOnVSync ? swapInterval : 0);
 
 #ifdef GLES
 	load_gles_symbols();
-#else
+#elif !defined(__APPLE__)
 	if (gl3wInit() == -1 || !gl3wIsSupported(3, 0))
 	{
 		ERROR_LOG(RENDERER, "gl3wInit failed or GL 3.0 not supported");
 		return false;
 	}
 #endif
-	PostInit();
+	postInit();
+
+#ifdef TARGET_UWP
+	// Force link with libGLESv2.dll and libEGL.dll
+#undef glGetError
+	glGetError();
+	eglGetError();
+#endif
 
 	return true;
 }
 
-void SDLGLGraphicsContext::Swap()
+void SDLGLGraphicsContext::swap()
 {
-	SDL_GL_SwapWindow(window);
+	do_swap_automation();
+	if (swapOnVSync == (settings.input.fastForwardMode || !config::VSync))
+	{
+		swapOnVSync = (!settings.input.fastForwardMode && config::VSync);
+		if (settings.display.refreshRate > 60.f)
+			swapInterval = settings.display.refreshRate / 60.f;
+		else
+			swapInterval = 1;
+		SDL_GL_SetSwapInterval(swapOnVSync ? swapInterval : 0);
+	}
+	SDL_GL_SwapWindow((SDL_Window *)window);
 
-	/* Check if drawable has been resized */
-	SDL_GL_GetDrawableSize(window, &screen_width, &screen_height);
+	// Check if drawable has been resized
+	SDL_GL_GetDrawableSize((SDL_Window *)window, &settings.display.width, &settings.display.height);
+#ifdef __SWITCH__
+	float newScaling = settings.display.height == 720 ? 1.5f : 1.0f;
+	if (newScaling != scaling)
+	{
+		// Restart the UI to take the new scaling factor into account
+		scaling = newScaling;
+		gui_term();
+		gui_init();
+	}
+#endif
 }
 
-void SDLGLGraphicsContext::Term()
+void SDLGLGraphicsContext::term()
 {
-	PreTerm();
+	preTerm();
 	if (glcontext != nullptr)
 	{
 		SDL_GL_DeleteContext(glcontext);

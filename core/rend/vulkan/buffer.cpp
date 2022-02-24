@@ -22,14 +22,19 @@
 #include "utils.h"
 #include "vulkan_context.h"
 
-BufferData::BufferData(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags propertyFlags)
+BufferData::BufferData(vk::DeviceSize size, const vk::BufferUsageFlags& usage, const vk::MemoryPropertyFlags& propertyFlags)
 	: bufferSize(size), m_usage(usage), m_propertyFlags(propertyFlags)
 {
 	VulkanContext *context = VulkanContext::Instance();
 	buffer = context->GetDevice().createBufferUnique(vk::BufferCreateInfo(vk::BufferCreateFlags(), size, usage));
 	VmaAllocationCreateInfo allocInfo = {
-			VMA_ALLOCATION_CREATE_MAPPED_BIT,
+			(propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent) ? VMA_ALLOCATION_CREATE_MAPPED_BIT : (VmaAllocationCreateFlags)0,
 			(propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal) ? VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY : VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU
 	};
+#ifdef __APPLE__
+	if (!(propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal))
+		// cpu memory management is fucked up with moltenvk
+		allocInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+#endif
 	allocation = context->GetAllocator().AllocateForBuffer(*buffer, allocInfo);
 }

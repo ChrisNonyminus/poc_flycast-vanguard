@@ -1,9 +1,9 @@
 #include "_vmem.h"
-#include "vmem32.h"
 #include "hw/aica/aica_if.h"
 #include "hw/pvr/pvr_mem.h"
 #include "hw/sh4/dyna/blockmanager.h"
 #include "hw/sh4/sh4_mem.h"
+#include "oslib/oslib.h"
 
 #define HANDLER_MAX 0x1F
 #define HANDLER_COUNT (HANDLER_MAX+1)
@@ -100,10 +100,10 @@ void* _vmem_write_const(u32 addr,bool& ismem,u32 sz)
 	}
 }
 
-template<typename T,typename Trv>
-INLINE Trv DYNACALL _vmem_readt(u32 addr)
+template<typename T, typename Trv>
+Trv DYNACALL _vmem_readt(u32 addr)
 {
-	const u32 sz=sizeof(T);
+	constexpr u32 sz = sizeof(T);
 
 	u32   page=addr>>24;	//1 op, shift/extract
 	unat  iirf=(unat)_vmem_MemInfo_ptr[page]; //2 ops, insert + read [vmem table will be on reg ]
@@ -152,9 +152,9 @@ template u32 DYNACALL _vmem_readt<u32, u32>(u32 addr);
 template u64 DYNACALL _vmem_readt<u64, u64>(u32 addr);
 
 template<typename T>
-INLINE void DYNACALL _vmem_writet(u32 addr,T data)
+void DYNACALL _vmem_writet(u32 addr, T data)
 {
-	const u32 sz=sizeof(T);
+	constexpr u32 sz = sizeof(T);
 
 	u32 page=addr>>24;
 	unat  iirf=(unat)_vmem_MemInfo_ptr[page];
@@ -214,8 +214,7 @@ void DYNACALL _vmem_WriteMem16(u32 Address,u16 data) { _vmem_writet<u16>(Address
 void DYNACALL _vmem_WriteMem32(u32 Address,u32 data) { _vmem_writet<u32>(Address,data); }
 void DYNACALL _vmem_WriteMem64(u32 Address,u64 data) { _vmem_writet<u64>(Address,data); }
 
-//0xDEADC0D3 or 0
-#define MEM_ERROR_RETURN_VALUE 0xDEADC0D3
+#define MEM_ERROR_RETURN_VALUE 0
 
 //default read handlers
 static u8 DYNACALL _vmem_ReadMem8_not_mapped(u32 addresss)
@@ -331,11 +330,6 @@ void _vmem_mirror_mapping(u32 new_region,u32 start,u32 size)
 //init/reset/term
 void _vmem_init()
 {
-	_vmem_reset();
-}
-
-void _vmem_reset()
-{
 	//clear read tables
 	memset(_vmem_RF8,0,sizeof(_vmem_RF8));
 	memset(_vmem_RF16,0,sizeof(_vmem_RF16));
@@ -362,21 +356,19 @@ void _vmem_term()
 
 u8* virt_ram_base;
 bool vmem_4gb_space;
-static VMemType vmemstatus;
+static VMemType vmemstatus = MemTypeError;
 
-static void* malloc_pages(size_t size) {
-#ifdef _WIN32
-	return _aligned_malloc(size, PAGE_SIZE);
-#elif defined(_ISOC11_SOURCE)
-	return aligned_alloc(PAGE_SIZE, size);
-#else
-	void *data;
-	if (posix_memalign(&data, PAGE_SIZE, size) != 0)
-		return NULL;
-	else
-		return data;
-#endif
+static void *malloc_pages(size_t size)
+{
+	return allocAligned(PAGE_SIZE, size);
 }
+
+static void free_pages(void *p)
+{
+	freeAligned(p);
+}
+
+#if FEAT_SHREC != DYNAREC_NONE
 
 // Resets the FPCB table (by either clearing it to the default val
 // or by flushing it and making it fault on access again.
@@ -410,6 +402,7 @@ bool BM_LockedWrite(u8* address) {
 	}
 	return false;
 }
+#endif
 
 static void _vmem_set_p0_mappings()
 {
@@ -435,10 +428,11 @@ bool _vmem_reserve()
 {
 	static_assert((sizeof(Sh4RCB) % PAGE_SIZE) == 0, "sizeof(Sh4RCB) not multiple of PAGE_SIZE");
 
-	vmemstatus = MemTypeError;
+	if (vmemstatus != MemTypeError)
+		return true;
 
 	// Use vmem only if settings mandate so, and if we have proper exception handlers.
-#ifndef TARGET_NO_EXCEPTIONS
+#if !defined(TARGET_NO_EXCEPTIONS)
 	if (!settings.dynarec.disable_nvmem)
 		vmemstatus = vmem_platform_init((void**)&virt_ram_base, (void**)&p_sh4rcb);
 #endif
@@ -447,27 +441,16 @@ bool _vmem_reserve()
 
 static void _vmem_term_mappings()
 {
-	if (vmemstatus == MemTypeError) {
-		if (p_sh4rcb != NULL)
-		{
-			free(p_sh4rcb);
-			p_sh4rcb = NULL;
-		}
-		if (mem_b.data != NULL)
-		{
-			free(mem_b.data);
-			mem_b.data = NULL;
-		}
-		if (vram.data != NULL)
-		{
-			free(vram.data);
-			vram.data = NULL;
-		}
-		if (aica_ram.data != NULL)
-		{
-			free(aica_ram.data);
-			aica_ram.data = NULL;
-		}
+	if (vmemstatus == MemTypeError)
+	{
+		free_pages(p_sh4rcb);
+		p_sh4rcb = nullptr;
+		free_pages(mem_b.data);
+		mem_b.data = nullptr;
+		free_pages(vram.data);
+		vram.data = nullptr;
+		free_pages(aica_ram.data);
+		aica_ram.data = nullptr;
 	}
 }
 
@@ -475,13 +458,17 @@ void _vmem_init_mappings()
 {
 	_vmem_term_mappings();
 	// Fallback to statically allocated buffers, this results in slow-ops being generated.
-	if (vmemstatus == MemTypeError) {
+	if (vmemstatus == MemTypeError)
+	{
 		WARN_LOG(VMEM, "Warning! nvmem is DISABLED (due to failure or not being built-in");
-		virt_ram_base = 0;
+		virt_ram_base = nullptr;
 
 		// Allocate it all and initialize it.
 		p_sh4rcb = (Sh4RCB*)malloc_pages(sizeof(Sh4RCB));
+#if FEAT_SHREC != DYNAREC_NONE
 		bm_vmem_pagefill((void**)p_sh4rcb->fpcb, sizeof(p_sh4rcb->fpcb));
+#endif
+		memset(&p_sh4rcb->cntx, 0, sizeof(p_sh4rcb->cntx));
 
 		mem_b.size = RAM_SIZE;
 		mem_b.data = (u8*)malloc_pages(RAM_SIZE);
@@ -582,36 +569,26 @@ void _vmem_init_mappings()
 	aica_ram.Zero();
 	vram.Zero();
 	mem_b.Zero();
+	NOTICE_LOG(VMEM, "BASE %p RAM(%d MB) %p VRAM64(%d MB) %p ARAM(%d MB) %p",
+			virt_ram_base,
+			RAM_SIZE / 1024 / 1024, mem_b.data,
+			VRAM_SIZE / 1024 / 1024, vram.data,
+			ARAM_SIZE / 1024 / 1024, aica_ram.data);
 }
 
-#define freedefptr(x) \
-	if (x) { free(x); x = NULL; }
-
-void _vmem_release() {
-	if (virt_ram_base)
-		vmem_platform_destroy();
-	else {
-		_vmem_unprotect_vram(0, VRAM_SIZE);
-		freedefptr(p_sh4rcb);
-		freedefptr(vram.data);
-		freedefptr(aica_ram.data);
-		freedefptr(mem_b.data);
-	}
-}
-
-void _vmem_enable_mmu(bool enable)
+void _vmem_release()
 {
-	if (enable)
+	if (virt_ram_base)
 	{
-		vmem32_init();
+		vmem_platform_destroy();
+		virt_ram_base = nullptr;
 	}
 	else
 	{
-		// Restore P0/U0 mem mappings
-		vmem32_term();
-		if (_nvmem_4gb_space())
-			_vmem_set_p0_mappings();
+		_vmem_unprotect_vram(0, VRAM_SIZE);
+		_vmem_term_mappings();
 	}
+	vmemstatus = MemTypeError;
 }
 
 void _vmem_protect_vram(u32 addr, u32 size)
@@ -619,16 +596,13 @@ void _vmem_protect_vram(u32 addr, u32 size)
 	addr &= VRAM_MASK;
 	if (_nvmem_enabled())
 	{
-		if (!mmu_enabled() || !_nvmem_4gb_space())
+		mem_region_lock(virt_ram_base + 0x04000000 + addr, size);	// P0
+		//mem_region_lock(virt_ram_base + 0x06000000 + addr, size);	// P0 - mirror
+		if (VRAM_SIZE == 0x800000)
 		{
-			mem_region_lock(virt_ram_base + 0x04000000 + addr, size);	// P0
-			//mem_region_lock(virt_ram_base + 0x06000000 + addr, size);	// P0 - mirror
-			if (VRAM_SIZE == 0x800000)
-			{
-				// wraps when only 8MB VRAM
-				mem_region_lock(virt_ram_base + 0x04000000 + addr + VRAM_SIZE, size);	// P0 wrap
-				//mem_region_lock(virt_ram_base + 0x06000000 + addr + VRAM_SIZE, size);	// P0 mirror wrap
-			}
+			// wraps when only 8MB VRAM
+			mem_region_lock(virt_ram_base + 0x04000000 + addr + VRAM_SIZE, size);	// P0 wrap
+			//mem_region_lock(virt_ram_base + 0x06000000 + addr + VRAM_SIZE, size);	// P0 mirror wrap
 		}
 		if (_nvmem_4gb_space())
 		{
@@ -648,7 +622,6 @@ void _vmem_protect_vram(u32 addr, u32 size)
 				//mem_region_lock(virt_ram_base + 0xC4000000 + addr + VRAM_SIZE, size);	// P3 wrap
 				//mem_region_lock(virt_ram_base + 0xC6000000 + addr + VRAM_SIZE, size);	// P3 - mirror wrap
 			}
-			vmem32_protect_vram(addr, size);
 		}
 	}
 	else
@@ -662,32 +635,29 @@ void _vmem_unprotect_vram(u32 addr, u32 size)
 	addr &= VRAM_MASK;
 	if (_nvmem_enabled())
 	{
-		if (!mmu_enabled() || !_nvmem_4gb_space())
+		mem_region_unlock(virt_ram_base + 0x04000000 + addr, size);		// P0
+		//mem_region_unlock(virt_ram_base + 0x06000000 + addr, size);	// P0 - mirror
+		if (VRAM_SIZE == 0x800000)
 		{
-			mem_region_unlock(virt_ram_base + 0x04000000 + addr, size);		// P0
-			//mem_region_unlock(virt_ram_base + 0x06000000 + addr, size);	// P0 - mirror
-			if (VRAM_SIZE == 0x800000)
-			{
-				// wraps when only 8MB VRAM
-				mem_region_unlock(virt_ram_base + 0x04000000 + addr + VRAM_SIZE, size);		// P0 wrap
-				//mem_region_unlock(virt_ram_base + 0x06000000 + addr + VRAM_SIZE, size);	// P0 mirror wrap
-			}
+			// wraps when only 8MB VRAM
+			mem_region_unlock(virt_ram_base + 0x04000000 + addr + VRAM_SIZE, size);		// P0 wrap
+			//mem_region_unlock(virt_ram_base + 0x06000000 + addr + VRAM_SIZE, size);	// P0 mirror wrap
 		}
 		if (_nvmem_4gb_space())
 		{
 			mem_region_unlock(virt_ram_base + 0x84000000 + addr, size);		// P1
-			//mem_region_unlock(virt_ram_base + 0x86000000 + addr, size);		// P1 - mirror
+			//mem_region_unlock(virt_ram_base + 0x86000000 + addr, size);	// P1 - mirror
 			mem_region_unlock(virt_ram_base + 0xA4000000 + addr, size);		// P2
-			//mem_region_unlock(virt_ram_base + 0xA6000000 + addr, size);		// P2 - mirror
+			//mem_region_unlock(virt_ram_base + 0xA6000000 + addr, size);	// P2 - mirror
 			// We should also lock P3 and its mirrors, but it doesn't seem to be used...
 			//mem_region_unlock(virt_ram_base + 0xC4000000 + addr, size);	// P3
 			//mem_region_unlock(virt_ram_base + 0xC6000000 + addr, size);	// P3 - mirror
 			if (VRAM_SIZE == 0x800000)
 			{
 				mem_region_unlock(virt_ram_base + 0x84000000 + addr + VRAM_SIZE, size);		// P1 wrap
-				//mem_region_unlock(virt_ram_base + 0x86000000 + addr + VRAM_SIZE, size);		// P1 - mirror wrap
+				//mem_region_unlock(virt_ram_base + 0x86000000 + addr + VRAM_SIZE, size);	// P1 - mirror wrap
 				mem_region_unlock(virt_ram_base + 0xA4000000 + addr + VRAM_SIZE, size);		// P2 wrap
-				//mem_region_unlock(virt_ram_base + 0xA6000000 + addr + VRAM_SIZE, size);		// P2 - mirror wrap
+				//mem_region_unlock(virt_ram_base + 0xA6000000 + addr + VRAM_SIZE, size);	// P2 - mirror wrap
 				//mem_region_unlock(virt_ram_base + 0xC4000000 + addr + VRAM_SIZE, size);	// P3 wrap
 				//mem_region_unlock(virt_ram_base + 0xC6000000 + addr + VRAM_SIZE, size);	// P3 - mirror wrap
 			}
@@ -706,17 +676,8 @@ u32 _vmem_get_vram_offset(void *addr)
 		ptrdiff_t offset = (u8*)addr - virt_ram_base;
 		if (_nvmem_4gb_space())
 		{
-			if (mmu_enabled())
-			{
-				// Only kernel mirrors
-				if (offset < 0x80000000 || offset >= 0xE0000000)
-					return -1;
-			}
-			else
-			{
-				if (offset < 0 || offset >= 0xE0000000)
-					return -1;
-			}
+			if (offset < 0 || offset >= 0xE0000000)
+				return -1;
 			offset &= 0x1FFFFFFF;
 		}
 		else
@@ -726,7 +687,9 @@ u32 _vmem_get_vram_offset(void *addr)
 		}
 		if ((offset >> 24) != 4)
 			return -1;
-		verify((((u8*)addr - virt_ram_base) >> 29) == 0 || (((u8*)addr - virt_ram_base) >> 29) == 4  || (((u8*)addr - virt_ram_base) >> 29) == 5);	// others areas aren't mapped atm
+		if ((((u8*)addr - virt_ram_base) >> 29) != 0 && (((u8*)addr - virt_ram_base) >> 29) != 4  && (((u8*)addr - virt_ram_base) >> 29) != 5)
+			// other areas aren't mapped atm
+			return -1;
 
 		return offset & VRAM_MASK;
 	}

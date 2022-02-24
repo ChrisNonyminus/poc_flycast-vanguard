@@ -11,10 +11,8 @@
 
     It does work on my macmini though
  */
-
-#include "audiostream.h"
-
 #if defined(__APPLE__)
+#include "audiostream.h"
 #include "stdclass.h"
 
 #include <atomic>
@@ -82,7 +80,6 @@ static void coreaudio_init()
 #else
     desc.componentSubType = kAudioUnitSubType_RemoteIO;
 #endif
-    //desc.componentSubType = kAudioUnitSubType_GenericOutput;
     desc.componentFlags = 0;
     desc.componentFlagsMask = 0;
     desc.componentManufacturer = kAudioUnitManufacturer_Apple;
@@ -120,7 +117,7 @@ static void coreaudio_init()
     err = AudioUnitInitialize(audioUnit);
     verify(err == noErr);
 
-	BUFSIZE = settings.aica.BufferSize * 4;
+	BUFSIZE = config::AudioBufferSize * 4;
 	samples_temp = new u8[BUFSIZE]();
 	samples_rptr = 0;
 	samples_wptr = 0;
@@ -196,7 +193,7 @@ static void coreaudio_term_record()
 
 static bool coreaudio_init_record(u32 sampling_freq)
 {
-	AudioStreamBasicDescription desc;
+	AudioStreamBasicDescription desc{};
 	desc.mFormatID = kAudioFormatLinearPCM;
 	desc.mSampleRate = (double)sampling_freq;
 	desc.mChannelsPerFrame = 1;
@@ -215,7 +212,7 @@ static bool coreaudio_init_record(u32 sampling_freq)
 					   &recordQueue);
 	if (err != noErr)
 	{
-		INFO_LOG(AUDIO, "AudioQueueNewInput failed: %d", err);
+		ERROR_LOG(AUDIO, "AudioQueueNewInput failed: %d", err);
 		return false;
 	}
 	
@@ -232,11 +229,11 @@ static bool coreaudio_init_record(u32 sampling_freq)
 		err = AudioQueueStart(recordQueue, nullptr);
 	if (err != noErr)
 	{
-		INFO_LOG(AUDIO, "AudioQueue init failed: %d", err);
+		ERROR_LOG(AUDIO, "AudioQueue init failed: %d", err);
 		coreaudio_term_record();
 		return false;
 	}
-	DEBUG_LOG(AUDIO, "AudioQueue initialized - sample rate %f", desc.mSampleRate);
+	INFO_LOG(AUDIO, "AudioQueue initialized - sample rate %f", desc.mSampleRate);
 
 	return true;
 }

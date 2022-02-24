@@ -1,18 +1,13 @@
 #include "types.h"
 #include <unordered_set>
 
-#include "../sh4_interpreter.h"
-#include "../sh4_opcode_list.h"
-#include "../sh4_core.h"
-#include "../sh4_if.h"
+#include "hw/sh4/sh4_interpreter.h"
+#include "hw/sh4/sh4_core.h"
 #include "hw/sh4/sh4_interrupts.h"
 
-#include "hw/mem/_vmem.h"
 #include "hw/sh4/sh4_mem.h"
 #include "hw/sh4/modules/mmu.h"
-#include "hw/pvr/pvr_mem.h"
-#include "hw/aica/aica_if.h"
-#include "hw/gdrom/gdrom_if.h"
+#include "cfg/option.h"
 
 #include <ctime>
 #include <cfloat>
@@ -25,33 +20,35 @@
 
 #if FEAT_SHREC != DYNAREC_NONE
 
-u8 SH4_TCB[CODE_SIZE + TEMP_CODE_SIZE + 4096]
-#if defined(_WIN32) || FEAT_SHREC != DYNAREC_JIT
-	;
-#elif HOST_OS == OS_LINUX
+#if defined(_WIN32) || FEAT_SHREC != DYNAREC_JIT || defined(TARGET_IPHONE) || defined(TARGET_ARM_MAC)
+static u8 *SH4_TCB;
+#else
+static u8 SH4_TCB[CODE_SIZE + TEMP_CODE_SIZE + 4096]
+#if defined(__unix__) || defined(__SWITCH__)
 	__attribute__((section(".text")));
 #elif defined(__APPLE__)
 	__attribute__((section("__TEXT,.text")));
 #else
 	#error SH4_TCB ALLOC
 #endif
+#endif
 
 u8* CodeCache;
-u8* TempCodeCache;
-uintptr_t cc_rx_offset;
+static u8* TempCodeCache;
+ptrdiff_t cc_rx_offset;
 
-u32 LastAddr;
-u32 LastAddr_min;
-u32 TempLastAddr;
-u32* emit_ptr=0;
-u32* emit_ptr_limit;
+static u32 LastAddr;
+static u32 TempLastAddr;
+static u32 *emit_ptr;
+static u32 *emit_ptr_limit;
 
-std::unordered_set<u32> smc_hotspots;
+static std::unordered_set<u32> smc_hotspots;
+
+static sh4_if sh4Interp;
 
 void* emit_GetCCPtr() { return emit_ptr==0?(void*)&CodeCache[LastAddr]:(void*)emit_ptr; }
-void emit_SetBaseAddr() { LastAddr_min = LastAddr; }
 
-void clear_temp_cache(bool full)
+static void clear_temp_cache(bool full)
 {
 	//printf("recSh4:Temp Code Cache clear at %08X\n", curr_pc);
 	TempLastAddr = 0;
@@ -61,7 +58,7 @@ void clear_temp_cache(bool full)
 static void recSh4_ClearCache()
 {
 	INFO_LOG(DYNAREC, "recSh4:Dynarec Cache clear at %08X free space %d", next_pc, emit_FreeSpace());
-	LastAddr=LastAddr_min;
+	LastAddr = 0;
 	bm_ResetCache();
 	smc_hotspots.clear();
 	clear_temp_cache(true);
@@ -69,32 +66,15 @@ static void recSh4_ClearCache()
 
 static void recSh4_Run()
 {
-	sh4_int_bCpuRun=true;
+	sh4_int_bCpuRun = true;
+	RestoreHostRoundingMode();
 
-	sh4_dyna_rcb=(u8*)&Sh4cntx + sizeof(Sh4cntx);
+	u8 *sh4_dyna_rcb = (u8 *)&Sh4cntx + sizeof(Sh4cntx);
 	INFO_LOG(DYNAREC, "cntx // fpcb offset: %td // pc offset: %td // pc %08X", (u8*)&sh4rcb.fpcb - sh4_dyna_rcb, (u8*)&sh4rcb.cntx.pc - sh4_dyna_rcb, sh4rcb.cntx.pc);
-
-	if (settings.dynarec.unstable_opt)
-		NOTICE_LOG(DYNAREC, "Warning: Unstable optimizations is on");
 	
-	verify(rcb_noffs(&next_pc)==-184);
 	ngen_mainloop(sh4_dyna_rcb);
 
 	sh4_int_bCpuRun = false;
-}
-
-void emit_Write32(u32 data)
-{
-	if (emit_ptr)
-	{
-		*emit_ptr=data;
-		emit_ptr++;
-	}
-	else
-	{
-		*(u32*)&CodeCache[LastAddr]=data;
-		LastAddr+=4;
-	}
 }
 
 void emit_Skip(u32 sz)
@@ -115,8 +95,6 @@ u32 emit_FreeSpace()
 
 void AnalyseBlock(RuntimeBlockInfo* blk);
 
-static char block_hash[1024];
-
 const char* RuntimeBlockInfo::hash()
 {
 	XXH32_hash_t hash = 0;
@@ -131,7 +109,7 @@ const char* RuntimeBlockInfo::hash()
 		{
 			u16 data = ptr[i];
 			//Do not count PC relative loads (relocated code)
-			if ((ptr[i] >> 12) == 0xD)
+			if ((data >> 12) == 0xD)
 				data = 0xD000;
 
 			XXH32_update(state, &data, 2);
@@ -139,7 +117,7 @@ const char* RuntimeBlockInfo::hash()
 		hash = XXH32_digest(state);
 		XXH32_freeState(state);
 	}
-
+	static char block_hash[20];
 	sprintf(block_hash, ">:1:%02X:%08X", this->guest_opcodes, hash);
 
 	return block_hash;
@@ -153,8 +131,9 @@ bool RuntimeBlockInfo::Setup(u32 rpc,fpscr_t rfpu_cfg)
 	pBranchBlock=pNextBlock=0;
 	code=0;
 	has_jcond=false;
-	BranchBlock=NextBlock=csc_RetCache=0xFFFFFFFF;
-	BlockType=BET_SCL_Intr;
+	BranchBlock = NullAddress;
+	NextBlock = NullAddress;
+	BlockType = BET_SCL_Intr;
 	has_fpu_op = false;
 	temp_block = false;
 	
@@ -174,18 +153,14 @@ bool RuntimeBlockInfo::Setup(u32 rpc,fpscr_t rfpu_cfg)
 	
 	oplist.clear();
 
-#if !defined(NO_MMU)
 	try {
-#endif
 		if (!dec_DecodeBlock(this, SH4_TIMESLICE / 2))
 			return false;
-#if !defined(NO_MMU)
 	}
-	catch (SH4ThrownException& ex) {
+	catch (const SH4ThrownException& ex) {
 		Do_Exception(rpc, ex.expEvn, ex.callVect);
 		return false;
 	}
-#endif
 	SetProtectedFlags();
 
 	AnalyseBlock(this);
@@ -243,7 +218,7 @@ DynarecCodeEntryPtr DYNACALL rdv_FailedToFindBlock_pc()
 
 DynarecCodeEntryPtr DYNACALL rdv_FailedToFindBlock(u32 pc)
 {
-	//printf("rdv_FailedToFindBlock ~ %08X\n",pc);
+	//DEBUG_LOG(DYNAREC, "rdv_FailedToFindBlock %08x", pc);
 	next_pc=pc;
 	DynarecCodeEntryPtr code = rdv_CompilePC(0);
 	if (code == NULL)
@@ -275,6 +250,7 @@ u32 DYNACALL rdv_DoInterrupts(void* block_cpde)
 // addr must be the physical address of the start of the block
 DynarecCodeEntryPtr DYNACALL rdv_BlockCheckFail(u32 addr)
 {
+	DEBUG_LOG(DYNAREC, "rdv_BlockCheckFail @ %08x", addr);
 	u32 blockcheck_failures = 0;
 	if (mmu_enabled())
 	{
@@ -308,6 +284,7 @@ DynarecCodeEntryPtr rdv_FindOrCompile()
 void* DYNACALL rdv_LinkBlock(u8* code,u32 dpc)
 {
 	// code is the RX addr to return after, however bm_GetBlock returns RW
+	//DEBUG_LOG(DYNAREC, "rdv_LinkBlock %p pc %08x", code, dpc);
 	RuntimeBlockInfoPtr rbi = bm_GetBlock(code);
 	bool stale_block = false;
 	if (!rbi)
@@ -383,43 +360,29 @@ void* DYNACALL rdv_LinkBlock(u8* code,u32 dpc)
 }
 static void recSh4_Stop()
 {
-	Sh4_int_Stop();
-}
-
-static void recSh4_Start()
-{
-	Sh4_int_Start();
+	sh4Interp.Stop();
 }
 
 static void recSh4_Step()
 {
-	Sh4_int_Step();
-}
-
-static void recSh4_Skip()
-{
-	Sh4_int_Skip();
+	sh4Interp.Step();
 }
 
 static void recSh4_Reset(bool hard)
 {
-	Sh4_int_Reset(hard);
+	sh4Interp.Reset(hard);
 	recSh4_ClearCache();
-	bm_Reset();
+	if (hard)
+		bm_Reset();
 }
 
 static void recSh4_Init()
 {
 	INFO_LOG(DYNAREC, "recSh4 Init");
-	Sh4_int_Init();
+	Get_Sh4Interpreter(&sh4Interp);
+	sh4Interp.Init();
 	bm_Init();
 
-	verify(rcb_noffs(p_sh4rcb->fpcb) == FPCB_OFFSET);
-
-	verify(rcb_noffs(p_sh4rcb->sq_buffer) == -512);
-
-	verify(rcb_noffs(&p_sh4rcb->cntx.sh4_sched_next) == -152);
-	verify(rcb_noffs(&p_sh4rcb->cntx.interrupt_pend) == -148);
 	
 	if (_nvmem_enabled())
 	{
@@ -446,7 +409,6 @@ static void recSh4_Init()
 	// Ensure the pointer returned is non-null
 	verify(CodeCache != NULL);
 
-	memset(CodeCache, 0xFF, CODE_SIZE + TEMP_CODE_SIZE);
 	TempCodeCache = CodeCache + CODE_SIZE;
 	ngen_init();
 	bm_ResetCache();
@@ -456,26 +418,24 @@ static void recSh4_Term()
 {
 	INFO_LOG(DYNAREC, "recSh4 Term");
 	bm_Term();
-	Sh4_int_Term();
+	sh4Interp.Term();
 }
 
 static bool recSh4_IsCpuRunning()
 {
-	return Sh4_int_IsCpuRunning();
+	return sh4Interp.IsCpuRunning();
 }
 
-void Get_Sh4Recompiler(sh4_if* rv)
+void Get_Sh4Recompiler(sh4_if* cpu)
 {
-	rv->Run = recSh4_Run;
-	rv->Stop = recSh4_Stop;
-	rv->Start = recSh4_Start;
-	rv->Step = recSh4_Step;
-	rv->Skip = recSh4_Skip;
-	rv->Reset = recSh4_Reset;
-	rv->Init = recSh4_Init;
-	rv->Term = recSh4_Term;
-	rv->IsCpuRunning = recSh4_IsCpuRunning;
-	rv->ResetCache = recSh4_ClearCache;
+	cpu->Run = recSh4_Run;
+	cpu->Stop = recSh4_Stop;
+	cpu->Step = recSh4_Step;
+	cpu->Reset = recSh4_Reset;
+	cpu->Init = recSh4_Init;
+	cpu->Term = recSh4_Term;
+	cpu->IsCpuRunning = recSh4_IsCpuRunning;
+	cpu->ResetCache = recSh4_ClearCache;
 }
 
 #endif  // FEAT_SHREC != DYNAREC_NONE

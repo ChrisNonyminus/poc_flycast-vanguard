@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <unistd.h>
+#include <climits>
 
 class DefaultEvdevInputMapping : public InputMapping
 {
@@ -24,12 +25,16 @@ public:
 		set_button(DC_DPAD_RIGHT, BTN_DPAD_RIGHT);
 		set_button(EMU_BTN_MENU, BTN_SELECT);
 
-		set_axis(DC_AXIS_X, ABS_X, false);
-		set_axis(DC_AXIS_Y, ABS_Y, false);
-		set_axis(DC_AXIS_LT, ABS_Z, false);
-		set_axis(DC_AXIS_RT, ABS_RZ, false);
-		set_axis(DC_AXIS_X2, ABS_RX, false);
-		set_axis(DC_AXIS_Y2, ABS_RY, false);
+		set_axis(DC_AXIS_LEFT, ABS_X, false);
+		set_axis(DC_AXIS_RIGHT, ABS_X, true);
+		set_axis(DC_AXIS_UP, ABS_Y, false);
+		set_axis(DC_AXIS_DOWN, ABS_Y, true);
+		set_axis(DC_AXIS_LT, ABS_Z, true);
+		set_axis(DC_AXIS_RT, ABS_RZ, true);
+		set_axis(DC_AXIS2_LEFT, ABS_RX, false);
+		set_axis(DC_AXIS2_RIGHT, ABS_RX, true);
+		set_axis(DC_AXIS_UP, ABS_RY, false);
+		set_axis(DC_AXIS_DOWN, ABS_RY, true);
 	}
 };
 
@@ -37,7 +42,7 @@ class EvdevGamepadDevice : public GamepadDevice
 {
 public:
 	EvdevGamepadDevice(int maple_port, const char *devnode, int fd, const char *mapping_file = NULL)
-	: GamepadDevice(maple_port, "evdev"), _fd(fd), _rumble_effect_id(-1), _devnode(devnode)
+	: GamepadDevice(maple_port, "evdev"), _fd(fd), _devnode(devnode), _rumble_effect_id(-1)
 	{
 		fcntl(fd, F_SETFL, O_NONBLOCK);
 		char buf[256] = "Unknown";
@@ -52,12 +57,10 @@ public:
 		if (_unique_id.empty())
 			_unique_id = devnode;
 
-		if (!find_mapping(mapping_file))
+		if (!find_mapping())
 		{
 #if defined(TARGET_PANDORA)
 			mapping_file = "controller_pandora.cfg";
-#elif defined(TARGET_GCW0)
-			mapping_file = "controller_gcwz.cfg";
 #else
 			if (_name == "Microsoft X-Box 360 pad"
 				|| _name == "Xbox 360 Wireless Receiver"
@@ -79,33 +82,37 @@ public:
 				mapping_file = "controller_generic.cfg";
 			}
 #endif
-			if (find_mapping(mapping_file))
+			if (find_mapping())
 			{
 				INFO_LOG(INPUT, "using default mapping '%s'", input_mapper->name.c_str());
 				input_mapper = std::make_shared<InputMapping>(*input_mapper);
 			}
 			else
-				input_mapper = std::make_shared<DefaultEvdevInputMapping>();
+				input_mapper = getDefaultMapping();
 			input_mapper->name = _name + " mapping";
 			save_mapping();
 		}
 		else
 			INFO_LOG(INPUT, "using custom mapping '%s'", input_mapper->name.c_str());
 	}
-	virtual ~EvdevGamepadDevice() override
+	~EvdevGamepadDevice() override
 	{
 		INFO_LOG(INPUT, "evdev: Device '%s' on port %d disconnected", _name.c_str(), maple_port());
 		close(_fd);
 	}
 
-	virtual void rumble(float power, float inclination, u32 duration_ms) override
+	std::shared_ptr<InputMapping> getDefaultMapping() override {
+		return std::make_shared<DefaultEvdevInputMapping>();
+	}
+
+	void rumble(float power, float inclination, u32 duration_ms) override
 	{
 		vib_inclination = inclination * power;
 		vib_stop_time = os_GetSeconds() + duration_ms / 1000.0;
 
 		do_rumble(power, duration_ms);
 	}
-	virtual void update_rumble() override
+	void update_rumble() override
 	{
 		if (vib_inclination > 0)
 		{
@@ -117,7 +124,7 @@ public:
 		}
 	}
 
-	virtual const char *get_button_name(u32 code) override
+	const char *get_button_name(u32 code) override
 	{
 		switch (code)
 		{
@@ -163,7 +170,7 @@ public:
 			return nullptr;
 		}
 	}
-	virtual const char *get_axis_name(u32 code) override
+	const char *get_axis_name(u32 code) override
 	{
 		switch (code)
 		{
@@ -223,8 +230,32 @@ public:
 		GamepadDevice::Unregister(gamepad);
 	}
 
-protected:
-	virtual void load_axis_min_max(u32 axis) override
+private:
+	int get_axis_min_value(u32 axis)
+	{
+		auto it = axis_min_values.find(axis);
+		if (it == axis_min_values.end()) {
+			load_axis_min_max(axis);
+			it = axis_min_values.find(axis);
+			if (it == axis_min_values.end())
+				return INT_MIN;
+		}
+		return it->second;
+	}
+
+	unsigned int get_axis_range(u32 axis)
+	{
+		auto it = axis_ranges.find(axis);
+		if (it == axis_ranges.end()) {
+			load_axis_min_max(axis);
+			it = axis_ranges.find(axis);
+			if (it == axis_ranges.end())
+				return UINT_MAX;
+		}
+		return it->second;
+	}
+
+	void load_axis_min_max(u32 axis)
 	{
 		struct input_absinfo abs;
 		if (ioctl(_fd, EVIOCGABS(axis), &abs))
@@ -239,7 +270,6 @@ protected:
 		DEBUG_LOG(INPUT, "evdev: range of axis %d is from %d to %d", axis, axis_min_values[axis], axis_min_values[axis] + axis_ranges[axis]);
 	}
 
-private:
 	void read_input()
 	{
 		update_rumble();
@@ -254,7 +284,12 @@ private:
 					break;
 
 				case EV_ABS:
-					gamepad_axis_input(ie.code, ie.value);
+					{
+						// TODO no way to distinguish between half and full axes
+						int min = get_axis_min_value(ie.code);
+						unsigned range = get_axis_range(ie.code);
+						gamepad_axis_input(ie.code, (ie.value - min) * 65535 / range - 32768);
+					}
 					break;
 			}
 		}
@@ -301,6 +336,8 @@ private:
 	int _rumble_effect_id = -1;
 	float vib_inclination = 0;
 	double vib_stop_time = 0;
+	std::map<u32, int> axis_min_values;
+	std::map<u32, unsigned int> axis_ranges;
 	static std::map<std::string, std::shared_ptr<EvdevGamepadDevice>> evdev_gamepads;
 };
 

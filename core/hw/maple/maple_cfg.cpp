@@ -2,7 +2,15 @@
 #include "maple_helper.h"
 #include "maple_if.h"
 #include "hw/naomi/naomi_cart.h"
-#include "input/gamepad_device.h"
+#include "cfg/option.h"
+#include "stdclass.h"
+#include "serialize.h"
+
+MapleInputState mapleInputState[4];
+extern bool maple_ddt_pending_reset;
+extern std::vector<std::pair<u32, std::vector<u32>>> mapleDmaOut;
+
+void (*MapleConfigMap::UpdateVibration)(u32 port, float power, float inclination, u32 duration_ms);
 
 static u8 GetBtFromSgn(s8 val)
 {
@@ -10,7 +18,7 @@ static u8 GetBtFromSgn(s8 val)
 }
 
 u32 awave_button_mapping[32] = {
-		AWAVE_SERVICE_KEY,	// DC_BTN_C
+		AWAVE_BTN2_KEY,		// DC_BTN_C
 		AWAVE_BTN1_KEY,		// DC_BTN_B
 		AWAVE_BTN0_KEY,		// DC_BTN_A
 		AWAVE_START_KEY,	// DC_BTN_START
@@ -18,18 +26,18 @@ u32 awave_button_mapping[32] = {
 		AWAVE_DOWN_KEY,		// DC_DPAD_DOWN
 		AWAVE_LEFT_KEY,		// DC_DPAD_LEFT
 		AWAVE_RIGHT_KEY,	// DC_DPAD_RIGHT
-		AWAVE_TEST_KEY,		// DC_BTN_Z
-		AWAVE_BTN3_KEY,		// DC_BTN_Y
-		AWAVE_BTN2_KEY,		// DC_BTN_X
+		AWAVE_BTN4_KEY,		// DC_BTN_Z (duplicated)
+		AWAVE_BTN4_KEY,		// DC_BTN_Y
+		AWAVE_BTN3_KEY,		// DC_BTN_X
 		AWAVE_COIN_KEY,		// DC_BTN_D
-		AWAVE_BTN4_KEY,		// DC_DPAD2_UP
-		0,					// DC_DPAD2_DOWN
+		AWAVE_SERVICE_KEY,	// DC_DPAD2_UP
+		AWAVE_TEST_KEY,		// DC_DPAD2_DOWN
 		0,					// DC_DPAD2_LEFT
 		0,					// DC_DPAD2_RIGHT
 };
 
 u32 awavelg_button_mapping[32] = {
-		AWAVE_SERVICE_KEY,	// DC_BTN_C
+		AWAVE_BTN1_KEY,		// DC_BTN_C
 		AWAVE_BTN0_KEY,		// DC_BTN_B
 		AWAVE_TRIGGER_KEY,	// DC_BTN_A
 		AWAVE_START_KEY,	// DC_BTN_START
@@ -37,149 +45,174 @@ u32 awavelg_button_mapping[32] = {
 		AWAVE_DOWN_KEY,		// DC_DPAD_DOWN
 		AWAVE_LEFT_KEY,		// DC_DPAD_LEFT
 		AWAVE_RIGHT_KEY,	// DC_DPAD_RIGHT
-		AWAVE_TEST_KEY,		// DC_BTN_Z
-		AWAVE_BTN2_KEY,		// DC_BTN_Y
-		AWAVE_BTN1_KEY,		// DC_BTN_X
+		AWAVE_BTN4_KEY,		// DC_BTN_Z
+		AWAVE_BTN3_KEY,		// DC_BTN_Y
+		AWAVE_BTN2_KEY,		// DC_BTN_X
 		AWAVE_COIN_KEY,		// DC_BTN_D
-		AWAVE_BTN3_KEY,		// DC_DPAD2_UP
-		AWAVE_BTN4_KEY,		// DC_DPAD2_DOWN
+		AWAVE_SERVICE_KEY,	// DC_DPAD2_UP
+		AWAVE_TEST_KEY,		// DC_DPAD2_DOWN
 		0,					// DC_DPAD2_LEFT
 		0,					// DC_DPAD2_RIGHT
 
 		AWAVE_BTN0_KEY		// DC_BTN_RELOAD (not needed for AW, mapped to BTN0 = pump)
 };
 
-struct MapleConfigMap : IMapleConfigMap
+inline u32 MapleConfigMap::playerNum()
 {
-	maple_device* dev;
-	s32 player_num;
+	return dev->player_num;
+}
 
-	MapleConfigMap(maple_device* dev, s32 player_num = -1)
+void MapleConfigMap::SetVibration(float power, float inclination, u32 duration_ms)
+{
+	UpdateVibration(playerNum(), power, inclination, duration_ms);
+}
+
+void MapleConfigMap::GetInput(PlainJoystickState* pjs)
+{
+	const MapleInputState& inputState = mapleInputState[playerNum()];
+
+	if (settings.platform.system == DC_PLATFORM_DREAMCAST)
 	{
-		this->dev=dev;
-		this->player_num = player_num;
+		pjs->kcode = inputState.kcode;
+		pjs->joy[PJAI_X1] = GetBtFromSgn(inputState.fullAxes[PJAI_X1]);
+		pjs->joy[PJAI_Y1] = GetBtFromSgn(inputState.fullAxes[PJAI_Y1]);
+		pjs->trigger[PJTI_R] = inputState.halfAxes[PJTI_R];
+		pjs->trigger[PJTI_L] = inputState.halfAxes[PJTI_L];
 	}
-
-	void SetVibration(float power, float inclination, u32 duration_ms)
+	else if (settings.platform.system == DC_PLATFORM_ATOMISWAVE)
 	{
-		int player_num = this->player_num == -1 ? dev->bus_id : this->player_num;
-		UpdateVibration(player_num, power, inclination, duration_ms);
-	}
-
-	void GetInput(PlainJoystickState* pjs)
-	{
-		int player_num = this->player_num == -1 ? dev->bus_id : this->player_num;
-
-		if (settings.platform.system == DC_PLATFORM_DREAMCAST)
+#ifdef LIBRETRO
+		pjs->kcode = inputState.kcode;
+#else
+		const u32* mapping = settings.input.JammaSetup == JVS::LightGun ? awavelg_button_mapping : awave_button_mapping;
+		pjs->kcode = ~0;
+		for (u32 i = 0; i < ARRAY_SIZE(awave_button_mapping); i++)
 		{
-			pjs->kcode = kcode[player_num];
-			pjs->joy[PJAI_X1] = GetBtFromSgn(joyx[player_num]);
-			pjs->joy[PJAI_Y1] = GetBtFromSgn(joyy[player_num]);
-			pjs->trigger[PJTI_R] = rt[player_num];
-			pjs->trigger[PJTI_L] = lt[player_num];
+			if ((inputState.kcode & (1 << i)) == 0)
+				pjs->kcode &= ~mapping[i];
 		}
-		else if (settings.platform.system == DC_PLATFORM_ATOMISWAVE)
+#endif
+		if (NaomiGameInputs != NULL)
 		{
-			const u32* mapping = settings.input.JammaSetup == JVS::LightGun ? awavelg_button_mapping : awave_button_mapping;
-			pjs->kcode = ~0;
-			for (u32 i = 0; i < ARRAY_SIZE(awave_button_mapping); i++)
+			for (u32 axis = 0; axis < PJAI_Count; axis++)
 			{
-				if ((kcode[player_num] & (1 << i)) == 0)
-					pjs->kcode &= ~mapping[i];
-			}
-			if (NaomiGameInputs != NULL)
-			{
-				for (u32 axis = 0; axis < PJAI_Count; axis++)
+				if (NaomiGameInputs->axes[axis].name != NULL)
 				{
-					if (NaomiGameInputs->axes[axis].name != NULL)
+					if (NaomiGameInputs->axes[axis].type == Full)
 					{
-						if (NaomiGameInputs->axes[axis].type == Full)
+						switch (NaomiGameInputs->axes[axis].axis)
 						{
-							switch (NaomiGameInputs->axes[axis].axis)
-							{
-							case 0:
-								pjs->joy[axis] = GetBtFromSgn(joyx[player_num]);
-								break;
-							case 1:
-								pjs->joy[axis] = GetBtFromSgn(joyy[player_num]);
-								break;
-							case 2:
-								pjs->joy[axis] = GetBtFromSgn(joyrx[player_num]);
-								break;
-							case 3:
-								pjs->joy[axis] = GetBtFromSgn(joyry[player_num]);
-								break;
-							default:
-								pjs->joy[axis] = 0x80;
-								break;
-							}
+						case 0:
+							pjs->joy[axis] = GetBtFromSgn(inputState.fullAxes[PJAI_X1]);
+							break;
+						case 1:
+							pjs->joy[axis] = GetBtFromSgn(inputState.fullAxes[PJAI_Y1]);
+							break;
+						case 2:
+							pjs->joy[axis] = GetBtFromSgn(inputState.fullAxes[PJAI_X2]);
+							break;
+						case 3:
+							pjs->joy[axis] = GetBtFromSgn(inputState.fullAxes[PJAI_Y2]);
+							break;
+						default:
+							pjs->joy[axis] = 0x80;
+							break;
 						}
-						else
-						{
-							switch (NaomiGameInputs->axes[axis].axis)
-							{
-							case 4:
-								pjs->joy[axis] = rt[player_num];
-								break;
-							case 5:
-								pjs->joy[axis] = lt[player_num];
-								break;
-							default:
-								pjs->joy[axis] = 0x80;
-								break;
-							}
-						}
-						if (NaomiGameInputs->axes[axis].inverted)
-							pjs->joy[axis] = pjs->joy[axis] == 0 ? 0xff : 0x100 - pjs->joy[axis];
 					}
 					else
 					{
-						pjs->joy[axis] = 0x80;
+						switch (NaomiGameInputs->axes[axis].axis)
+						{
+						case 4:
+							pjs->joy[axis] = inputState.halfAxes[PJTI_R];
+							break;
+						case 5:
+							pjs->joy[axis] = inputState.halfAxes[PJTI_L];
+							break;
+						default:
+							pjs->joy[axis] = 0;
+							break;
+						}
 					}
+					if (NaomiGameInputs->axes[axis].inverted)
+						pjs->joy[axis] = pjs->joy[axis] == 0 ? 0xff : 0x100 - pjs->joy[axis];
+				}
+				else
+				{
+					pjs->joy[axis] = 0x80;
 				}
 			}
-			else
-			{
-				pjs->joy[PJAI_X1] = GetBtFromSgn(joyx[player_num]);
-				pjs->joy[PJAI_Y1] = GetBtFromSgn(joyy[player_num]);
-				pjs->joy[PJAI_X2] = rt[player_num];
-				pjs->joy[PJAI_Y2] = lt[player_num];
-			}
+		}
+		else
+		{
+			pjs->joy[PJAI_X1] = GetBtFromSgn(inputState.fullAxes[PJAI_X1]);
+			pjs->joy[PJAI_Y1] = GetBtFromSgn(inputState.fullAxes[PJAI_Y1]);
+			pjs->joy[PJAI_X2] = inputState.halfAxes[PJTI_R];
+			pjs->joy[PJAI_Y2] = inputState.halfAxes[PJTI_L];
 		}
 	}
-	void SetImage(void* img)
-	{
-		//?
-	}
-};
+}
+void MapleConfigMap::SetImage(u8 *img)
+{
+	push_vmu_screen(dev->bus_id, dev->bus_port, img);
+}
+
+void MapleConfigMap::GetAbsCoordinates(int& x, int& y)
+{
+	const MapleInputState& inputState = mapleInputState[playerNum()];
+	x = inputState.absPos.x;
+	y = inputState.absPos.y;
+}
+
+void MapleConfigMap::GetMouseInput(u8& buttons, int& x, int& y, int& wheel)
+{
+	const MapleInputState& inputState = mapleInputState[playerNum()];
+	buttons = inputState.mouseButtons;
+	x = inputState.relPos.x;
+	y = inputState.relPos.y * (invertMouseY ? -1 : 1);
+	wheel = inputState.relPos.wheel;
+}
+
+void MapleConfigMap::GetKeyboardInput(u8& shift, u8 keys[6])
+{
+	const MapleInputState& inputState = mapleInputState[playerNum()];
+	shift = inputState.keyboard.shift;
+	memcpy(keys, inputState.keyboard.key, sizeof(inputState.keyboard.key));
+}
 
 bool maple_atomiswave_coin_chute(int slot)
 {
+#ifdef LIBRETRO
+	return mapleInputState[slot].kcode & AWAVE_COIN_KEY;
+#else
 	for (int i = 0; i < 16; i++)
 	{
-		if ((kcode[slot] & (1 << i)) == 0 && awave_button_mapping[i] == AWAVE_COIN_KEY)
+		if ((mapleInputState[slot].kcode & (1 << i)) == 0 && awave_button_mapping[i] == AWAVE_COIN_KEY)
 			return true;
 	}
 	return false;
+#endif
 }
 
-void mcfg_Create(MapleDeviceType type, u32 bus, u32 port, s32 player_num = -1)
+static void mcfg_Create(MapleDeviceType type, u32 bus, u32 port, s32 player_num = -1)
 {
-	if (MapleDevices[bus][port] != NULL)
-		delete MapleDevices[bus][port];
+	delete MapleDevices[bus][port];
 	maple_device* dev = maple_Create(type);
-	dev->Setup(maple_GetAddress(bus, port));
-	dev->config = new MapleConfigMap(dev, player_num);
+	dev->Setup(maple_GetAddress(bus, port), player_num);
+	dev->config = new MapleConfigMap(dev);
 	dev->OnSetup();
 	MapleDevices[bus][port] = dev;
 }
 
-void mcfg_CreateNAOMIJamma()
+static void createNaomiDevices()
 {
 	mcfg_DestroyDevices();
 	mcfg_Create(MDT_NaomiJamma, 0, 5);
 	if (settings.input.JammaSetup == JVS::Keyboard)
-		mcfg_Create(MDT_Keyboard, 1, 5);
+	{
+		mcfg_Create(MDT_Keyboard, 1, 5, 0);
+		mcfg_Create(MDT_Keyboard, 2, 5, 1);
+	}
 	else
 	{
 		// Connect VMU B1
@@ -191,7 +224,7 @@ void mcfg_CreateNAOMIJamma()
 	}
 }
 
-void mcfg_CreateAtomisWaveControllers()
+static void createAtomiswaveDevices()
 {
 	mcfg_DestroyDevices();
 	// Looks like two controllers needs to be on bus 0 and 1 for digital inputs
@@ -222,22 +255,29 @@ void mcfg_CreateAtomisWaveControllers()
 	else if (settings.input.JammaSetup == JVS::SegaMarineFishing || settings.input.JammaSetup == JVS::RotaryEncoders)
 	{
 		// Sega Bass Fishing Challenge  needs a mouse (track-ball) on port 2
+		// Waiwai drive needs two track-balls
 		mcfg_Create(MDT_Mouse, 2, 5, 0);
+		mcfg_Create(MDT_Mouse, 3, 5, 1);
+		if (settings.content.gameId == "DRIVE")
+		{
+			MapleDevices[2][5]->config->invertMouseY = true;
+			MapleDevices[3][5]->config->invertMouseY = true;
+		}
 	}
 }
 
-void mcfg_CreateDevices()
+static void createDreamcastDevices()
 {
 	for (int bus = 0; bus < MAPLE_PORTS; ++bus)
 	{
-		switch ((MapleDeviceType)settings.input.maple_devices[bus])
+		switch (config::MapleMainDevices[bus])
 		{
 		case MDT_SegaController:
 			mcfg_Create(MDT_SegaController, bus, 5);
-			if (settings.input.maple_expansion_devices[bus][0] != MDT_None)
-				mcfg_Create((MapleDeviceType)settings.input.maple_expansion_devices[bus][0], bus, 0);
-			if (settings.input.maple_expansion_devices[bus][1] != MDT_None)
-				mcfg_Create((MapleDeviceType)settings.input.maple_expansion_devices[bus][1], bus, 1);
+			if (config::MapleExpansionDevices[bus][0] != MDT_None)
+				mcfg_Create(config::MapleExpansionDevices[bus][0], bus, 0);
+			if (config::MapleExpansionDevices[bus][1] != MDT_None)
+				mcfg_Create(config::MapleExpansionDevices[bus][1], bus, 1);
 			break;
 
 		case MDT_Keyboard:
@@ -250,30 +290,70 @@ void mcfg_CreateDevices()
 
 		case MDT_LightGun:
 			mcfg_Create(MDT_LightGun, bus, 5);
-			if (settings.input.maple_expansion_devices[bus][0] != MDT_None)
-				mcfg_Create((MapleDeviceType)settings.input.maple_expansion_devices[bus][0], bus, 0);
+			if (config::MapleExpansionDevices[bus][0] != MDT_None)
+				mcfg_Create(config::MapleExpansionDevices[bus][0], bus, 0);
 			break;
 
 		case MDT_TwinStick:
 			mcfg_Create(MDT_TwinStick, bus, 5);
-			if (settings.input.maple_expansion_devices[bus][0] != MDT_None)
-				mcfg_Create((MapleDeviceType)settings.input.maple_expansion_devices[bus][0], bus, 0);
+			if (config::MapleExpansionDevices[bus][0] != MDT_None)
+				mcfg_Create(config::MapleExpansionDevices[bus][0], bus, 0);
 			break;
 
 		case MDT_AsciiStick:
 			mcfg_Create(MDT_AsciiStick, bus, 5);
-			if (settings.input.maple_expansion_devices[bus][0] != MDT_None)
-				mcfg_Create((MapleDeviceType)settings.input.maple_expansion_devices[bus][0], bus, 0);
+			if (config::MapleExpansionDevices[bus][0] != MDT_None)
+				mcfg_Create(config::MapleExpansionDevices[bus][0], bus, 0);
 			break;
 
 		case MDT_None:
 			break;
 
 		default:
-			WARN_LOG(MAPLE, "Invalid device type %d for port %d", settings.input.maple_devices[bus], bus);
+			WARN_LOG(MAPLE, "Invalid device type %d for port %d", (MapleDeviceType)config::MapleMainDevices[bus], bus);
 			break;
 		}
 	}
+}
+
+static void vmuDigest()
+{
+	if (!config::GGPOEnable)
+		return;
+	MD5Sum md5;
+	for (int i = 0; i < MAPLE_PORTS; i++)
+		for (int j = 0; j < 6; j++)
+		{
+			const maple_device* device = MapleDevices[i][j];
+			if (device != nullptr)
+			{
+				size_t size;
+				const void *data = device->getData(size);
+				if (data != nullptr)
+					md5.add(data, size);
+			}
+		}
+	md5.getDigest(settings.network.md5.vmu);
+}
+
+void mcfg_CreateDevices()
+{
+	switch (settings.platform.system)
+	{
+	case DC_PLATFORM_DREAMCAST:
+		createDreamcastDevices();
+		break;
+	case DC_PLATFORM_NAOMI:
+		createNaomiDevices();
+		break;
+	case DC_PLATFORM_ATOMISWAVE:
+		createAtomiswaveDevices();
+		break;
+	default:
+		die("Unknown system");
+		break;
+	}
+	vmuDigest();
 }
 
 void mcfg_DestroyDevices()
@@ -289,81 +369,67 @@ void mcfg_DestroyDevices()
 		}
 }
 
-void mcfg_SerializeDevices(void **data, unsigned int *total_size)
+void mcfg_SerializeDevices(Serializer& ser)
 {
+	ser << maple_ddt_pending_reset;
+	ser << (u32)mapleDmaOut.size();
+	for (const auto& pair : mapleDmaOut)
+	{
+		ser << pair.first;	// u32 address
+		ser << (u32)pair.second.size();
+		ser.serialize(pair.second.data(), pair.second.size());
+	}
 	for (int i = 0; i < MAPLE_PORTS; i++)
 		for (int j = 0; j < 6; j++)
 		{
-			u8 **p = (u8 **)data;
-			if (MapleDevices[i][j] != NULL)
-			{
-				if (*p != NULL)
-				{
-					**p = MapleDevices[i][j]->get_device_type();
-					*p = *p + 1;
-				}
-				MapleDevices[i][j]->maple_serialize(data, total_size);
-			}
-			else if (*p != NULL)
-			{
-				**p = MDT_None;
-				*p = *p + 1;
-			}
-			*total_size = *total_size + 1;
+			u8 deviceType = MDT_None;
+			maple_device* device = MapleDevices[i][j];
+			if (device != nullptr)
+				deviceType =  device->get_device_type();
+			ser << deviceType;
+			if (device != nullptr)
+				device->serialize(ser);
 		}
 }
 
-void mcfg_UnserializeDevices(void **data, unsigned int *total_size, bool old)
+void mcfg_DeserializeDevices(Deserializer& deser)
 {
 	mcfg_DestroyDevices();
+	u8 eeprom[sizeof(maple_naomi_jamma::eeprom)];
+	if (deser.version() < Deserializer::V23)
+	{
+		deser >> eeprom;
+		deser.skip(128);	// Unused eeprom space
+		deser.skip<bool>(); // EEPROM_loaded
+	}
+	deser >> maple_ddt_pending_reset;
+	mapleDmaOut.clear();
+	if (deser.version() >= Deserializer::V23)
+	{
+		u32 size;
+		deser >> size;
+		for (u32 i = 0; i < size; i++)
+		{
+			u32 address;
+			deser >> address;
+			u32 dataSize;
+			deser >> dataSize;
+			mapleDmaOut.emplace_back(address, std::vector<u32>(dataSize));
+			deser.deserialize(mapleDmaOut.back().second.data(), dataSize);
+		}
+	}
 
 	for (int i = 0; i < MAPLE_PORTS; i++)
 		for (int j = 0; j < 6; j++)
 		{
-			u8 **p = (u8 **)data;
-			MapleDeviceType device_type = (MapleDeviceType)**p;
-			*p = *p + 1;
-			*total_size = *total_size + 1;
-			if (old)
+			u8 deviceType;
+			deser >> deviceType;
+			if (deviceType != MDT_None)
 			{
-				switch ((OldMapleDeviceType::MapleDeviceType)device_type)
-				{
-				case OldMapleDeviceType::MDT_None:
-					device_type = MDT_None;
-					break;
-				case OldMapleDeviceType::MDT_SegaController:
-					device_type = MDT_SegaController;
-					break;
-				case OldMapleDeviceType::MDT_SegaVMU:
-					device_type = MDT_SegaVMU;
-					break;
-				case OldMapleDeviceType::MDT_PurupuruPack:
-					device_type = MDT_PurupuruPack;
-					break;
-				case OldMapleDeviceType::MDT_Microphone:
-					device_type = MDT_Microphone;
-					break;
-				case OldMapleDeviceType::MDT_Keyboard:
-					device_type = MDT_Keyboard;
-					break;
-				case OldMapleDeviceType::MDT_Mouse:
-					device_type = MDT_Mouse;
-					break;
-				case OldMapleDeviceType::MDT_LightGun:
-					device_type = MDT_LightGun;
-					break;
-				case OldMapleDeviceType::MDT_NaomiJamma:
-					device_type = MDT_NaomiJamma;
-					break;
-				default:
-					die("Invalid maple device type");
-					break;
-				}
-			}
-			if (device_type != MDT_None)
-			{
-				mcfg_Create(device_type, i, j);
-				MapleDevices[i][j]->maple_unserialize(data, total_size);
+				mcfg_Create((MapleDeviceType)deviceType, i, j);
+				MapleDevices[i][j]->deserialize(deser);
 			}
 		}
+	if (deser.version() < Deserializer::V23 && EEPROM != nullptr)
+		memcpy(EEPROM, eeprom, sizeof(eeprom));
 }

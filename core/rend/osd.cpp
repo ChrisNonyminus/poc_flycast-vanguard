@@ -19,10 +19,14 @@
 #include "input/gamepad.h"
 #include "input/gamepad_device.h"
 #include "TexCache.h"
+#include "hw/maple/maple_devs.h"
+#ifdef LIBRETRO
+#include "vmu_xhair.h"
+#endif
 
 #include <stb_image.h>
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) && !defined(LIBRETRO)
 extern float vjoy_pos[15][8];
 #else
 
@@ -102,8 +106,8 @@ const std::vector<OSDVertex>& GetOSDVertices()
 	DrawButton2(vjoy_pos[2], kcode[0] & DC_DPAD_RIGHT);
 	DrawButton2(vjoy_pos[3], kcode[0] & DC_DPAD_DOWN);
 
-	DrawButton2(vjoy_pos[4], kcode[0] & DC_BTN_X);
-	DrawButton2(vjoy_pos[5], kcode[0] & DC_BTN_Y);
+	DrawButton2(vjoy_pos[4], kcode[0] & (settings.platform.system == DC_PLATFORM_DREAMCAST ? DC_BTN_X : DC_BTN_C));
+	DrawButton2(vjoy_pos[5], kcode[0] & (settings.platform.system == DC_PLATFORM_DREAMCAST ? DC_BTN_Y : DC_BTN_X));
 	DrawButton2(vjoy_pos[6], kcode[0] & DC_BTN_B);
 	DrawButton2(vjoy_pos[7], kcode[0] & DC_BTN_A);
 
@@ -113,10 +117,10 @@ const std::vector<OSDVertex>& GetOSDVertices()
 
 	DrawButton(vjoy_pos[10], rt[0]);
 
-	DrawButton2(vjoy_pos[11], 1);
-	DrawButton2(vjoy_pos[12], 0);
+	DrawButton2(vjoy_pos[11], true);
+	DrawButton2(vjoy_pos[12], false);
 
-	DrawButton2(vjoy_pos[13], 0);
+	DrawButton2(vjoy_pos[13], false);
 
 	return osdVertices;
 }
@@ -150,7 +154,14 @@ u8 *loadOSDButtons(int &width, int &height)
 {
 	int n;
 	stbi_set_flip_vertically_on_load(1);
-	u8 *image_data = stbi_load(get_readonly_data_path("buttons.png").c_str(), &width, &height, &n, STBI_rgb_alpha);
+
+	FILE *file = nowide::fopen(get_readonly_data_path("buttons.png").c_str(), "rb");
+	u8 *image_data = nullptr;
+	if (file != nullptr)
+	{
+		image_data = stbi_load_from_file(file, &width, &height, &n, STBI_rgb_alpha);
+		std::fclose(file);
+	}
 	if (image_data == nullptr)
 	{
 		if (DefaultOSDButtons.empty())
@@ -159,3 +170,80 @@ u8 *loadOSDButtons(int &width, int &height)
 	}
 	return image_data;
 }
+
+u32 vmu_lcd_data[8][48 * 32];
+bool vmu_lcd_status[8];
+bool vmu_lcd_changed[8];
+
+void push_vmu_screen(int bus_id, int bus_port, u8* buffer)
+{
+	int vmu_id = bus_id * 2 + bus_port;
+	if (vmu_id < 0 || vmu_id >= (int)ARRAY_SIZE(vmu_lcd_data))
+		return;
+	u32 *p = &vmu_lcd_data[vmu_id][0];
+	for (int i = 0; i < (int)ARRAY_SIZE(vmu_lcd_data[vmu_id]); i++, buffer++)
+#ifdef LIBRETRO
+		*p++ = (*buffer != 0
+				? vmu_screen_params[bus_id].vmu_pixel_on_R | (vmu_screen_params[bus_id].vmu_pixel_on_G << 8) | (vmu_screen_params[bus_id].vmu_pixel_on_B << 16)
+				: vmu_screen_params[bus_id].vmu_pixel_off_R | (vmu_screen_params[bus_id].vmu_pixel_off_G << 8) | (vmu_screen_params[bus_id].vmu_pixel_off_B << 16))
+				  | (vmu_screen_params[bus_id].vmu_screen_opacity << 24);
+#else
+		*p++ = *buffer != 0 ? 0xFFFFFFFFu : 0xFF000000u;
+#endif
+#ifndef LIBRETRO
+	vmu_lcd_status[vmu_id] = true;
+#endif
+	vmu_lcd_changed[vmu_id] = true;
+}
+
+static const int lightgunCrosshairData[16 * 16] =
+{
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	-1,-1,-1,-1,-1,-1, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,
+	-1,-1,-1,-1,-1,-1, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0,-1,-1, 0, 0, 0, 0, 0, 0, 0,
+};
+
+const u32 *getCrosshairTextureData()
+{
+	return (u32 *)lightgunCrosshairData;
+}
+
+#ifndef LIBRETRO
+#include "input/mouse.h"
+
+std::pair<float, float> getCrosshairPosition(int playerNum)
+{
+	float fx = mo_x_abs[playerNum];
+	float fy = mo_y_abs[playerNum];
+	float width = 640.f;
+	float height = 480.f;
+
+	if (config::Rotate90)
+	{
+		float t = fy;
+		fy = 639.f - fx;
+		fx = t;
+		std::swap(width, height);
+	}
+	float scale = height / settings.display.height;
+	fy /= scale;
+	scale /= config::ScreenStretching / 100.f;
+	fx = fx / scale + (settings.display.width - width / scale) / 2.f;
+
+	return std::make_pair(fx, fy);
+}
+
+#endif

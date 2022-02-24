@@ -41,15 +41,11 @@
 */
 
 #pragma once
-#include "decoder.h"
 #include "blockmanager.h"
+#include "oslib/host_context.h"
 
 #define CODE_SIZE   (10*1024*1024)
-#ifdef NO_MMU
-#define TEMP_CODE_SIZE (0)
-#else
 #define TEMP_CODE_SIZE (1024*1024)
-#endif
 
 // When NO_RWX is enabled there's two address-spaces, one executable and
 // one writtable. The emitter and most of the code in rec-* will work with
@@ -57,7 +53,7 @@
 // (ie. exceptions) are RX pointers. These two macros convert between them by
 // sub/add the pointer offset. CodeCache will point to the RW pointer for simplicity.
 #ifdef FEAT_NO_RWX_PAGES
-	extern uintptr_t cc_rx_offset;
+	extern ptrdiff_t cc_rx_offset;
 	#define CC_RW2RX(ptr) (void*)(((uintptr_t)(ptr)) + cc_rx_offset)
 	#define CC_RX2RW(ptr) (void*)(((uintptr_t)(ptr)) - cc_rx_offset)
 #else
@@ -65,25 +61,17 @@
 	#define CC_RX2RW(ptr) (ptr)
 #endif
 
-//alternative emit ptr, set to 0 to use the main buffer
-extern u32* emit_ptr;
 extern u8* CodeCache;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void emit_Write32(u32 data);
 void emit_Skip(u32 sz);
 u32 emit_FreeSpace();
 void* emit_GetCCPtr();
-void emit_SetBaseAddr();
 
 //Called from ngen_FailedToFindBlock
 DynarecCodeEntryPtr DYNACALL rdv_FailedToFindBlock(u32 pc);
 DynarecCodeEntryPtr DYNACALL rdv_FailedToFindBlock_pc();
 //Called when a block check failed, and the block needs to be invalidated
-DynarecCodeEntryPtr DYNACALL rdv_BlockCheckFail(u32 pc);
+DynarecCodeEntryPtr DYNACALL rdv_BlockCheckFail(u32 addr);
 //Called to compile code @pc
 DynarecCodeEntryPtr rdv_CompilePC(u32 blockcheck_failures);
 //Finds or compiles code @pc
@@ -102,16 +90,18 @@ void ngen_init();
 //Called to compile a block
 void ngen_Compile(RuntimeBlockInfo* block, bool smc_checks, bool reset, bool staging, bool optimise);
 
-//Called when blocks are reseted
+//Called when blocks are reset
 void ngen_ResetBlocks();
 //Value to be returned when the block manager failed to find a block,
 //should call rdv_FailedToFindBlock and then jump to the return value
 extern void (*ngen_FailedToFindBlock)();
-//the dynarec mainloop
+// The dynarec mainloop
+// cntx points right after the Sh4RCB struct,
+// which corresponds to the start of the 512 MB or 4 GB virtual address space if enabled.
 void ngen_mainloop(void* cntx);
 
-void ngen_GetFeatures(ngen_features* dst);
-void ngen_HandleException();
+void ngen_HandleException(host_context_t &context);
+bool ngen_Rewrite(host_context_t &context, void *faultAddress);
 
 //Canonical callback interface
 enum CanonicalParamType
@@ -131,7 +121,3 @@ void ngen_CC_Call(shil_opcode* op,void* function);
 void ngen_CC_Finish(shil_opcode* op);
 
 RuntimeBlockInfo* ngen_AllocateBlock();
-
-#ifdef __cplusplus
-}
-#endif
