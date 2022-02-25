@@ -28,9 +28,10 @@ void ManagedWrapper::pokebyte(long long addr, unsigned char val)
 
 void ManagedWrapper::savesavestate(std::string path)
 {
-	/*EventManager::event(Event::Pause);
+	emu.stop();
 	dc_savestate(0);
-	*/
+	emu.start();
+	
 }
 int ManagedWrapper::GetMemSize()
 {
@@ -50,8 +51,9 @@ int ManagedWrapper::GetBIOSSize()
 }
 void ManagedWrapper::loadsavestate(std::string path)
 {
-	/*EventManager::event(Event::Pause);
-	dc_loadstate(0);*/
+	emu.stop();
+	dc_loadstate(0);
+	emu.start();
 }
 void ManagedWrapper::RelayToFlycastLog(std::string string)
 {
