@@ -11,15 +11,16 @@
 typedef int sh4_sched_callback(int tag, int sch_cycl, int jitter);
 
 /*
-	Register a callback to the scheduler. The returned id
-	is used for sh4_sched_request and sh4_sched_unregister calls
+	Registed a callback to the scheduler. The returned id 
+	is used for sh4_sched_request and sh4_sched_elapsed calls
 */
 int sh4_sched_register(int tag, sh4_sched_callback* ssc);
 
-/***
- * Unregister a callback from the scheduler.
- */
-void sh4_sched_unregister(int id);
+/*
+	current time in SH4 cycles, referenced to boot.
+	Wraps every ~21 secs
+*/
+u32 sh4_sched_now();
 
 /*
 	current time, in SH4 cycles, referenced to boot.
@@ -34,7 +35,7 @@ u64 sh4_sched_now64();
 	Passing a value of 0 disables the callback.
 	If called multiple times, only the last call is in effect
 */
-void sh4_sched_request(int id, int cycles);
+void sh4_sched_request(size_t id, int cycles);
 
 /*
 	Tick for *cycles*
@@ -42,7 +43,6 @@ void sh4_sched_request(int id, int cycles);
 void sh4_sched_tick(int cycles);
 
 void sh4_sched_ffts();
-void sh4_sched_reset(bool hard);
 
 struct sched_list
 {

@@ -1,8 +1,6 @@
-#pragma once
-
 // We use long because X11 wants 32-bit pixels for 32-bit systems and 64 for 64...
 // ARGB
-static unsigned long window_icon[] =
+static unsigned long reicast_icon[] =
 {
 		48, 48,
 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,

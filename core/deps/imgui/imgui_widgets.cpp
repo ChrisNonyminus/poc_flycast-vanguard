@@ -636,24 +636,7 @@ bool ImGui::ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool
                 ClearActiveID();
             }
             if (!(flags & ImGuiButtonFlags_NoNavFocus))
-            {
                 g.NavDisableHighlight = true;
-				// Check if dragging (except for scrollbars)
-				if (held && !hovered && !pressed)
-				{
-					ImVec2 delta = GetMouseDragDelta(ImGuiMouseButton_Left);
-					if (delta.x != 0.f || delta.y != 0.f)
-					{
-						ClearActiveID();
-						ImGuiWindow *scrollableWindow = window;
-						while ((scrollableWindow->Flags & ImGuiWindowFlags_ChildWindow) && scrollableWindow->ScrollMax.x == 0.0f && scrollableWindow->ScrollMax.y == 0.0f)
-							scrollableWindow = scrollableWindow->ParentWindow;
-						scrollableWindow->DragScrolling = true;
-						held = false;
-						pressed = false;
-					}
-				}
-            }
         }
         else if (g.ActiveIdSource == ImGuiInputSource_Nav)
         {
@@ -1706,8 +1689,6 @@ bool ImGui::Combo(const char* label, int* current_item, bool (*items_getter)(voi
             SetItemDefaultFocus();
         PopID();
     }
-    // no drag scrolling on combo popup
-	GetCurrentWindow()->DragScrolling = false;
 
     EndCombo();
     return value_changed;
@@ -6026,11 +6007,6 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
 
     if (flags & ImGuiSelectableFlags_Disabled)
         selected = false;
-    if (window->DragScrolling)
-    {
-    	selected = false;
-    	button_flags |= ImGuiButtonFlags_Disabled;
-    }
 
     const bool was_selected = selected;
     bool hovered, held;

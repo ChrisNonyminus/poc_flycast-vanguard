@@ -7,6 +7,7 @@ Here lies the core of our codebase. Everything that's OS inspecific rests here.
 ### Some rudimentary categories are:
 - hw				  -- DC Hardware Components Implementation
 - nullDC.cpp	-- Main entry points
+- emitter			-- x86 code emitter
 - khronos			-- OpenGL and Vulkan headers
 - oslib				-- Audio drivers
 - cfg				  -- Configuration backend structure

@@ -21,7 +21,9 @@
 
 #include "archive.h"
 #include "7zArchive.h"
+#ifndef _MSC_VER
 #include "ZipArchive.h"
+#endif
 
 Archive *OpenArchive(const char *path)
 {
@@ -32,10 +34,12 @@ Archive *OpenArchive(const char *path)
 		return sz_archive;
 	delete sz_archive;
 
+#ifndef _MSC_VER
 	Archive *zip_archive = new ZipArchive();
 	if (zip_archive->Open(base_path.c_str()) || zip_archive->Open((base_path + ".zip").c_str()) || zip_archive->Open((base_path + ".ZIP").c_str()))
 		return zip_archive;
 	delete zip_archive;
+#endif
 
 	return NULL;
 }

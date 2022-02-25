@@ -1,7 +1,7 @@
 #include "ini.h"
-#include "types.h"
 #include <sstream>
-#include "stdclass.h"
+
+char* trim_ws(char* str);
 
 namespace emucfg {
 
@@ -16,7 +16,7 @@ int ConfigEntry::get_int()
 {
 	if (strstr(this->value.c_str(), "0x") != NULL)
 	{
-		return (int)strtoul(this->value.c_str(), NULL, 16);
+		return strtol(this->value.c_str(), NULL, 16);
 	}
 	else
 	{
@@ -196,37 +196,74 @@ void ConfigFile::set_bool(const std::string& section_name, const std::string& en
 
 void ConfigFile::parse(FILE* file)
 {
-	if (file == nullptr)
-		return;
-
-	char line[512];
-	std::string section;
-	int cline = 0;
-	while (true)
+	if(file == NULL)
 	{
-		if (std::fgets(line, sizeof(line), file) == nullptr)
+		return;
+	}
+	char line[512];
+	char current_section[512] = { '\0' };
+	int cline = 0;
+	while(file && !feof(file))
+	{
+		if (fgets(line, 512, file) == NULL || feof(file))
+		{
 			break;
+		}
+
 		cline++;
-		std::string s(line);
-		s = trim_ws(s, " \r\n");
-		if (s.empty())
-			continue;
-		if (s.length() >= 3 && s[0] == '[' && s[s.length() - 1] == ']')
+
+		if (strlen(line) < 3)
 		{
-			section = s.substr(1, s.length() - 2);
 			continue;
 		}
-		auto eqpos = s.find('=');
-		if (eqpos == std::string::npos)
+
+		if (line[strlen(line)-1] == '\r' ||
+			  line[strlen(line)-1] == '\n')
 		{
-			WARN_LOG(COMMON, "Malformed entry on config - ignoring line %d: %s", cline, s.c_str());
-			continue;
+			line[strlen(line)-1] = '\0';
 		}
-		std::string property = trim_ws(s.substr(0, eqpos));
-		std::string value = trim_ws(s.substr(eqpos + 1));
-		if (value.length() >= 2 && value[0] == '"' && value[value.length() - 1] == '"')
-			value = value.substr(1, value.length() - 2);
-		set(section, property, value);
+
+		char* tl = trim_ws(line);
+
+		if (tl[0] == '[' && tl[strlen(tl)-1] == ']')
+		{
+			tl[strlen(tl)-1] = '\0';
+
+			// FIXME: Data loss if buffer is too small
+			strncpy(current_section, tl+1, sizeof(current_section));
+			current_section[sizeof(current_section) - 1] = '\0';
+
+			trim_ws(current_section);
+		}
+		else
+		{
+			if (strlen(current_section) == 0)
+			{
+				continue; //no open section
+			}
+
+			char* separator = strstr(tl, "=");
+
+			if (!separator)
+			{
+				WARN_LOG(COMMON, "Malformed entry on config - ignoring @ %d(%s)", cline, tl);
+				continue;
+			}
+
+			*separator = '\0';
+
+			char* name = trim_ws(tl);
+			char* value = trim_ws(separator + 1);
+			if (name == NULL || value == NULL)
+			{
+				//printf("Malformed entry on config - ignoring @ %d(%s)\n",cline, tl);
+				continue;
+			}
+			else
+			{
+				this->set(std::string(current_section), std::string(name), std::string(value));
+			}
+		}
 	}
 }
 
@@ -237,17 +274,16 @@ void ConfigFile::save(FILE* file)
 		const std::string& section_name = section_it.first;
 		const ConfigSection& section = section_it.second;
 
-		if (!section_name.empty())
-			std::fprintf(file, "[%s]\n", section_name.c_str());
+		fprintf(file, "[%s]\n", section_name.c_str());
 
 		for (const auto& entry_it : section.entries)
 		{
 			const std::string& entry_name = entry_it.first;
 			const ConfigEntry& entry = entry_it.second;
-			std::fprintf(file, "%s = %s\n", entry_name.c_str(), entry.get_string().c_str());
+			fprintf(file, "%s = %s\n", entry_name.c_str(), entry.get_string().c_str());
 		}
-		if (!section_name.empty())
-			std::fputc('\n', file);
+
+		fputs("\n", file);
 	}
 }
 
@@ -261,14 +297,6 @@ void ConfigFile::delete_entry(const std::string& section_name, const std::string
 	ConfigSection *section = get_section(section_name, false);
 	if (section != NULL)
 		section->delete_entry(entry_name);
-}
-
-bool ConfigFile::is_virtual(const std::string& section_name, const std::string& entry_name)
-{
-	ConfigSection *section = get_section(section_name, true);
-	if (section == nullptr)
-		return false;
-	return section->has_entry(entry_name);
 }
 
 } // namespace emucfg

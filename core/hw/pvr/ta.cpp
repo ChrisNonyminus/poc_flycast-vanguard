@@ -2,6 +2,8 @@
 #include "ta_ctx.h"
 #include "hw/holly/holly_intc.h"
 
+extern u32 ta_type_lut[256];
+
 /*
 	Threaded TA Implementation
 
@@ -133,7 +135,7 @@ static void fill_fsm()
 
 				for (int k=0;k<32;k++)
 				{
-					u32 uid = TaTypeLut::instance().table[k * 4];
+					u32 uid=ta_type_lut[k*4];
 					u32 vt=uid & 0x7f;
 
 					bool v64 = vt == 5 || vt == 6 || vt == 11 || vt == 12 || vt == 13 || vt == 14;
@@ -281,7 +283,7 @@ void ta_vtx_SoftReset()
 }
 
 static INLINE
-void DYNACALL ta_thd_data32_i(const simd256_t *data)
+void DYNACALL ta_thd_data32_i(void* data)
 {
 	if (ta_ctx == NULL)
 	{
@@ -296,12 +298,13 @@ void DYNACALL ta_thd_data32_i(const simd256_t *data)
 	}
 
 	simd256_t* dst = (simd256_t*)ta_tad.thd_data;
+	simd256_t* src = (simd256_t*)data;
 
 	// First byte is PCW
-	PCW pcw = *(const PCW*)data;
+	PCW pcw = *(PCW*)data;
 	
 	// Copy the TA data
-	*dst = *data;
+	*dst = *src;
 
 	ta_tad.thd_data += 32;
 
@@ -323,30 +326,39 @@ void DYNACALL ta_thd_data32_i(const simd256_t *data)
 	}
 }
 
-void DYNACALL ta_vtx_data32(const SQBuffer *data)
+void DYNACALL ta_vtx_data32(void* data)
 {
-	ta_thd_data32_i((const simd256_t *)data);
+	ta_thd_data32_i(data);
 }
 
-void ta_vtx_data(const SQBuffer *data, u32 size)
+void ta_vtx_data(u32* data, u32 size)
 {
-	while (size >= 4)
+	while(size>4)
 	{
-		ta_thd_data32_i((simd256_t *)data);
-		data++;
-		ta_thd_data32_i((simd256_t *)data);
-		data++;
-		ta_thd_data32_i((simd256_t *)data);
-		data++;
-		ta_thd_data32_i((simd256_t *)data);
-		data++;
-		size -= 4;
+		ta_thd_data32_i(data);
+
+		data+=8;
+		size--;
+
+		ta_thd_data32_i(data);
+
+		data+=8;
+		size--;
+
+		ta_thd_data32_i(data);
+		data+=8;
+		size--;
+
+		ta_thd_data32_i(data);
+		data+=8;
+		size--;
 	}
 
-	while (size > 0)
+	while(size>0)
 	{
-		ta_thd_data32_i((simd256_t *)data);
-		data++;
+		ta_thd_data32_i(data);
+
+		data+=8;
 		size--;
 	}
 }

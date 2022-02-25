@@ -15,12 +15,8 @@ bool rend_single_frame(const bool& enabled);
 void rend_swap_frame(u32 fb_r_sof1);
 void rend_set_fb_write_addr(u32 fb_w_sof1);
 void rend_reset();
-void rend_disable_rollback();
-void rend_start_rollback();
-void rend_allow_rollback();
-void rend_serialize(Serializer& ser);
-void rend_deserialize(Deserializer& deser);
-void rend_resize_renderer();
+
+void rend_resize(int width, int height);
 
 ///////
 extern TA_context* _pvrrc;
@@ -30,7 +26,7 @@ extern TA_context* _pvrrc;
 struct Renderer
 {
 	virtual bool Init()=0;
-	virtual ~Renderer() = default;
+	virtual ~Renderer() {}
 	
 	virtual void Resize(int w, int h)=0;
 
@@ -44,7 +40,7 @@ struct Renderer
 
 	virtual void DrawOSD(bool clear_screen) { }
 
-	virtual BaseTextureCacheData *GetTexture(TSP tsp, TCW tcw) { return nullptr; }
+	virtual u64 GetTexture(TSP tsp, TCW tcw) { return 0; }
 };
 
 extern Renderer* renderer;

@@ -1,5 +1,8 @@
 /*
 	Command line parsing
+	~yay~
+
+	Nothing too interesting here, really
 */
 
 #include <cstdio>
@@ -7,9 +10,39 @@
 #include <cstring>
 
 #include "cfg/cfg.h"
-#include "stdclass.h"
 
-static int setconfig(char *arg[], int cl)
+char* trim_ws(char* str)
+{
+	if (str==0 || strlen(str)==0)
+		return 0;
+
+	while(*str)
+	{
+		if (!isspace(*str))
+			break;
+		str++;
+	}
+
+	size_t l=strlen(str);
+	
+	if (l==0)
+		return 0;
+
+	while(l>0)
+	{
+		if (!isspace(str[l-1]))
+			break;
+		str[l-1]=0;
+		l--;
+	}
+
+	if (l==0)
+		return 0;
+
+	return str;
+}
+
+int setconfig(char** arg,int cl)
 {
 	int rv=0;
 	for(;;)
@@ -17,38 +50,43 @@ static int setconfig(char *arg[], int cl)
 		if (cl<1)
 		{
 			WARN_LOG(COMMON, "-config : invalid number of parameters, format is section:key=value");
-			break;
+			return rv;
 		}
-		std::string value(arg[1]);
-		auto seppos = value.find(':');
-		if (seppos == std::string::npos)
+		char* sep=strstr(arg[1],":");
+		if (sep==0)
 		{
-			WARN_LOG(COMMON, "-config : invalid parameter %s, format is section:key=value", value.c_str());
-			break;
+			WARN_LOG(COMMON, "-config : invalid parameter %s, format is section:key=value", arg[1]);
+			return rv;
 		}
-		auto eqpos = value.find('=', seppos);
-		if (eqpos == std::string::npos)
+		char* value=strstr(sep+1,"=");
+		if (value==0)
 		{
-			WARN_LOG(COMMON, "-config : invalid parameter %s, format is section:key=value", value.c_str());
-			break;
+			WARN_LOG(COMMON, "-config : invalid parameter %s, format is section:key=value", arg[1]);
+			return rv;
 		}
 
-		std::string sect = trim_ws(value.substr(0, seppos));
-		std::string key = trim_ws(value.substr(seppos + 1, eqpos - seppos - 1));
-		value = trim_ws(value.substr(eqpos + 1));
+		*sep++=0;
+		*value++=0;
 
-		if (sect.empty() || key.empty())
+		char* sect=trim_ws(arg[1]);
+		char* key=trim_ws(sep);
+		value=trim_ws(value);
+
+		if (sect==0 || key==0)
 		{
 			WARN_LOG(COMMON, "-config : invalid parameter, format is section:key=value");
-			break;
+			return rv;
 		}
 
-		INFO_LOG(COMMON, "Virtual cfg %s:%s=%s", sect.c_str(), key.c_str(), value.c_str());
+		const char* constval = value;
+		if (constval==0)
+			constval="";
+		INFO_LOG(COMMON, "Virtual cfg %s:%s=%s", sect, key, value);
 
-		cfgSetVirtual(sect, key, value);
+		cfgSetVirtual(sect,key,value);
 		rv++;
 
-		if (cl>=3 && strcmp(arg[2],",")==0)
+		if (cl>=3 && stricmp(arg[2],",")==0)
 		{
 			cl-=2;
 			arg+=2;
@@ -76,7 +114,7 @@ static int showhelp()
 
 bool ParseCommandLine(int argc,char* argv[])
 {
-	settings.content.path.clear();
+	settings.imgread.ImagePath[0] = '\0';
 	int cl=argc-2;
 	char** arg=argv+1;
 	while(cl>=0)
@@ -98,10 +136,6 @@ bool ParseCommandLine(int argc,char* argv[])
 			cl--;
 		}
 #endif
-		else if ((*arg)[0] == '-')
-		{
-			WARN_LOG(COMMON, "Ignoring unknown command line option '%s'", *arg);
-		}
 		else
 		{
 			char* extension = strrchr(*arg, '.');
@@ -111,18 +145,18 @@ bool ParseCommandLine(int argc,char* argv[])
 					|| stricmp(extension, ".gdi") == 0 || stricmp(extension, ".cue") == 0))
 			{
 				INFO_LOG(COMMON, "Using '%s' as cd image", *arg);
-				settings.content.path = *arg;
+				strcpy(settings.imgread.ImagePath, *arg);
 			}
 			else if (extension && stricmp(extension, ".elf") == 0)
 			{
 				INFO_LOG(COMMON, "Using '%s' as reios elf file", *arg);
 				cfgSetVirtual("config", "bios.UseReios", "yes");
-				settings.content.path = *arg;
+				strcpy(settings.imgread.ImagePath, *arg);
 			}
 			else
 			{
 				INFO_LOG(COMMON, "Using '%s' as rom", *arg);
-				settings.content.path = *arg;
+				strcpy(settings.imgread.ImagePath, *arg);
 			}
 		}
 		arg++;

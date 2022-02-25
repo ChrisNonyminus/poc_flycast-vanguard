@@ -1,9 +1,8 @@
 #include "common.h"
-#include "stdclass.h"
 #include <algorithm>
 #include <sstream>
 
-// On windows, transform slashes to backslashes
+// On windows, transform / to \\
 
 std::string normalize_path_separator(std::string path)
 {
@@ -60,41 +59,38 @@ namespace {
 }
 #endif
 
-Disc* load_gdi(const char* file, std::vector<u8> *digest)
+Disc* load_gdi(const char* file)
 {
-	FILE *t = nowide::fopen(file, "rb");
-	if (t == nullptr)
-	{
-		WARN_LOG(COMMON, "Cannot open file '%s' errno %d", file, errno);
-		throw FlycastException(std::string("Cannot open GDI file ") + file);
-	}
+	core_file *t = core_fopen(file);
+	if (!t)
+		return nullptr;
 
-	size_t gdi_len = flycast::fsize(t);
+	size_t gdi_len = core_fsize(t);
 
 	char gdi_data[8193] = { 0 };
 
 	if (gdi_len >= sizeof(gdi_data))
 	{
-		std::fclose(t);
-		throw FlycastException("GDI file too big");
+		WARN_LOG(GDROM, "GDI: file too big");
+		core_fclose(t);
+		return nullptr;
 	}
 
-	if (std::fread(gdi_data, 1, gdi_len, t) != gdi_len)
-		WARN_LOG(GDROM, "Failed or truncated read of gdi file '%s'", file);
-	std::fclose(t);
+	core_fread(t, gdi_data, gdi_len);
+	core_fclose(t);
 
 	std::istringstream gdi(gdi_data);
 
 	u32 iso_tc = 0;
 	gdi >> iso_tc;
 	if (iso_tc == 0)
-		throw FlycastException("GDI: empty or invalid GDI file");
-
+	{
+		WARN_LOG(GDROM, "GDI: empty or invalid GDI file");
+		return nullptr;
+	}
 	INFO_LOG(GDROM, "GDI : %d tracks", iso_tc);
 
 	std::string basepath = OS_dirname(file);
-
-	MD5Sum md5;
 
 	Disc* disc = new Disc();
 	u32 TRACK=0,FADS=0,CTRL=0,SSIZE=0;
@@ -137,21 +133,16 @@ Disc* load_gdi(const char* file, std::vector<u8> *digest)
 		DEBUG_LOG(GDROM, "file[%d] \"%s\": FAD:%d, CTRL:%d, SSIZE:%d, OFFSET:%d", TRACK, track_filename.c_str(), FADS, CTRL, SSIZE, OFFSET);
 
 		Track t;
-		t.StartFAD = FADS + 150;
+		t.ADDR=0;
+		t.StartFAD=FADS+150;
+		t.EndFAD=0;		//fill it in
+		t.file=0;
 		t.CTRL = CTRL;
 
 		if (SSIZE!=0)
 		{
 			std::string path = basepath + normalize_path_separator(track_filename);
-			FILE *file = nowide::fopen(path.c_str(), "rb");
-			if (file == nullptr)
-			{
-				delete disc;
-				throw FlycastException("GDI file: Cannot open track " + path);
-			}
-			if (digest != nullptr)
-				md5.add(file);
-			t.file = new RawTrackFile(file, OFFSET, t.StartFAD, SSIZE);
+			t.file = new RawTrackFile(core_fopen(path.c_str()),OFFSET,t.StartFAD,SSIZE);	
 		}
 		if (!disc->tracks.empty())
 			disc->tracks.back().EndFAD = t.StartFAD - 1;
@@ -159,17 +150,20 @@ Disc* load_gdi(const char* file, std::vector<u8> *digest)
 	}
 
 	disc->FillGDSession();
-	if (digest != nullptr)
-		*digest = md5.getDigest();
 
 	return disc;
 }
 
 
-Disc* gdi_parse(const char* file, std::vector<u8> *digest)
+Disc* gdi_parse(const char* file)
 {
-	if (get_file_extension(file) != "gdi")
-		return nullptr;
-
-	return load_gdi(file, digest);
+	size_t len=strlen(file);
+	if (len>4)
+	{
+		if (stricmp( &file[len-4],".gdi")==0)
+		{
+			return load_gdi(file);
+		}
+	}
+	return 0;
 }

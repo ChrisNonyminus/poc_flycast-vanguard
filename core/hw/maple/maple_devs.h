@@ -1,11 +1,48 @@
 #pragma once
 #include <memory>
 #include "types.h"
-#include "maple_cfg.h"
 #include "maple_helper.h"
 #include <cmath>
 #include "input/gamepad.h"
-#include "serialize.h"
+
+enum MapleDeviceType
+{
+	MDT_SegaController,
+
+	MDT_SegaVMU,
+	MDT_Microphone,
+	MDT_PurupuruPack,
+	MDT_AsciiStick,
+	MDT_Keyboard,
+	MDT_Mouse,
+	MDT_LightGun,
+	MDT_TwinStick,
+
+	MDT_NaomiJamma,
+
+	MDT_None,
+	MDT_Count
+};
+
+namespace OldMapleDeviceType
+{
+enum MapleDeviceType
+{
+	MDT_SegaController,
+
+	MDT_SegaVMU,
+	MDT_Microphone,
+	MDT_PurupuruPack,
+	MDT_Keyboard,
+	MDT_Mouse,
+	MDT_LightGun,
+
+	MDT_NaomiJamma,
+
+	MDT_None,
+	MDT_Count
+};
+}
 
 enum MapleFunctionID
 {
@@ -92,7 +129,6 @@ enum NAOMI_KEYS
 
 	// Not an actual button
 	NAOMI_COIN_KEY = 1 << 0,
-	NAOMI_RELOAD_KEY = 1 << 17,
 };
 
 enum AWAVE_KEYS
@@ -118,44 +154,38 @@ enum AWAVE_KEYS
 	AWAVE_TRIGGER_KEY = 1 << 12,
 };
 
+struct IMapleConfigMap;
+
 struct maple_device
 {
 	u8 maple_port;          //raw maple port
 	u8 bus_port;            //0 .. 5
 	u8 bus_id;              //0 .. 3
-	u8 player_num;			// for Atomiswave
 	char logical_port[3];  //A0, etc
-	MapleConfigMap* config;
+	IMapleConfigMap* config;
 
 	//fill in the info
-	void Setup(u32 port, int playerNum = -1);
+	void Setup(u32 prt);
 
 	virtual void OnSetup() {};
 	virtual ~maple_device();
 
 	virtual u32 RawDma(u32* buffer_in, u32 buffer_in_len, u32* buffer_out) = 0;
-
-	virtual void serialize(Serializer& ser) const {
-		ser << player_num;
-	}
-	virtual void deserialize(Deserializer& deser) {
-		if (deser.version() >= Deserializer::V14)
-			deser >> player_num;
-	}
-
+	virtual bool maple_serialize(void **data, unsigned int *total_size) { return true; }
+	virtual bool maple_unserialize(void **data, unsigned int *total_size) { return true; }
 	virtual MapleDeviceType get_device_type() = 0;
 	virtual bool get_lightgun_pos() { return false; }
-	virtual const void *getData(size_t& size) const { size = 0; return nullptr; }
 };
 
 maple_device* maple_Create(MapleDeviceType type);
 
+void push_vmu_screen(int bus_id, int bus_port, u8* buffer);
 #define MAPLE_PORTS 4
 
 template<int Magnitude>
 void limit_joystick_magnitude(s8& joyx, s8& joyy)
 {
-	float mag = (float)joyx * joyx + (float)joyy * joyy;
+	float mag = joyx * joyx + joyy * joyy;
 	if (mag > (float)Magnitude * Magnitude)
 	{
 		mag = sqrtf(mag) / (float)Magnitude;
@@ -164,7 +194,61 @@ void limit_joystick_magnitude(s8& joyx, s8& joyy)
 	}
 }
 
-extern u8 *EEPROM;
+extern u8 EEPROM[0x100];
+void load_naomi_eeprom();
+
+// Mouse position and buttons
+extern u32 mo_buttons;
+extern s32 mo_x_abs;
+extern s32 mo_y_abs;
+extern f32 mo_x_delta;
+extern f32 mo_y_delta;
+extern f32 mo_wheel_delta;
+
+extern s32 mo_x_phy;
+extern s32 mo_y_phy;
+
+extern s32 mo_x_prev;
+extern s32 mo_y_prev;
+
+static inline void SetMousePosition(int x, int y, int width, int height)
+{
+	mo_x_phy = x;
+	mo_y_phy = y;
+
+	if (settings.rend.Rotate90)
+	{
+		int t = y;
+		y = x;
+		x = height - t;
+		std::swap(width, height);
+	}
+	float fx, fy;
+	if ((float)width / height >= 640.f / 480.f)
+	{
+		float scale = 480.f / height;
+		fy = y * scale;
+		scale /= settings.rend.ScreenStretching / 100.f;
+		fx = (x - (width - 640.f / scale) / 2.f) * scale;
+	}
+	else
+	{
+		float scale = 640.f / width;
+		fx = x * scale;
+		scale /= settings.rend.ScreenStretching / 100.f;
+		fy = (y - (height - 480.f / scale) / 2.f) * scale;
+	}
+	mo_x_abs = (int)roundf(fx);
+	mo_y_abs = (int)roundf(fy);
+
+	if (mo_x_prev != -1)
+	{
+		mo_x_delta += (f32)(x - mo_x_prev) * settings.input.MouseSensitivity / 100.f;
+		mo_y_delta += (f32)(y - mo_y_prev) * settings.input.MouseSensitivity / 100.f;
+	}
+	mo_x_prev = x;
+	mo_y_prev = y;
+}
 
 #define SWAP32(a) ((((a) & 0xff) << 24)  | (((a) & 0xff00) << 8) | (((a) >> 8) & 0xff00) | (((a) >> 24) & 0xff))
 
@@ -195,7 +279,7 @@ struct maple_base: maple_device
 
 	void wstr(const char* str, u32 len)
 	{
-		u32 ln = (u32)strlen(str);
+		size_t ln = strlen(str);
 		verify(len >= ln);
 		len -= ln;
 		while (ln--)
@@ -208,10 +292,6 @@ struct maple_base: maple_device
 	u8 r8() { u8  rv = *(u8*)dma_buffer_in; dma_buffer_in += 1; dma_count_in -= 1; return rv; }
 	u16 r16() { u16 rv = *(u16*)dma_buffer_in; dma_buffer_in += 2; dma_count_in -= 2; return rv; }
 	u32 r32() { u32 rv = *(u32*)dma_buffer_in; dma_buffer_in += 4; dma_count_in -= 4; return rv; }
-	void skip(u32 len) {
-		dma_buffer_in += len;
-		dma_count_in -= len;
-	}
 
 	void rptr(void* dst, u32 len)
 	{
@@ -233,7 +313,7 @@ struct maple_base: maple_device
 	}
 	virtual u32 dma(u32 cmd) = 0;
 
-	u32 RawDma(u32* buffer_in, u32 buffer_in_len, u32* buffer_out) override
+	virtual u32 RawDma(u32* buffer_in, u32 buffer_in_len, u32* buffer_out)
 	{
 		u32 command=buffer_in[0] &0xFF;
 		//Recipient address
@@ -257,7 +337,7 @@ class jvs_io_board;
 
 struct maple_naomi_jamma : maple_base
 {
-	static constexpr u8 ALL_NODES = 0xff;
+	const u8 ALL_NODES = 0xff;
 
 	std::vector<std::unique_ptr<jvs_io_board>> io_boards;
 	bool crazy_mode = false;
@@ -265,12 +345,11 @@ struct maple_naomi_jamma : maple_base
 	u8 jvs_repeat_request[32][256];
 	u8 jvs_receive_buffer[32][258];
 	u32 jvs_receive_length[32] = { 0 };
-	u8 eeprom[128];
 
 	maple_naomi_jamma();
-	~maple_naomi_jamma();
+	virtual ~maple_naomi_jamma();
 
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_NaomiJamma;
 	}
@@ -287,9 +366,9 @@ struct maple_naomi_jamma : maple_base
 
 	void handle_86_subcommand();
 
-	u32 RawDma(u32* buffer_in, u32 buffer_in_len, u32* buffer_out) override;
-	u32 dma(u32 cmd) override { return 0; }
+	virtual u32 RawDma(u32* buffer_in, u32 buffer_in_len, u32* buffer_out) override;
+	virtual u32 dma(u32 cmd) override { return 0; }
 
-	void serialize(Serializer& ser) const override;
-	void deserialize(Deserializer& deser) override;
+	virtual bool maple_serialize(void **data, unsigned int *total_size) override;
+	virtual bool maple_unserialize(void **data, unsigned int *total_size) override;
 };

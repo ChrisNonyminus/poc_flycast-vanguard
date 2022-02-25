@@ -64,19 +64,19 @@ private:
 class RttRenderPasses : public RenderPasses
 {
 protected:
-	vk::AttachmentDescription GetAttachment0Description(bool initial, bool last) const override
+	virtual vk::AttachmentDescription GetAttachment0Description(bool initial, bool last) const override
 	{
 		return vk::AttachmentDescription(vk::AttachmentDescriptionFlags(), vk::Format::eR8G8B8A8Unorm, vk::SampleCountFlagBits::e1,
 				vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 				vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
 				vk::ImageLayout::eUndefined,
-				config::RenderToTextureBuffer && last ? vk::ImageLayout::eTransferSrcOptimal : vk::ImageLayout::eShaderReadOnlyOptimal);
+				settings.rend.RenderToTextureBuffer && last ? vk::ImageLayout::eTransferSrcOptimal : vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
-	vk::Format GetColorFormat() const override { return vk::Format::eR8G8B8A8Unorm; }
-	std::vector<vk::SubpassDependency> GetSubpassDependencies() const override
+	virtual vk::Format GetColorFormat() const override { return vk::Format::eR8G8B8A8Unorm; }
+	virtual std::vector<vk::SubpassDependency> GetSubpassDependencies() const override
 	{
 		std::vector<vk::SubpassDependency> deps;
-		if (config::RenderToTextureBuffer)
+		if (settings.rend.RenderToTextureBuffer)
 			deps.emplace_back(2, VK_SUBPASS_EXTERNAL,
 					vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer | vk::PipelineStageFlagBits::eHost,
 					vk::AccessFlagBits::eColorAttachmentWrite, vk::AccessFlagBits::eTransferRead | vk::AccessFlagBits::eHostRead);

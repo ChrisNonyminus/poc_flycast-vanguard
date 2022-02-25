@@ -20,9 +20,11 @@
 */
 #include "gl_context.h"
 #include "types.h"
+#include "oslib/oslib.h"
 
-#if defined(_WIN32) && !defined(USE_SDL) && !defined(LIBRETRO)
+#if defined(_WIN32) && !defined(USE_SDL)
 void CreateMainWindow();
+void DestroyMainWindow();
 
 WGLGraphicsContext theGLContext;
 
@@ -30,13 +32,12 @@ PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
 PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
 PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 
-bool WGLGraphicsContext::init()
+bool WGLGraphicsContext::Init()
 {
 	if (ourOpenGLRenderingContext != NULL)
 		// Already initialized
 		return true;
 
-	instance = this;
 	CreateMainWindow();
 	PIXELFORMATDESCRIPTOR pfd =
 	{
@@ -59,11 +60,11 @@ bool WGLGraphicsContext::init()
 	};
 
 	int  letWindowsChooseThisPixelFormat;
-	letWindowsChooseThisPixelFormat = ChoosePixelFormat((HDC)display, &pfd);
-	SetPixelFormat((HDC)display,letWindowsChooseThisPixelFormat, &pfd);
+	letWindowsChooseThisPixelFormat = ChoosePixelFormat(ourWindowHandleToDeviceContext, &pfd);
+	SetPixelFormat(ourWindowHandleToDeviceContext,letWindowsChooseThisPixelFormat, &pfd);
 
-	HGLRC tempOpenGLContext = wglCreateContext((HDC)display);
-	wglMakeCurrent((HDC)display, tempOpenGLContext);
+	HGLRC tempOpenGLContext = wglCreateContext(ourWindowHandleToDeviceContext);
+	wglMakeCurrent(ourWindowHandleToDeviceContext, tempOpenGLContext);
 
 	wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
 	if(!wglChoosePixelFormatARB)
@@ -86,7 +87,7 @@ bool WGLGraphicsContext::init()
 		0
 	};
 
-	ourOpenGLRenderingContext = wglCreateContextAttribsARB((HDC)display, 0, attribs);
+	ourOpenGLRenderingContext = wglCreateContextAttribsARB(ourWindowHandleToDeviceContext, 0, attribs);
 
 	if (!ourOpenGLRenderingContext)
 	{
@@ -94,13 +95,13 @@ bool WGLGraphicsContext::init()
 		// Try Gl 3.1
 		attribs[1] = 3;
 		attribs[3] = 1;
-		ourOpenGLRenderingContext = wglCreateContextAttribsARB((HDC)display, 0, attribs);
+		ourOpenGLRenderingContext = wglCreateContextAttribsARB(ourWindowHandleToDeviceContext, 0, attribs);
 	}
 
 	bool rv = true;
 
 	if (ourOpenGLRenderingContext)
-		wglMakeCurrent((HDC)display, ourOpenGLRenderingContext);
+		wglMakeCurrent(ourWindowHandleToDeviceContext, ourOpenGLRenderingContext);
 	else
 		rv = false;
 
@@ -111,30 +112,33 @@ bool WGLGraphicsContext::init()
 	}
 
 	RECT r;
-	GetClientRect((HWND)window, &r);
-	settings.display.width = r.right - r.left;
-	settings.display.height = r.bottom - r.top;
+	GetClientRect(ourWindow, &r);
+	screen_width = r.right - r.left;
+	screen_height = r.bottom - r.top;
 
 	if (rv)
-		postInit();
+		PostInit();
 
 	return rv;
 }
 
-void WGLGraphicsContext::swap()
+void WGLGraphicsContext::Swap()
 {
+#ifdef TEST_AUTOMATION
 	do_swap_automation();
-	wglSwapLayerBuffers((HDC)display, WGL_SWAP_MAIN_PLANE);
+#endif
+	wglSwapLayerBuffers(ourWindowHandleToDeviceContext, WGL_SWAP_MAIN_PLANE);
 }
 
-void WGLGraphicsContext::term()
+void WGLGraphicsContext::Term()
 {
-	preTerm();
+	PreTerm();
 	if (ourOpenGLRenderingContext != NULL)
 	{
-		wglMakeCurrent((HDC)display, NULL);
+		wglMakeCurrent(ourWindowHandleToDeviceContext, NULL);
 		wglDeleteContext(ourOpenGLRenderingContext);
 		ourOpenGLRenderingContext = NULL;
+		DestroyMainWindow();
 	}
 }
 

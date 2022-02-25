@@ -7,21 +7,31 @@
 //
 #import <Carbon/Carbon.h>
 #import <AppKit/AppKit.h>
+#include <OpenGL/gl3.h>
 #include <sys/stat.h>
 #include <mach/task.h>
 #include <mach/mach_init.h>
 #include <mach/mach_port.h>
 
 #include "types.h"
+#include "hw/maple/maple_cfg.h"
+#include "hw/maple/maple_devs.h"
 #include "log/LogManager.h"
 #include "rend/gui.h"
+#include "osx_keyboard.h"
+#include "osx_gamepad.h"
 #if defined(USE_SDL)
 #include "sdl/sdl.h"
 #endif
 #include "stdclass.h"
-#include "oslib/oslib.h"
+#include "wsi/context.h"
 #include "emulator.h"
+#include "hw/pvr/Renderer_if.h"
 #include "rend/mainui.h"
+
+OSXKeyboardDevice keyboard(0);
+static std::shared_ptr<OSXKbGamepadDevice> kb_gamepad(0);
+static std::shared_ptr<OSXMouseGamepadDevice> mouse_gamepad(0);
 
 int darw_printf(const char* text, ...)
 {
@@ -63,7 +73,6 @@ void os_CreateWindow() {
         printf("task_set_exception_ports: %s\n", mach_error_string(ret));
     }
 #endif
-	sdl_window_create();
 }
 
 void os_SetupInput()
@@ -71,36 +80,68 @@ void os_SetupInput()
 #if defined(USE_SDL)
 	input_sdl_init();
 #endif
+
+	kb_gamepad = std::make_shared<OSXKbGamepadDevice>(0);
+	GamepadDevice::Register(kb_gamepad);
+	mouse_gamepad = std::make_shared<OSXMouseGamepadDevice>(0);
+	GamepadDevice::Register(mouse_gamepad);
 }
 
 void common_linux_setup();
-static int emu_flycast_init();
 
-static void emu_flycast_term()
+extern "C" void emu_dc_exit()
 {
-	flycast_term();
+    dc_exit();
+}
+
+extern "C" void emu_dc_term()
+{
+	if (dc_is_running())
+		dc_exit();
+	dc_term();
 	LogManager::Shutdown();
 }
 
-extern "C" int SDL_main(int argc, char *argv[])
+extern "C" void emu_dc_resume()
 {
+	dc_resume();
+}
+
+extern int screen_width,screen_height;
+bool rend_framePending();
+
+extern "C" bool emu_frame_pending()
+{
+	return rend_framePending() || gui_is_open();
+}
+
+extern "C" bool emu_renderer_enabled()
+{
+	return mainui_loop_enabled();
+}
+
+extern "C" int emu_single_frame(int w, int h)
+{
+    if (!emu_frame_pending())
+        return 0;
+
+    screen_width = w;
+    screen_height = h;
+    return (int)mainui_rend_frame();
+}
+
+extern "C" void emu_gles_init(int width, int height) {
     char *home = getenv("HOME");
     if (home != NULL)
     {
         std::string config_dir = std::string(home) + "/.reicast/";
         if (!file_exists(config_dir))
-            config_dir = std::string(home) + "/.flycast/";
-		if (!file_exists(config_dir))
-			config_dir = std::string(home) + "/Library/Application Support/Flycast/";
-
-        /* Different config folder for multiple instances */
-        int instanceNumber = (int)[[NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.flyinghead.Flycast"] count];
-		if (instanceNumber > 1)
-		{
-			config_dir += std::to_string(instanceNumber) + "/";
-			[[NSApp dockTile] setBadgeLabel:@(instanceNumber).stringValue];
-		}
-
+        	config_dir = std::string(home) + "/.flycast/";
+        int instanceNumber = (int)[[NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.reicast.Flycast"] count];
+        if (instanceNumber > 1){
+            config_dir += std::to_string(instanceNumber) + "/";
+            [[NSApp dockTile] setBadgeLabel:@(instanceNumber).stringValue];
+        }
         mkdir(config_dir.c_str(), 0755); // create the directory if missing
         set_user_config_dir(config_dir);
         add_system_data_dir(config_dir);
@@ -122,18 +163,38 @@ extern "C" int SDL_main(int argc, char *argv[])
     CFRelease(resourcesURL);
     CFRelease(mainBundle);
 
-	emu_flycast_init();
+	// Calculate screen DPI
+	NSScreen *screen = [NSScreen mainScreen];
+	NSDictionary *description = [screen deviceDescription];
+    CGDirectDisplayID displayID = [[description objectForKey:@"NSScreenNumber"] unsignedIntValue];
+	CGSize displayPhysicalSize = CGDisplayScreenSize(displayID);
+    
+    //Neither CGDisplayScreenSize(description's NSScreenNumber) nor [NSScreen backingScaleFactor] can calculate the correct dpi in macOS. E.g. backingScaleFactor is always 2 in all display modes for rMBP 16"
+    NSSize displayNativeSize;
+    CFArrayRef allDisplayModes = CGDisplayCopyAllDisplayModes(displayID, NULL);
+    CFIndex n = CFArrayGetCount(allDisplayModes);
+    for(int i = 0; i < n; ++i)
+    {
+        CGDisplayModeRef m = (CGDisplayModeRef)CFArrayGetValueAtIndex(allDisplayModes, i);
+        if(CGDisplayModeGetIOFlags(m) & kDisplayModeNativeFlag)
+        {
+            displayNativeSize.width = CGDisplayModeGetPixelWidth(m);
+            displayNativeSize.height = CGDisplayModeGetPixelHeight(m);
+            break;
+        }
+    }
+    CFRelease(allDisplayModes);
+    
+	screen_dpi = (int)(displayNativeSize.width / displayPhysicalSize.width * 25.4f);
+	screen_width = width;
+	screen_height = height;
 
-	mainui_loop();
-
-	emu_flycast_term();
-	os_UninstallFaultHandler();
-	sdl_window_destroy();
-
-	return 0;
+	InitRenderApi();
+	mainui_init();
+	mainui_enabled = true;
 }
 
-static int emu_flycast_init()
+extern "C" int emu_reicast_init()
 {
 	LogManager::Init();
 	common_linux_setup();
@@ -150,7 +211,7 @@ static int emu_flycast_init()
 		argv[paramCount++] = strdup(arg);
 	}
 	
-	int rc = flycast_init(paramCount, argv);
+	int rc = reicast_init(paramCount, argv);
 	
 	for (unsigned long i = 0; i < paramCount; i++)
 		free(argv[i]);
@@ -159,10 +220,24 @@ static int emu_flycast_init()
 	return rc;
 }
 
-std::string os_Locale(){
-    return [[[NSLocale preferredLanguages] objectAtIndex:0] UTF8String];
+extern "C" void emu_key_input(UInt16 keyCode, bool pressed, UInt modifierFlags) {
+	keyboard.keyboard_input(keyCode, pressed, keyboard.convert_modifier_keys(modifierFlags));
+	if ((modifierFlags
+		 & (NSEventModifierFlagShift | NSEventModifierFlagControl | NSEventModifierFlagOption | NSEventModifierFlagCommand)) == 0)
+		kb_gamepad->gamepad_btn_input(keyCode, pressed);
+}
+extern "C" void emu_character_input(const char *characters) {
+	if (characters != NULL)
+		while (*characters != '\0')
+			keyboard.keyboard_character(*characters++);
 }
 
-std::string os_PrecomposedString(std::string string){
-    return [[[NSString stringWithUTF8String:string.c_str()] precomposedStringWithCanonicalMapping] UTF8String];
+extern "C" void emu_mouse_buttons(int button, bool pressed)
+{
+	mouse_gamepad->gamepad_btn_input(button, pressed);
+}
+
+extern "C" void emu_set_mouse_position(int x, int y, int width, int height)
+{
+	SetMousePosition(x, y, width, height);
 }

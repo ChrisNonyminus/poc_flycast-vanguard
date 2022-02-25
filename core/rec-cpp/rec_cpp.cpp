@@ -1,3 +1,4 @@
+
 #include "types.h"
 
 #if FEAT_SHREC == DYNAREC_CPP
@@ -8,6 +9,9 @@
 #include "hw/sh4/sh4_core.h"
 #include "hw/sh4/dyna/ngen.h"
 #include "hw/sh4/sh4_mem.h"
+#include "hw/sh4/dyna/regalloc.h"
+#include "profiler/profiler.h"
+#include "oslib/oslib.h"
 
 #define SHIL_MODE 2
 #include "hw/sh4/dyna/shil_canonical.h"
@@ -52,6 +56,12 @@ void ngen_mainloop(void* v_cntx)
 
 void ngen_init()
 {
+}
+
+void ngen_GetFeatures(ngen_features* dst)
+{
+	dst->InterpreterFallback = false;
+	dst->OnlyDynamicEnds = false;
 }
 
 RuntimeBlockInfo* ngen_AllocateBlock()
@@ -1947,7 +1957,7 @@ void ngen_ResetBlocks()
 	*/
 }
 
-void ngen_HandleException(host_context_t &context)
+void ngen_HandleException()
 {
 	die("rec-cpp exceptions not supported");
 }

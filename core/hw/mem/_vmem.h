@@ -29,11 +29,9 @@ void vmem_platform_destroy();
 bool vmem_platform_prepare_jit_block(void *code_area, unsigned size, void **code_area_rwx);
 // Same as above but uses two address spaces one with RX and RW protections.
 // Note: this function doesnt have to be implemented, it's a fallback for the above one.
-bool vmem_platform_prepare_jit_block(void *code_area, unsigned size, void **code_area_rw, ptrdiff_t *rx_offset);
+bool vmem_platform_prepare_jit_block(void *code_area, unsigned size, void **code_area_rw, uintptr_t *rx_offset);
 // This might not need an implementation (ie x86/64 cpus).
 void vmem_platform_flush_cache(void *icache_start, void *icache_end, void *dcache_start, void *dcache_end);
-// Change a code buffer permissions from r-x to/from rw-
-void vmem_platform_jit_set_exec(void* code, size_t size, bool enable);
 
 // Note: if you want to disable vmem magic in any given platform, implement the
 // above functions as empty functions and make vmem_platform_init return MemTypeError.
@@ -55,6 +53,7 @@ typedef u32 _vmem_handler;
 
 //init/reset/term
 void _vmem_init();
+void _vmem_reset();
 void _vmem_term();
 void _vmem_init_mappings();
 
@@ -108,6 +107,7 @@ static inline bool _nvmem_4gb_space() {
 	return vmem_4gb_space;
 }
 void _vmem_bm_reset();
+void _vmem_enable_mmu(bool enable);
 
 #define MAP_RAM_START_OFFSET  0
 #define MAP_VRAM_START_OFFSET (MAP_RAM_START_OFFSET+RAM_SIZE)
@@ -116,5 +116,3 @@ void _vmem_bm_reset();
 void _vmem_protect_vram(u32 addr, u32 size);
 void _vmem_unprotect_vram(u32 addr, u32 size);
 u32 _vmem_get_vram_offset(void *addr);
-bool BM_LockedWrite(u8* address);
-

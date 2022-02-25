@@ -35,22 +35,28 @@ extern "C" void load_gles_symbols();
 class EGLGraphicsContext : public GLGraphicsContext
 {
 public:
-	~EGLGraphicsContext() { term(); }
+	~EGLGraphicsContext() { Term(); }
 
-	bool init();
-	void term() override;
-	void swap();
+	bool Init();
+	void Term();
+	void Swap();
+	bool MakeCurrent();
+	bool IsSwapBufferPreserved() const { return swap_buffer_preserved; }
+	void SetNativeWindow(EGLNativeWindowType window)
+		{ nativeWindow = window; }
+	void SetNativeDisplay(EGLNativeDisplayType display)
+		{ nativeDisplay = display; }
 
 private:
-	bool makeCurrent();
-
+	EGLNativeDisplayType nativeDisplay = EGL_DEFAULT_DISPLAY;
+	EGLNativeWindowType nativeWindow = (EGLNativeWindowType)0;
 	EGLDisplay display = EGL_NO_DISPLAY;
 	EGLSurface surface = EGL_NO_SURFACE;
 	EGLContext context = EGL_NO_CONTEXT;
+	bool swap_buffer_preserved = true;
 #ifdef TARGET_PANDORA
 	int fbdev = -1;
 #endif
-	bool swapOnVSync = false;
 };
 
 extern EGLGraphicsContext theGLContext;

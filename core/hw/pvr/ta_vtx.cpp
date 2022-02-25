@@ -8,17 +8,28 @@
 #include "ta_ctx.h"
 #include "pvr_mem.h"
 #include "Renderer_if.h"
-#include "cfg/option.h"
 
 #include <algorithm>
 #include <cmath>
+
+u32 ta_type_lut[256];
+extern int screen_height;
 
 #define TACALL DYNACALL
 #ifdef NDEBUG
 #undef verify
 #define verify(x)
 #endif
+#define PLD(ptr,offs) //  __asm __volatile ( "pld	 [%0, #" #offs "]\n"::"r" (ptr): );
 
+#define TA_VTX 
+#define TA_SPR 
+#define TA_EOS 
+#define TA_PP 
+#define TA_SP 
+#define TA_EOL 
+#define TA_V64H 
+	
 //cache state vars
 static u32 tileclip_val = 0;
 
@@ -59,13 +70,13 @@ alignas(4) static u8 FaceBaseColor[4];
 alignas(4) static u8 FaceOffsColor[4];
 alignas(4) static u8 FaceBaseColor1[4];
 alignas(4) static u8 FaceOffsColor1[4];
-static u32 SFaceBaseColor;
-static u32 SFaceOffsColor;
+alignas(4) static u32 SFaceBaseColor;
+alignas(4) static u32 SFaceOffsColor;
 
 //misc ones
-const u32 ListType_None = -1;
-const u32 SZ32 = 1;
-const u32 SZ64 = 2;
+static const u32 ListType_None = -1;
+static const u32 SZ32 = 1;
+static const u32 SZ64 = 2;
 
 #include "ta_structs.h"
 
@@ -86,10 +97,12 @@ static f32 f16(u16 v)
 
 #define vdrc vd_rc
 
-template<int Red = 0, int Green = 1, int Blue = 2, int Alpha = 3>
+//Splitter function (normally ta_dma_main , modified for split dma's)
+
+template<u32 instance>
 class FifoSplitter
 {
-	static const u32 *ta_type_lut;
+public:
 
 	static void ta_list_start(u32 new_list)
 	{
@@ -117,6 +130,7 @@ class FifoSplitter
 
 		if (part==2)
 		{
+			TA_V64H;
 			TaCmd=ta_main;
 		}
 
@@ -125,7 +139,7 @@ class FifoSplitter
 #define ver_32B_def(num) \
 case num : {\
 AppendPolyVertex##num(&vp->vtx##num);\
-rv=SZ32; }\
+rv=SZ32; TA_VTX; }\
 break;
 
 			//32b , always in one pass :)
@@ -146,6 +160,7 @@ case num : {\
 /*process first half*/\
 	if (part!=2)\
 	{\
+	TA_VTX;\
 	rv+=SZ32;\
 	AppendPolyVertex##num##A(&vp->vtx##num##A);\
 	}\
@@ -195,6 +210,7 @@ case num : {\
 	static Ta_Dma* TACALL ta_mod_vol_data(Ta_Dma* data,Ta_Dma* data_end)
 	{
 		TA_VertexParam* vp=(TA_VertexParam*)data;
+		TA_VTX;
 		if (data==data_end)
 		{
 			AppendModVolVertexA(&vp->mvolA);
@@ -212,6 +228,7 @@ case num : {\
 	}
 	static Ta_Dma* TACALL ta_spriteB_data(Ta_Dma* data,Ta_Dma* data_end)
 	{
+		TA_V64H;
 		//32B more needed , 32B done :)
 		TaCmd=ta_main;
 			
@@ -221,6 +238,7 @@ case num : {\
 	}
 	static Ta_Dma* TACALL ta_sprite_data(Ta_Dma* data,Ta_Dma* data_end)
 	{
+		TA_SPR;
 		verify(data->pcw.ParaType==ParamType_Vertex_Parameter);
 		if (data==data_end)
 		{
@@ -239,6 +257,7 @@ case num : {\
 			AppendSpriteVertexA(&vp->spr1A);
 			AppendSpriteVertexB(&vp->spr1B);
 
+			//all 64B doneisimooooo la la la :*iiiiii  niarj
 			return data+SZ64;
 		}
 	}
@@ -251,17 +270,24 @@ case num : {\
 					//If SZ64  && 32 bytes
 #define IS_FIST_HALF ((poly_size!=SZ32) && (data==data_end))
 
+					//If SZ32 && >=32 bytes
+					//If SZ64 && > 32 bytes
+#define HAS_FULL_DATA (poly_size==SZ32 ? (data<=data_end) : (data<data_end))
+
+#define ITER verify(data->pcw.ParaType==ParamType_Vertex_Parameter);\
+PLD(data,128); \
+ta_handle_poly<poly_type,0>(data,0); \
+if (data->pcw.EndOfStrip) \
+	goto strip_end; \
+data+=poly_size;
+
 		if (IS_FIST_HALF)
 			goto fist_half;
 
 		do
 		{
-			verify(data->pcw.ParaType == ParamType_Vertex_Parameter);
-			ta_handle_poly<poly_type,0>(data, 0);
-			if (data->pcw.EndOfStrip)
-				goto strip_end;
-			data += poly_size;
-		} while (poly_size == SZ32 ? data <= data_end : data < data_end);
+			ITER
+		} while (HAS_FULL_DATA);
 			
 		if (IS_FIST_HALF)
 		{
@@ -279,6 +305,7 @@ strip_end:
 		TaCmd=ta_main;
 		if (data->pcw.EndOfStrip)
 			EndPolyStrip();
+		TA_EOS;
 		return data+poly_size;
 	}
 
@@ -310,12 +337,15 @@ strip_end:
 		return data+SZ32;
 	}
 
+public:
+	
 	//Group_En bit seems ignored, thanks p1pkin 
 #define group_EN() /*if (data->pcw.Group_En) */{ TileClipMode(data->pcw.User_Clip); }
 	static Ta_Dma* TACALL ta_main(Ta_Dma* data,Ta_Dma* data_end)
 	{
 		do
 		{
+			PLD(data,128);
 			switch (data->pcw.ParaType)
 			{
 				//Control parameter
@@ -339,6 +369,7 @@ strip_end:
 					CurrentList=ListType_None;
 					VertexDataFP = NullVertexData;
 					data+=SZ32;
+					TA_EOL;
 				}
 				break;
 
@@ -360,6 +391,8 @@ strip_end:
 				//PolyType :32B/64B
 			case ParamType_Polygon_or_Modifier_Volume:
 				{
+
+					TA_PP;
 					group_EN();
 					//Yep , C++ IS lame & limited
 					#include "ta_const_df.h"
@@ -376,7 +409,7 @@ strip_end:
 					else
 					{
 
-						u32 uid = ta_type_lut[data->pcw.obj_ctrl];
+						u32 uid=ta_type_lut[data->pcw.obj_ctrl];
 						u32 psz=uid>>30;
 						u32 pdid=(u8)(uid);
 						u32 ppid=(u8)(uid>>8);
@@ -409,6 +442,7 @@ strip_end:
 			case ParamType_Sprite:
 				{
 
+					TA_SP;
 					group_EN();
 					if (CurrentList==ListType_None)
 						ta_list_start(data->pcw.ListType);	//start a list ;)
@@ -421,7 +455,13 @@ strip_end:
 
 				//Variable size
 			case ParamType_Vertex_Parameter:
-				data = VertexDataFP(data, data_end);
+				//log ("vtx");
+				{
+
+					//printf("VTX:0x%08X\n", VertexDataFP);
+					//verify(VertexDataFP != NullVertexData);
+					data = VertexDataFP(data, data_end);
+				}
 				break;
 
 				//not handled
@@ -435,16 +475,30 @@ strip_end:
 				break;
 			}
 		}
-		while (data <= data_end);
+		while(data<=data_end);
 		return data;
 	}
 
-public:
 	//Fill in lookup table
 	FifoSplitter()
 	{
+		for (int i=0;i<256;i++)
+		{
+			PCW pcw;
+			pcw.obj_ctrl=i;
+			u32 rv=	poly_data_type_id(pcw);
+			u32 type= poly_header_type_size(pcw);
+
+			if (type& 0x80)
+				rv|=(SZ64<<30);
+			else
+				rv|=(SZ32<<30);
+
+			rv|=(type&0x7F)<<8;
+
+			ta_type_lut[i]=rv;
+		}
 		VertexDataFP = NullVertexData;
-		ta_type_lut = TaTypeLut::instance().table;
 	}
 	/*
 	Volume,Col_Type,Texture,Offset,Gouraud,16bit_UV
@@ -623,6 +677,7 @@ public:
 		}
 	}
 
+
 	void vdec_init()
 	{
 		VDECInit();
@@ -641,7 +696,6 @@ public:
 		CurrentPPlist = NULL;
 	}
 		
-private:
 	__forceinline
 		static void SetTileClip(u32 xmin,u32 ymin,u32 xmax,u32 ymax)
 	{
@@ -705,23 +759,23 @@ private:
 		d_pp->pcw = pp->pcw;
 		d_pp->tileclip = tileclip_val;
 
+		d_pp->texid = -1;
+
 		if (d_pp->pcw.Texture)
-			d_pp->texture = renderer->GetTexture(d_pp->tsp, d_pp->tcw);
-		else
-			d_pp->texture = nullptr;
+			d_pp->texid = renderer->GetTexture(d_pp->tsp,d_pp->tcw);
 
 		d_pp->tsp1.full = -1;
 		d_pp->tcw1.full = -1;
-		d_pp->texture1 = nullptr;
+		d_pp->texid1 = -1;
 	}
 
 	#define glob_param_bdc(pp) glob_param_bdc_( (TA_PolyParam0*)pp)
 
 	#define poly_float_color_(to,a,r,g,b) \
-		to[Red] = float_to_satu8(r);	\
-		to[Green] = float_to_satu8(g);	\
-		to[Blue] = float_to_satu8(b);	\
-		to[Alpha] = float_to_satu8(a);
+		to[0] = float_to_satu8(r);	\
+		to[1] = float_to_satu8(g);	\
+		to[2] = float_to_satu8(b);	\
+		to[3] = float_to_satu8(a);
 
 
 	#define poly_float_color(to,src) \
@@ -777,7 +831,7 @@ private:
 		CurrentPP->tsp1.full = pp->tsp1.full;
 		CurrentPP->tcw1.full = pp->tcw1.full;
 		if (pp->pcw.Texture)
-			CurrentPP->texture1 = renderer->GetTexture(pp->tsp1, pp->tcw1);
+			CurrentPP->texid1 = renderer->GetTexture(pp->tsp1, pp->tcw1);
 	}
 
 	// Intensity, with Two Volumes
@@ -791,7 +845,7 @@ private:
 		CurrentPP->tsp1.full = pp->tsp1.full;
 		CurrentPP->tcw1.full = pp->tcw1.full;
 		if (pp->pcw.Texture)
-			CurrentPP->texture1 = renderer->GetTexture(pp->tsp1, pp->tcw1);
+			CurrentPP->texid1 = renderer->GetTexture(pp->tsp1, pp->tcw1);
 	}
 
 	__forceinline
@@ -868,17 +922,17 @@ private:
 	#define vert_packed_color_(to,src) \
 		{ \
 		u32 t=src; \
-		to[Blue] = (u8)(t);t>>=8;\
-		to[Green] = (u8)(t);t>>=8;\
-		to[Red] = (u8)(t);t>>=8;\
-		to[Alpha] = (u8)(t);      \
+		to[2] = (u8)(t);t>>=8;\
+		to[1] = (u8)(t);t>>=8;\
+		to[0] = (u8)(t);t>>=8;\
+		to[3] = (u8)(t);      \
 		}
 
 	#define vert_float_color_(to,a,r,g,b) \
-		to[Red] = float_to_satu8(r); \
-		to[Green] = float_to_satu8(g); \
-		to[Blue] = float_to_satu8(b); \
-		to[Alpha] = float_to_satu8(a);
+		to[0] = float_to_satu8(r); \
+		to[1] = float_to_satu8(g); \
+		to[2] = float_to_satu8(b); \
+		to[3] = float_to_satu8(a);
 
 		//Macros to make thins easier ;)
 	#define vert_packed_color(to,src) \
@@ -894,32 +948,34 @@ private:
 		//Intensity is clamped before the mul, as well as on face color to work the same as the hardware. [Fixes red dog]
 
 	#define vert_face_base_color(baseint) \
-		{ u32 satint = float_to_satu8(vtx->baseint); \
-		cv->col[Red] = FaceBaseColor[Red] * satint / 256;  \
-		cv->col[Green] = FaceBaseColor[Green] * satint / 256;  \
-		cv->col[Blue] = FaceBaseColor[Blue] * satint / 256;  \
-		cv->col[Alpha] = FaceBaseColor[Alpha]; }
+		{ u32 satint=float_to_satu8(vtx->baseint); \
+		cv->col[0] = FaceBaseColor[0]*satint/256;  \
+		cv->col[1] = FaceBaseColor[1]*satint/256;  \
+		cv->col[2] = FaceBaseColor[2]*satint/256;  \
+		cv->col[3] = FaceBaseColor[3]; }
 
 	#define vert_face_offs_color(offsint) \
-		{ u32 satint = float_to_satu8(vtx->offsint); \
-		cv->spc[Red] = FaceOffsColor[Red] * satint / 256;  \
-		cv->spc[Green] = FaceOffsColor[Green] * satint / 256;  \
-		cv->spc[Blue] = FaceOffsColor[Blue] * satint / 256;  \
-		cv->spc[Alpha] = FaceOffsColor[Alpha]; }
+		{ u32 satint=float_to_satu8(vtx->offsint); \
+		cv->spc[0] = FaceOffsColor[0]*satint/256;  \
+		cv->spc[1] = FaceOffsColor[1]*satint/256;  \
+		cv->spc[2] = FaceOffsColor[2]*satint/256;  \
+		cv->spc[3] = FaceOffsColor[3]; }
 
 	#define vert_face_base_color1(baseint) \
-		{ u32 satint = float_to_satu8(vtx->baseint); \
-		cv->col1[Red] = FaceBaseColor1[Red] * satint / 256;  \
-		cv->col1[Green] = FaceBaseColor1[Green] * satint / 256;  \
-		cv->col1[Blue] = FaceBaseColor1[Blue] * satint / 256;  \
-		cv->col1[Alpha] = FaceBaseColor1[Alpha]; }
+		{ u32 satint=float_to_satu8(vtx->baseint); \
+		cv->col1[0] = FaceBaseColor1[0]*satint/256;  \
+		cv->col1[1] = FaceBaseColor1[1]*satint/256;  \
+		cv->col1[2] = FaceBaseColor1[2]*satint/256;  \
+		cv->col1[3] = FaceBaseColor1[3]; }
 
 	#define vert_face_offs_color1(offsint) \
-		{ u32 satint = float_to_satu8(vtx->offsint); \
-		cv->spc1[Red] = FaceOffsColor1[Red] * satint / 256;  \
-		cv->spc1[Green] = FaceOffsColor1[Green] * satint / 256;  \
-		cv->spc1[Blue] = FaceOffsColor1[Blue] * satint / 256;  \
-		cv->spc1[Alpha] = FaceOffsColor1[Alpha]; }
+		{ u32 satint=float_to_satu8(vtx->offsint); \
+		cv->spc1[0] = FaceOffsColor1[0]*satint/256;  \
+		cv->spc1[1] = FaceOffsColor1[1]*satint/256;  \
+		cv->spc1[2] = FaceOffsColor1[2]*satint/256;  \
+		cv->spc1[3] = FaceOffsColor1[3]; }
+
+	//vert_float_color_(cv->spc,FaceOffsColor[3],FaceOffsColor[0]*satint/256,FaceOffsColor[1]*satint/256,FaceOffsColor[2]*satint/256); }
 
 
 	//(Non-Textured, Packed Color)
@@ -1167,14 +1223,14 @@ private:
 		d_pp->pcw=spr->pcw; 
 		d_pp->tileclip=tileclip_val;
 
-		if (d_pp->pcw.Texture)
-			d_pp->texture = renderer->GetTexture(d_pp->tsp, d_pp->tcw);
-		else
-			d_pp->texture = nullptr;
-
+		d_pp->texid = -1;
+		
+		if (d_pp->pcw.Texture) {
+			d_pp->texid = renderer->GetTexture(d_pp->tsp,d_pp->tcw);
+		}
 		d_pp->tcw1.full = -1;
 		d_pp->tsp1.full = -1;
-		d_pp->texture1 = nullptr;
+		d_pp->texid1 = -1;
 
 		SFaceBaseColor=spr->BaseCol;
 		SFaceOffsColor=spr->OffsCol;
@@ -1371,34 +1427,10 @@ private:
 	}
 };
 
-template<int Red, int Green, int Blue, int Alpha>
-const u32 *FifoSplitter<Red, Green, Blue, Alpha>::ta_type_lut;
-
-TaTypeLut::TaTypeLut()
-{
-	for (int i = 0; i < 256; i++)
-	{
-		PCW pcw;
-		pcw.obj_ctrl = i;
-		u32 rv = FifoSplitter<>::poly_data_type_id(pcw);
-		u32 type = FifoSplitter<>::poly_header_type_size(pcw);
-
-		if (type & 0x80)
-			rv |= SZ64 << 30;
-		else
-			rv |= SZ32 << 30;
-
-		rv |= (type & 0x7F) << 8;
-
-		table[i] = rv;
-	}
-}
-
 static bool ClearZBeforePass(int pass_number);
 static void getRegionTileClipping(u32& xmin, u32& xmax, u32& ymin, u32& ymax);
 
-FifoSplitter<> TAParser;
-FifoSplitter<2, 1, 0, 3> TAParserDX;
+FifoSplitter<0> TAFifo0;
 
 //
 // Check if a vertex has huge x,y,z values or negative z
@@ -1430,8 +1462,7 @@ static void make_index(const List<PolyParam> *polys, int first, int end, bool me
 				&& poly->tcw.full == last_poly->tcw.full
 				&& poly->tsp.full == last_poly->tsp.full
 				&& poly->isp.full == last_poly->isp.full
-				&& poly->tileclip == last_poly->tileclip
-				// FIXME tcw1, tsp1?
+				// FIXME tcw1, tsp1, tileclip?
 				)
 		{
 			const u32 last_vtx = indices[last_poly->first + last_poly->count - 1];
@@ -1540,7 +1571,7 @@ static void fix_texture_bleeding(const List<PolyParam> *list)
 	}
 }
 
-bool ta_parse_vdrc(TA_context* ctx, bool bgraColors)
+bool ta_parse_vdrc(TA_context* ctx)
 {
 	ctx->rend_inuse.lock();
 	bool rv=false;
@@ -1548,10 +1579,7 @@ bool ta_parse_vdrc(TA_context* ctx, bool bgraColors)
 	vd_ctx = ctx;
 	vd_rc = vd_ctx->rend;
 
-	if (bgraColors)
-		TAParserDX.vdec_init();
-	else
-		TAParser.vdec_init();
+	TAFifo0.vdec_init();
 
 	bool empty_context = true;
 	int op_poly_count = 0;
@@ -1561,7 +1589,7 @@ bool ta_parse_vdrc(TA_context* ctx, bool bgraColors)
 	PolyParam *bgpp = vd_rc.global_param_op.head();
 	if (bgpp->pcw.Texture)
 	{
-		bgpp->texture = renderer->GetTexture(bgpp->tsp, bgpp->tcw);
+		bgpp->texid = renderer->GetTexture(bgpp->tsp, bgpp->tcw);
 		empty_context = false;
 	}
 
@@ -1571,11 +1599,14 @@ bool ta_parse_vdrc(TA_context* ctx, bool bgraColors)
 		vd_rc.proc_start = ctx->rend.proc_start;
 		vd_rc.proc_end = ctx->rend.proc_end;
 
-		Ta_Dma* ta_data = (Ta_Dma *)vd_rc.proc_start;
-		Ta_Dma* ta_data_end = (Ta_Dma *)vd_rc.proc_end - 1;
+		Ta_Dma* ta_data=(Ta_Dma*)vd_rc.proc_start;
+		Ta_Dma* ta_data_end=((Ta_Dma*)vd_rc.proc_end)-1;
 
-		while (ta_data <= ta_data_end)
-			ta_data = TaCmd(ta_data, ta_data_end);
+		do
+		{
+			ta_data =TaCmd(ta_data,ta_data_end);
+		}
+		while(ta_data<=ta_data_end);
 
 		if (ctx->rend.Overrun)
 			break;
@@ -1611,7 +1642,7 @@ bool ta_parse_vdrc(TA_context* ctx, bool bgraColors)
 	bool overrun = ctx->rend.Overrun;
 	if (overrun)
 		WARN_LOG(PVR, "ERROR: TA context overrun");
-	else if (config::RenderResolution > 480)
+	else if (screen_height > 480)
 	{
 		fix_texture_bleeding(&vd_rc.global_param_op);
 		fix_texture_bleeding(&vd_rc.global_param_pt);
@@ -1639,14 +1670,13 @@ bool ta_parse_vdrc(TA_context* ctx, bool bgraColors)
 
 //decode a vertex in the native pvr format
 //used for bg poly
-template<int Red, int Green, int Blue, int Alpha>
-void decode_pvr_vertex(u32 base, u32 ptr, Vertex* cv)
+static void decode_pvr_vertex(u32 base,u32 ptr,Vertex* cv)
 {
 	//ISP
 	//TSP
 	//TCW
 	ISP_TSP isp;
-	isp.full = pvr_read32p<u32>(base);
+	isp.full=vri(base);
 
 	//XYZ
 	//UV
@@ -1654,39 +1684,39 @@ void decode_pvr_vertex(u32 base, u32 ptr, Vertex* cv)
 	//Offset Col
 
 	//XYZ are _always_ there :)
-	cv->x = pvr_read32p<float>(ptr);
+	cv->x = vrf(ptr);
 	ptr += 4;
-	cv->y = pvr_read32p<float>(ptr);
+	cv->y = vrf(ptr);
 	ptr += 4;
-	cv->z = pvr_read32p<float>(ptr);
+	cv->z = vrf(ptr);
 	ptr += 4;
 
 	if (isp.Texture)
 	{	//Do texture , if any
 		if (isp.UV_16b)
 		{
-			u32 uv = pvr_read32p<u32>(ptr);
+			u32 uv = vri(ptr);
 			cv->u = f16((u16)uv);
 			cv->v = f16((u16)(uv >> 16));
 			ptr+=4;
 		}
 		else
 		{
-			cv->u = pvr_read32p<float>(ptr);
+			cv->u = vrf(ptr);
 			ptr += 4;
-			cv->v = pvr_read32p<float>(ptr);
+			cv->v = vrf(ptr);
 			ptr += 4;
 		}
 	}
 
 	//Color
-	u32 col = pvr_read32p<u32>(ptr);
+	u32 col = vri(ptr);
 	ptr += 4;
 	vert_packed_color_(cv->col, col);
 	if (isp.Offset)
 	{
 		//Intensity color (can be missing too ;p)
-		u32 col = pvr_read32p<u32>(ptr);
+		u32 col = vri(ptr);
 		ptr += 4;
 		vert_packed_color_(cv->spc, col);
 	}
@@ -1753,14 +1783,14 @@ void FillBGP(TA_context* ctx)
 	u32 vertex_ptr=strip_vert_num*strip_vs+strip_base +3*4;
 	//now , all the info is ready :p
 
-	bgpp->texture = nullptr;
+	bgpp->texid = -1;
 
-	bgpp->isp.full = pvr_read32p<u32>(strip_base);
-	bgpp->tsp.full = pvr_read32p<u32>(strip_base + 4);
-	bgpp->tcw.full = pvr_read32p<u32>(strip_base + 8);
+	bgpp->isp.full=vri(strip_base);
+	bgpp->tsp.full=vri(strip_base+4);
+	bgpp->tcw.full=vri(strip_base+8);
 	bgpp->tcw1.full = -1;
 	bgpp->tsp1.full = -1;
-	bgpp->texture1 = nullptr;
+	bgpp->texid1 = -1;
 	bgpp->count=4;
 	bgpp->first=0;
 	bgpp->tileclip=0;//disabled ! HA ~
@@ -1777,10 +1807,7 @@ void FillBGP(TA_context* ctx)
 	float scale_x= (SCALER_CTL.hscale) ? 2.f:1.f;	//if AA hack the hacked pos value hacks
 	for (int i=0;i<3;i++)
 	{
-		if (isDirectX(config::RendererType))
-			decode_pvr_vertex<2, 1, 0, 3>(strip_base,vertex_ptr,&cv[i]);
-		else
-			decode_pvr_vertex<0, 1, 2, 3>(strip_base,vertex_ptr,&cv[i]);
+		decode_pvr_vertex(strip_base,vertex_ptr,&cv[i]);
 		vertex_ptr+=strip_vs;
 	}
 
@@ -1835,7 +1862,7 @@ static void getRegionTileClipping(u32& xmin, u32& xmax, u32& ymin, u32& ymax)
 	int tile_size = (type1_tile ? 5 : 6) * 4;
 	bool empty_first_region = true;
 	for (int i = type1_tile ? 4 : 5; i > 0; i--)
-		if ((pvr_read32p<u32>(addr + i * 4) & 0x80000000) == 0)
+		if ((vri(addr + i * 4) & 0x80000000) == 0)
 		{
 			empty_first_region = false;
 			break;
@@ -1845,7 +1872,7 @@ static void getRegionTileClipping(u32& xmin, u32& xmax, u32& ymin, u32& ymax)
 
 	RegionArrayTile tile;
 	do {
-		tile.full = pvr_read32p<u32>(addr);
+		tile.full = vri(addr);
 		xmin = std::min(xmin, tile.X);
 		xmax = std::max(xmax, tile.X);
 		ymin = std::min(ymin, tile.Y);
@@ -1869,7 +1896,7 @@ static RegionArrayTile getRegionTile(int pass_number)
 	int tile_size = (type1_tile ? 5 : 6) * 4;
 	bool empty_first_region = true;
 	for (int i = type1_tile ? 4 : 5; i > 0; i--)
-		if ((pvr_read32p<u32>(addr + i * 4) & 0x80000000) == 0)
+		if ((vri(addr + i * 4) & 0x80000000) == 0)
 		{
 			empty_first_region = false;
 			break;
@@ -1878,11 +1905,11 @@ static RegionArrayTile getRegionTile(int pass_number)
 		addr += tile_size;
 
 	RegionArrayTile tile;
-	tile.full = pvr_read32p<u32>(addr);
+	tile.full = vri(addr);
 	if (type1_tile && tile.PreSort)
 		// Windows CE weirdness
 		tile_size = 6 * 4;
-	tile.full = pvr_read32p<u32>(addr + pass_number * tile_size);
+	tile.full = vri(addr + pass_number * tile_size);
 
 	return tile;
 }

@@ -19,8 +19,6 @@
     along with Flycast.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "gl_context.h"
-
-#include "rend/gles/opengl_driver.h"
 #include "rend/gui.h"
 
 void GLGraphicsContext::findGLVersion()
@@ -36,33 +34,17 @@ void GLGraphicsContext::findGLVersion()
 		glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
 	}
 	const char *version = (const char *)glGetString(GL_VERSION);
-	_isGLES = !strncmp(version, "OpenGL ES", 9);
+	isGLES = !strncmp(version, "OpenGL ES", 9);
 	INFO_LOG(RENDERER, "OpenGL version: %s", version);
 }
 
-void GLGraphicsContext::postInit()
+void GLGraphicsContext::PostInit()
 {
-	instance = this;
 	findGLVersion();
-#ifndef LIBRETRO
 	gui_init();
-	imguiDriver = std::unique_ptr<ImGuiDriver>(new OpenGLDriver());
-#endif
 }
 
-void GLGraphicsContext::preTerm()
+void GLGraphicsContext::PreTerm()
 {
-#ifndef LIBRETRO
-	imguiDriver.reset();
 	gui_term();
-#endif
-	instance = nullptr;
-}
-
-std::string GLGraphicsContext::getDriverName() {
-	return (const char *)glGetString(GL_RENDERER);
-}
-
-std::string GLGraphicsContext::getDriverVersion() {
-	return (const char *)glGetString(GL_VERSION);
 }

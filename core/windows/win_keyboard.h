@@ -9,7 +9,7 @@
 class Win32KeyboardDevice : public KeyboardDeviceTemplate<u8>
 {
 public:
-	Win32KeyboardDevice(int maple_port) : KeyboardDeviceTemplate(maple_port, "win32")
+	Win32KeyboardDevice(int maple_port) : KeyboardDeviceTemplate(maple_port)
 	{
 		kb_map['A'] = 0x04;
 		kb_map['B'] = 0x05;
@@ -141,9 +141,10 @@ public:
 		//E8-FF Reserved
 
 	}
+	virtual const char* name() override { return "Windows Keyboard"; }
 
 protected:
-	u8 convert_keycode(u8 keycode) override
+	virtual u8 convert_keycode(u8 keycode) override
 	{
 		return kb_map[keycode];
 	}

@@ -19,6 +19,8 @@
 #pragma once
 #include "types.h"
 
+extern bool mainui_enabled;		// Signals the UI thread to exit
+extern int renderer_changed;	// Signals the UI thread to switch renderer when different from settings.pvr.rend
 extern u32 MainFrameCount;
 
 bool mainui_rend_frame();
@@ -27,3 +29,8 @@ void mainui_term();
 void mainui_loop();
 void mainui_stop();
 void mainui_reinit();
+
+static inline bool mainui_loop_enabled()
+{
+	return mainui_enabled;
+}

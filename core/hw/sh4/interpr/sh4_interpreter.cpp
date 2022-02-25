@@ -12,19 +12,21 @@
 #include "../sh4_sched.h"
 #include "hw/holly/sb.h"
 #include "../sh4_cache.h"
-#include "debug/gdb_server.h"
+#include <Vanguard/VanguardClient.h>
 
 #define CPU_RATIO      (8)
 
 sh4_icache icache;
 sh4_ocache ocache;
 
+static s32 l;
+
 static void ExecuteOpcode(u16 op)
 {
 	if (sr.FD == 1 && OpDesc[op]->IsFloatingPoint())
 		RaiseFPUDisableException();
 	OpPtr[op](op);
-	p_sh4rcb->cntx.cycle_counter -= CPU_RATIO;
+	l -= CPU_RATIO;
 }
 
 static u16 ReadNexOp()
@@ -35,87 +37,106 @@ static u16 ReadNexOp()
 	return IReadMem16(addr);
 }
 
-static void Sh4_int_Run()
+void Sh4_int_Run()
 {
-	sh4_int_bCpuRun = true;
-	RestoreHostRoundingMode();
+	sh4_int_bCpuRun=true;
 
-	try {
-		do
-		{
-			try {
-				do
-				{
-					u32 op = ReadNexOp();
+	l = SH4_TIMESLICE;
 
-					ExecuteOpcode(op);
-				} while (p_sh4rcb->cntx.cycle_counter > 0);
-				p_sh4rcb->cntx.cycle_counter += SH4_TIMESLICE;
-				UpdateSystem_INTC();
-			} catch (const SH4ThrownException& ex) {
-				Do_Exception(ex.epc, ex.expEvn, ex.callVect);
-				p_sh4rcb->cntx.cycle_counter -= CPU_RATIO * 5;	// an exception requires the instruction pipeline to drain, so approx 5 cycles
-			}
-		} while (sh4_int_bCpuRun);
-	} catch (const debugger::Stop&) {
+	do
+	{
+		//VanguardClientUnmanaged::CORE_STEP();
+#if !defined(NO_MMU)
+		try {
+#endif
+			do
+			{
+				//VanguardClientUnmanaged::CORE_STEP();
+				u32 op = ReadNexOp();
+
+				ExecuteOpcode(op);
+			} while (l > 0);
+			l += SH4_TIMESLICE;
+			UpdateSystem_INTC();
+#if !defined(NO_MMU)
+		}
+		catch (SH4ThrownException& ex) {
+			Do_Exception(ex.epc, ex.expEvn, ex.callVect);
+			l -= CPU_RATIO * 5;	// an exception requires the instruction pipeline to drain, so approx 5 cycles
+		}
+#endif
+	} while (sh4_int_bCpuRun);
+
+	sh4_int_bCpuRun = false;
+}
+
+void Sh4_int_Stop()
+{
+	if (sh4_int_bCpuRun)
+		sh4_int_bCpuRun=false;
+}
+
+void Sh4_int_Start()
+{
+	if (!sh4_int_bCpuRun)
+		sh4_int_bCpuRun=true;
+}
+
+void Sh4_int_Step()
+{
+	if (sh4_int_bCpuRun)
+	{
+		WARN_LOG(INTERPRETER, "Sh4 Is running , can't step");
 	}
-
-	sh4_int_bCpuRun = false;
-}
-
-static void Sh4_int_Stop()
-{
-	sh4_int_bCpuRun = false;
-}
-
-static void Sh4_int_Step()
-{
-	verify(!sh4_int_bCpuRun);
-
-	RestoreHostRoundingMode();
-	try {
+	else
+	{
 		u32 op = ReadNexOp();
 		ExecuteOpcode(op);
-	} catch (const SH4ThrownException& ex) {
-		Do_Exception(ex.epc, ex.expEvn, ex.callVect);
-		p_sh4rcb->cntx.cycle_counter -= CPU_RATIO * 5;	// an exception requires the instruction pipeline to drain, so approx 5 cycles
-	} catch (const debugger::Stop&) {
 	}
 }
 
-static void Sh4_int_Reset(bool hard)
+void Sh4_int_Skip()
 {
-	verify(!sh4_int_bCpuRun);
-
-	if (hard)
-	{
-		int schedNext = p_sh4rcb->cntx.sh4_sched_next;
-		memset(&p_sh4rcb->cntx, 0, sizeof(p_sh4rcb->cntx));
-		p_sh4rcb->cntx.sh4_sched_next = schedNext;
-	}
-	next_pc = 0xA0000000;
-
-	memset(r,0,sizeof(r));
-	memset(r_bank,0,sizeof(r_bank));
-
-	gbr=ssr=spc=sgr=dbr=vbr=0;
-	mac.full=pr=fpul=0;
-
-	sh4_sr_SetFull(0x700000F0);
-	old_sr.status=sr.status;
-	UpdateSR();
-
-	fpscr.full = 0x00040001;
-	old_fpscr=fpscr;
-	UpdateFPSCR();
-	icache.Reset(hard);
-	ocache.Reset(hard);
-	p_sh4rcb->cntx.cycle_counter = SH4_TIMESLICE;
-
-	INFO_LOG(INTERPRETER, "Sh4 Reset");
+	if (sh4_int_bCpuRun)
+		WARN_LOG(INTERPRETER, "Sh4 Is running, can't Skip");
+	else
+		next_pc += 2;
 }
 
-static bool Sh4_int_IsCpuRunning()
+void Sh4_int_Reset(bool hard)
+{
+	if (sh4_int_bCpuRun)
+	{
+		WARN_LOG(INTERPRETER, "Sh4 Is running, can't Reset");
+	}
+	else
+	{
+		if (hard)
+			memset(&p_sh4rcb->cntx, 0, sizeof(p_sh4rcb->cntx));
+		next_pc = 0xA0000000;
+
+		memset(r,0,sizeof(r));
+		memset(r_bank,0,sizeof(r_bank));
+
+		gbr=ssr=spc=sgr=dbr=vbr=0;
+		mac.full=pr=fpul=0;
+
+		sh4_sr_SetFull(0x700000F0);
+		old_sr.status=sr.status;
+		UpdateSR();
+
+		fpscr.full = 0x0004001;
+		old_fpscr=fpscr;
+		UpdateFPSCR();
+		icache.Reset(hard);
+		ocache.Reset(hard);
+
+		//Any more registers have default value ?
+		INFO_LOG(INTERPRETER, "Sh4 Reset");
+	}
+}
+
+bool Sh4_int_IsCpuRunning()
 {
 	return sh4_int_bCpuRun;
 }
@@ -123,26 +144,33 @@ static bool Sh4_int_IsCpuRunning()
 //TODO : Check for valid delayslot instruction
 void ExecuteDelayslot()
 {
+#if !defined(NO_MMU)
 	try {
+#endif
 		u32 op = ReadNexOp();
 
 		ExecuteOpcode(op);
-	} catch (SH4ThrownException& ex) {
+#if !defined(NO_MMU)
+	}
+	catch (SH4ThrownException& ex) {
 		AdjustDelaySlotException(ex);
 		throw ex;
-	} catch (const debugger::Stop& e) {
-		next_pc -= 2;	// break on previous instruction
-		throw e;
 	}
+#endif
 }
 
 void ExecuteDelayslot_RTE()
 {
+#if !defined(NO_MMU)
 	try {
+#endif
 		ExecuteDelayslot();
-	} catch (const SH4ThrownException&) {
-		throw FlycastException("Fatal: SH4 exception in RTE delay slot");
+#if !defined(NO_MMU)
 	}
+	catch (SH4ThrownException& ex) {
+		ERROR_LOG(INTERPRETER, "Exception in RTE delay slot");
+	}
+#endif
 }
 
 // every SH4_TIMESLICE cycles
@@ -163,31 +191,32 @@ int UpdateSystem_INTC()
 		return 0;
 }
 
-static void sh4_int_resetcache() {
+void sh4_int_resetcache() { }
+//Get an interface to sh4 interpreter
+void Get_Sh4Interpreter(sh4_if* rv)
+{
+	rv->Run=Sh4_int_Run;
+	rv->Stop=Sh4_int_Stop;
+	rv->Start=Sh4_int_Start;
+	rv->Step=Sh4_int_Step;
+	rv->Skip=Sh4_int_Skip;
+	rv->Reset=Sh4_int_Reset;
+	rv->Init=Sh4_int_Init;
+	rv->Term=Sh4_int_Term;
+	rv->IsCpuRunning=Sh4_int_IsCpuRunning;
+
+	rv->ResetCache=sh4_int_resetcache;
 }
 
-static void Sh4_int_Init()
+void Sh4_int_Init()
 {
 	static_assert(sizeof(Sh4cntx) == 448, "Invalid Sh4Cntx size");
 
 	memset(&p_sh4rcb->cntx, 0, sizeof(p_sh4rcb->cntx));
 }
 
-static void Sh4_int_Term()
+void Sh4_int_Term()
 {
 	Sh4_int_Stop();
 	INFO_LOG(INTERPRETER, "Sh4 Term");
-}
-
-void Get_Sh4Interpreter(sh4_if* cpu)
-{
-	cpu->Run = Sh4_int_Run;
-	cpu->Stop = Sh4_int_Stop;
-	cpu->Step = Sh4_int_Step;
-	cpu->Reset = Sh4_int_Reset;
-	cpu->Init = Sh4_int_Init;
-	cpu->Term = Sh4_int_Term;
-	cpu->IsCpuRunning = Sh4_int_IsCpuRunning;
-
-	cpu->ResetCache = sh4_int_resetcache;
 }

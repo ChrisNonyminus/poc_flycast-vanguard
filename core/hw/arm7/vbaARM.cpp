@@ -6,7 +6,7 @@
 //called when plugin is used by emu (you should do first time init here)
 s32 libARM_Init()
 {
-	aicaarm::init();
+	arm_Init();
 
 	return 0;
 }
@@ -20,6 +20,6 @@ void libARM_Term()
 //It's supposed to reset anything
 void libARM_Reset(bool hard)
 {
-	aicaarm::reset();
-	aicaarm::enable(false);
+	arm_Reset();
+	arm_SetEnabled(false);
 }

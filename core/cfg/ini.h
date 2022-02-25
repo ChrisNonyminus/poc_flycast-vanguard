@@ -1,8 +1,6 @@
 #pragma once
-
-#include <cstdio>
+#include "types.h"
 #include <map>
-#include <string>
 
 namespace emucfg {
 
@@ -33,10 +31,9 @@ struct ConfigFile {
 	public:
 		bool has_section(const std::string& name);
 		bool has_entry(const std::string& section_name, const std::string& entry_name);
-		bool is_virtual(const std::string& section_name, const std::string& entry_name);
 
-		void parse(FILE* file);
-		void save(FILE* file);
+		void parse(FILE* fd);
+		void save(FILE* fd);
 
 		/* getting values */
 		std::string get(const std::string& section_name, const std::string& entry_name, const std::string& default_value = "");

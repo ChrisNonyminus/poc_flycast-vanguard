@@ -29,10 +29,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-#define FindFirstFileExW FindFirstFileExFromAppW
-#endif
-
 /* Indicates that d_type field is available in dirent structure */
 #define _DIRENT_HAVE_D_TYPE
 
@@ -459,7 +455,7 @@ _wopendir(
  * Returns pointer to static directory entry which may be overwritten by
  * subsequent calls to _wreaddir().
  */
-inline static struct _wdirent*
+static struct _wdirent*
 _wreaddir(
     _WDIR *dirp)
 {
@@ -617,7 +613,7 @@ dirent_first(
         /* Failed to re-open directory: no directory entry in memory */
         dirp->cached = 0;
         datap = NULL;
-        dirent_set_errno(GetLastError()); /* Not a valid errno but better than nothing */
+
     }
     return datap;
 }
@@ -651,8 +647,6 @@ dirent_next(
             FindClose (dirp->handle);
             dirp->handle = INVALID_HANDLE_VALUE;
             p = NULL;
-            if (GetLastError() != ERROR_NO_MORE_FILES)
-            	dirent_set_errno(GetLastError());
         }
 
     } else {
@@ -729,7 +723,7 @@ opendir(
 /*
  * Read next directory entry.
  */
-inline static struct dirent*
+static struct dirent*
 readdir(
     DIR *dirp)
 {
@@ -867,7 +861,7 @@ closedir(
 /*
  * Rewind directory stream to beginning.
  */
-inline static void
+static void
 rewinddir(
     DIR* dirp)
 {
@@ -878,7 +872,7 @@ rewinddir(
 /*
  * Scan directory for entries.
  */
-inline static int
+static int
 scandir(
     const char *dirname,
     struct dirent ***namelist,
@@ -1025,7 +1019,7 @@ alphasort(
 }
 
 /* Sort versions */
-inline static int
+static int
 versionsort(
     const struct dirent **a, const struct dirent **b)
 {

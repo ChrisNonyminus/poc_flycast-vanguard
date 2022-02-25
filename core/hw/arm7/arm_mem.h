@@ -58,4 +58,3 @@ extern u32 e68k_reg_L;
 extern u32 e68k_reg_M;
 
 void update_armintc();
-void libARM_InterruptChange(u32 bits, u32 L);

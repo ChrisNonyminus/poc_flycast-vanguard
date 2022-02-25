@@ -1,20 +1,13 @@
 #pragma once
 #include "types.h"
 
-namespace aicaarm {
+void arm_Init();
+void arm_Reset();
+void arm_Run(u32 samples);
+void arm_SetEnabled(bool enabled);
 
-void init();
-void reset();
-void run(u32 samples);
-void enable(bool enabled);
-// Called when the arm interrupts the SH4 to make sure it has enough cycles to finish what it's doing.
-void avoidRaceCondition();
-}
-
-enum Arm7Reg
+enum
 {
-	RN_LR		 = 14,
-	RN_PC		 = 15,
 	RN_CPSR      = 16,
 	RN_SPSR      = 17,
 
@@ -44,7 +37,6 @@ enum Arm7Reg
 	R15_ARM_NEXT = 46,
 	INTR_PEND    = 47,
 	CYCL_CNT     = 48,
-	RN_SCRATCH   = 49,
 
 	RN_ARM_REG_COUNT,
 };
@@ -95,11 +87,3 @@ typedef union
 
 	u32 I;
 } reg_pair;
-
-alignas(8) extern reg_pair arm_Reg[RN_ARM_REG_COUNT];
-
-#define ARM_CYCLES_PER_SAMPLE 256
-extern int arm7ClockTicks;
-
-void CPUFiq();
-void CPUUpdateCPSR();

@@ -4,10 +4,9 @@
 #ifndef __7Z_FILE_H
 #define __7Z_FILE_H
 
-// Flycast handles wchar file path already
-//#ifdef _WIN32
-//#define USE_WINDOWS_FILE
-//#endif
+#ifdef _WIN32
+#define USE_WINDOWS_FILE
+#endif
 
 #ifdef USE_WINDOWS_FILE
 #include <windows.h>

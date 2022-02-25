@@ -1,6 +1,6 @@
 ﻿//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by flycast.rc
+// Used by reicast.rc
 //
 #define IDI_ICON1                       105
 

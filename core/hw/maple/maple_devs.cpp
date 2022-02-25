@@ -2,10 +2,9 @@
 #include "maple_cfg.h"
 #include "maple_helper.h"
 #include "hw/pvr/spg.h"
+#include "stdclass.h"
 #include "oslib/audiostream.h"
-#include "oslib/oslib.h"
-#include "cfg/option.h"
-#include "hw/aica/sgc_if.h"
+
 #include <zlib.h>
 
 const char* maple_sega_controller_name = "Dreamcast Controller";
@@ -23,25 +22,19 @@ const char* maple_ascii_stick_name = "ASCII STICK";
 const char* maple_sega_brand = "Produced By or Under License From SEGA ENTERPRISES,LTD.";
 
 //fill in the info
-void maple_device::Setup(u32 port, int playerNum)
+void maple_device::Setup(u32 prt)
 {
-	maple_port = port;
-	bus_port = maple_GetPort(port);
-	bus_id = maple_GetBusId(port);
+	maple_port = prt;
+	bus_port = maple_GetPort(prt);
+	bus_id = maple_GetBusId(prt);
 	logical_port[0] = 'A' + bus_id;
 	logical_port[1] = bus_port == 5 ? 'x' : '1' + bus_port;
 	logical_port[2] = 0;
-	player_num = playerNum == -1 ? bus_id : playerNum;
 }
 maple_device::~maple_device()
 {
-    delete config;
-}
-
-static inline void mutualExclusion(u32& keycode, u32 mask)
-{
-	if ((keycode & mask) == 0)
-		keycode |= mask;
+	if (config)
+		delete config;
 }
 
 /*
@@ -59,10 +52,7 @@ struct maple_sega_controller: maple_base
 		return 0xfe060f00;	// 4 analog axes (0-3) X Y A B Start U D L R
 	}
 
-	virtual u32 transform_kcode(u32 kcode)
-	{
-		mutualExclusion(kcode, DC_DPAD_UP | DC_DPAD_DOWN);
-		mutualExclusion(kcode, DC_DPAD_LEFT | DC_DPAD_RIGHT);
+	virtual u32 transform_kcode(u32 kcode) {
 		return kcode | 0xF901;		// mask off DPad2, C, D and Z;
 	}
 
@@ -87,7 +77,7 @@ struct maple_sega_controller: maple_base
 			return 0x80;					// unused
 	}
 
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_SegaController;
 	}
@@ -102,7 +92,7 @@ struct maple_sega_controller: maple_base
 		return maple_sega_brand;
 	}
 
-	u32 dma(u32 cmd) override
+	virtual u32 dma(u32 cmd) override
 	{
 		//printf("maple_sega_controller::dma Called 0x%X;Command %d\n", bus_id, cmd);
 		switch (cmd)
@@ -189,7 +179,7 @@ struct maple_sega_controller: maple_base
 
 struct maple_atomiswave_controller: maple_sega_controller
 {
-	u32 get_capabilities() override {
+	virtual u32 get_capabilities() override {
 		// byte 0: 0  0  0  0  0  0  0  0
 		// byte 1: 0  0  a5 a4 a3 a2 a1 a0
 		// byte 2: R2 L2 D2 U2 D  X  Y  Z
@@ -198,14 +188,11 @@ struct maple_atomiswave_controller: maple_sega_controller
 		return 0xff663f00;	// 6 analog axes, X Y L2/D2(?) A B C Start U D L R
 	}
 
-	u32 transform_kcode(u32 kcode) override
-	{
-		mutualExclusion(kcode, AWAVE_UP_KEY | AWAVE_DOWN_KEY);
-		mutualExclusion(kcode, AWAVE_LEFT_KEY | AWAVE_RIGHT_KEY);
+	virtual u32 transform_kcode(u32 kcode) override {
 		return kcode | AWAVE_TRIGGER_KEY;
 	}
 
-	u32 get_analog_axis(int index, const PlainJoystickState &pjs) override {
+	virtual u32 get_analog_axis(int index, const PlainJoystickState &pjs) override {
 		if (index < 2 || index > 5)
 			return 0x80;
 		index -= 2;
@@ -218,7 +205,7 @@ struct maple_atomiswave_controller: maple_sega_controller
 */
 struct maple_sega_twinstick: maple_sega_controller
 {
-	u32 get_capabilities() override {
+	virtual u32 get_capabilities() override {
 		// byte 0: 0  0  0  0  0  0  0  0
 		// byte 1: 0  0  a5 a4 a3 a2 a1 a0
 		// byte 2: R2 L2 D2 U2 D  X  Y  Z
@@ -227,24 +214,19 @@ struct maple_sega_twinstick: maple_sega_controller
 		return 0xfefe0000;	// no analog axes, X Y A B D Start U/D/L/R U2/D2/L2/R2
 	}
 
-	u32 transform_kcode(u32 kcode) override
-	{
-		mutualExclusion(kcode, DC_DPAD_UP | DC_DPAD_DOWN);
-		mutualExclusion(kcode, DC_DPAD_LEFT | DC_DPAD_RIGHT);
-		mutualExclusion(kcode, DC_DPAD2_UP | DC_DPAD2_DOWN);
-		mutualExclusion(kcode, DC_DPAD2_LEFT | DC_DPAD2_RIGHT);
+	virtual u32 transform_kcode(u32 kcode) override {
 		return kcode | 0x0101;
 	}
 
-	MapleDeviceType get_device_type() override {
+	virtual MapleDeviceType get_device_type() override {
 		return MDT_TwinStick;
 	}
 
-	u32 get_analog_axis(int index, const PlainJoystickState &pjs) override {
+	virtual u32 get_analog_axis(int index, const PlainJoystickState &pjs) override {
 		return 0x80;
 	}
 
-	const char *get_device_name() override {
+	virtual const char *get_device_name() override {
 		return maple_sega_twinstick_name;
 	}
 };
@@ -255,7 +237,7 @@ struct maple_sega_twinstick: maple_sega_controller
 */
 struct maple_ascii_stick: maple_sega_controller
 {
-	u32 get_capabilities() override {
+	virtual u32 get_capabilities() override {
 		// byte 0: 0  0  0  0  0  0  0  0
 		// byte 1: 0  0  a5 a4 a3 a2 a1 a0
 		// byte 2: R2 L2 D2 U2 D  X  Y  Z
@@ -264,22 +246,19 @@ struct maple_ascii_stick: maple_sega_controller
 		return 0xff070000;	// no analog axes, X Y Z A B C Start U/D/L/R
 	}
 
-	u32 transform_kcode(u32 kcode) override
-	{
-		mutualExclusion(kcode, DC_DPAD_UP | DC_DPAD_DOWN);
-		mutualExclusion(kcode, DC_DPAD_LEFT | DC_DPAD_RIGHT);
+	virtual u32 transform_kcode(u32 kcode) override {
 		return kcode | 0xF800;
 	}
 
-	MapleDeviceType get_device_type() override {
+	virtual MapleDeviceType get_device_type() override {
 		return MDT_AsciiStick;
 	}
 
-	u32 get_analog_axis(int index, const PlainJoystickState &pjs) override {
+	virtual u32 get_analog_axis(int index, const PlainJoystickState &pjs) override {
 		return 0x80;
 	}
 
-	const char *get_device_name() override {
+	virtual const char *get_device_name() override {
 		return maple_ascii_stick_name;
 	}
 };
@@ -318,33 +297,13 @@ struct maple_sega_vmu: maple_base
 	u8 lcd_data[192];
 	u8 lcd_data_decoded[48*32];
 
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_SegaVMU;
 	}
 
-	void serialize(Serializer& ser) const override
-	{
-		maple_base::serialize(ser);
-		ser << flash_data;
-		ser << lcd_data;
-		ser << lcd_data_decoded;
-	}
-	void deserialize(Deserializer& deser) override
-	{
-		maple_base::deserialize(deser);
-		deser >> flash_data;
-		deser >> lcd_data;
-		deser >> lcd_data_decoded;
-		for (u8 b : lcd_data)
-			if (b != 0)
-			{
-				config->SetImage(lcd_data_decoded);
-				break;
-			}
-	}
-
-	void initializeVmu()
+	// creates an empty VMU
+	bool init_emptyvmu()
 	{
 		INFO_LOG(MAPLE, "Initialising empty VMU...");
 
@@ -354,51 +313,82 @@ struct maple_sega_vmu: maple_base
 		verify(rv == Z_OK);
 		verify(dec_sz == sizeof(flash_data));
 
-		if (file != nullptr)
-		{
-			if (std::fwrite(flash_data, sizeof(flash_data), 1, file) != 1)
-				WARN_LOG(MAPLE, "Failed to write the VMU to disk");
-			if (std::fseek(file, 0, SEEK_SET) != 0)
-				WARN_LOG(MAPLE, "VMU: I/O error");
-		}
+		return (rv == Z_OK && dec_sz == sizeof(flash_data));
 	}
 
-	void OnSetup() override
+	virtual bool maple_serialize(void **data, unsigned int *total_size) override
+	{
+		REICAST_SA(flash_data,128*1024);
+		REICAST_SA(lcd_data,192);
+		REICAST_SA(lcd_data_decoded,48*32);
+		return true ;
+	}
+	virtual bool maple_unserialize(void **data, unsigned int *total_size) override
+	{
+		REICAST_USA(flash_data,128*1024);
+		REICAST_USA(lcd_data,192);
+		REICAST_USA(lcd_data_decoded,48*32);
+		return true ;
+	}
+	virtual void OnSetup() override
 	{
 		memset(flash_data, 0, sizeof(flash_data));
 		memset(lcd_data, 0, sizeof(lcd_data));
-		std::string apath = hostfs::getVmuPath(logical_port);
+		char tempy[512];
+		sprintf(tempy, "vmu_save_%s.bin", logical_port);
+		// VMU saves used to be stored in .reicast, not in .reicast/data
+		std::string apath = get_writable_config_path(tempy);
+		if (!file_exists(apath))
+			apath = get_writable_data_path(tempy);
 
-		file = nowide::fopen(apath.c_str(), "rb+");
-		if (file == nullptr)
+		file = fopen(apath.c_str(), "rb+");
+		if (!file)
 		{
 			INFO_LOG(MAPLE, "Unable to open VMU save file \"%s\", creating new file", apath.c_str());
-			file = nowide::fopen(apath.c_str(), "wb+");
-			if (file == nullptr)
+			file = fopen(apath.c_str(), "wb");
+			if (file) {
+				if (!init_emptyvmu())
+					WARN_LOG(MAPLE, "Failed to initialize an empty VMU, you should reformat it using the BIOS");
+
+				fwrite(flash_data, sizeof(flash_data), 1, file);
+				fseek(file, 0, SEEK_SET);
+			}
+			else
+			{
 				ERROR_LOG(MAPLE, "Failed to create VMU save file \"%s\"", apath.c_str());
-			initializeVmu();
+			}
 		}
 
 		if (file != nullptr)
-			if (std::fread(flash_data, sizeof(flash_data), 1, file) != 1)
-				WARN_LOG(MAPLE, "Failed to read the VMU from disk");
+			fread(flash_data, 1, sizeof(flash_data), file);
 
 		u8 sum = 0;
 		for (u32 i = 0; i < sizeof(flash_data); i++)
 			sum |= flash_data[i];
 
-		if (sum == 0)
+		if (sum == 0) {
 			// This means the existing VMU file is completely empty and needs to be recreated
-			initializeVmu();
-	}
 
-	~maple_sega_vmu() override
+			if (init_emptyvmu())
+			{
+				if (file != nullptr)
+				{
+					fwrite(flash_data, sizeof(flash_data), 1, file);
+					fseek(file, 0, SEEK_SET);
+				}
+			}
+			else
+			{
+				WARN_LOG(MAPLE, "Failed to initialize an empty VMU, you should reformat it using the BIOS");
+			}
+		}
+
+	}
+	virtual ~maple_sega_vmu()
 	{
-		if (file != nullptr)
-			std::fclose(file);
+		if (file) fclose(file);
 	}
-
-	u32 dma(u32 cmd) override
+	virtual u32 dma(u32 cmd) override
 	{
 		//printf("maple_sega_vmu::dma Called for port %d:%d, Command %d\n", bus_id, bus_port, cmd);
 		switch (cmd)
@@ -586,8 +576,7 @@ struct maple_sega_vmu: maple_base
 
 		case MDCF_BlockWrite:
 			{
-				u32 function = r32();
-				switch (function)
+				switch(r32())
 				{
 					case MFID_1_Storage:
 					{
@@ -600,26 +589,21 @@ struct maple_sega_vmu: maple_base
 						if (write_adr + write_len > sizeof(flash_data))
 						{
 							INFO_LOG(MAPLE, "Failed to write VMU %s: overflow", logical_port);
-							skip(write_len);
-							return MDRE_FileError; //invalid params
+							return MDRE_TransmitAgain; //invalid params
 						}
 						rptr(&flash_data[write_adr],write_len);
 
-						if (file != nullptr)
+						if (file)
 						{
-							if (std::fseek(file, write_adr, SEEK_SET) != 0
-									|| std::fwrite(&flash_data[write_adr], write_len, 1, file) != 1)
-							{
-								WARN_LOG(MAPLE, "Failed to save VMU %s: I/O error", logical_port);
-								return MDRE_FileError; // I/O error
-							}
-							std::fflush(file);
+							fseek(file,write_adr,SEEK_SET);
+							fwrite(&flash_data[write_adr],1,write_len,file);
+							fflush(file);
 						}
 						else
 						{
 							INFO_LOG(MAPLE, "Failed to save VMU %s data", logical_port);
 						}
-						return MDRS_DeviceReply;
+						return MDRS_DeviceReply;//just ko
 					}
 
 					case MFID_2_LCD:
@@ -645,8 +629,8 @@ struct maple_sega_vmu: maple_base
 							}
 						}
 						config->SetImage(lcd_data_decoded);
-
-						return  MDRS_DeviceReply;
+						push_vmu_screen(bus_id, bus_port, lcd_data_decoded);
+						return  MDRS_DeviceReply;//just ko
 					}
 
 					case MFID_3_Clock:
@@ -665,7 +649,7 @@ struct maple_sega_vmu: maple_base
 						}
 
 					default:
-						INFO_LOG(MAPLE, "VMU: command MDCF_BlockWrite -> Unknown function %x", function);
+						INFO_LOG(MAPLE, "VMU: command MDCF_BlockWrite -> Bad function used, returning MDRE_UnknownFunction");
 						return  MDRE_UnknownFunction;//bad function
 				}
 			}
@@ -680,13 +664,11 @@ struct maple_sega_vmu: maple_base
 				{
 				case MFID_3_Clock:
 					{
-						u8 on = r8();
-						u8 period = r8();
-						r16(); // Alarm 2
-						INFO_LOG(MAPLE, "BEEP: %d/%d", on, period);
-						vmuBeep(on, period);
+						u32 bp = r32();
+						if (bp)
+							INFO_LOG(MAPLE, "BEEP : %08X", bp);
 					}
-					return MDRS_DeviceReply;
+					return MDRS_DeviceReply; //just ko
 
 				default:
 					INFO_LOG(MAPLE, "VMU: command MDCF_SetCondition -> Bad function used, returning MDRE_UnknownFunction");
@@ -696,23 +678,15 @@ struct maple_sega_vmu: maple_base
 			break;
 
 		case MDC_DeviceReset:
-			vmuBeep(0, 0);
 			return MDRS_DeviceReply;
 
 		case MDC_DeviceKill:
-			vmuBeep(0, 0);
 			return MDRS_DeviceReply;
 
 		default:
 			DEBUG_LOG(MAPLE, "Unknown MAPLE COMMAND %d", cmd);
 			return MDRE_UnknownCmd;
 		}
-	}
-
-	const void *getData(size_t& size) const override
-	{
-		size = sizeof(flash_data);
-		return flash_data;
 	}
 };
 
@@ -723,44 +697,44 @@ struct maple_microphone: maple_base
 	bool sampling;
 	bool eight_khz;
 
-	~maple_microphone() override
+	virtual ~maple_microphone()
 	{
 		if (sampling)
 			StopAudioRecording();
 	}
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_Microphone;
 	}
 
-	void serialize(Serializer& ser) const override
+	virtual bool maple_serialize(void **data, unsigned int *total_size) override
 	{
-		maple_base::serialize(ser);
-		ser << gain;
-		ser << sampling;
-		ser << eight_khz;
+		REICAST_S(gain);
+		REICAST_S(sampling);
+		REICAST_S(eight_khz);
+		REICAST_SKIP(480 - sizeof(u32) - sizeof(bool) * 2);
+		return true;
 	}
-	void deserialize(Deserializer& deser) override
+	virtual bool maple_unserialize(void **data, unsigned int *total_size) override
 	{
 		if (sampling)
 			StopAudioRecording();
-		maple_base::deserialize(deser);
-		deser >> gain;
-		deser >> sampling;
-		deser >> eight_khz;
-		deser.skip(480 - sizeof(u32) - sizeof(bool) * 2, Deserializer::V23);
+		REICAST_US(gain);
+		REICAST_US(sampling);
+		REICAST_US(eight_khz);
+		REICAST_SKIP(480 - sizeof(u32) - sizeof(bool) * 2);
 		if (sampling)
 			StartAudioRecording(eight_khz);
+		return true;
 	}
-
-	void OnSetup() override
+	virtual void OnSetup() override
 	{
 		gain = 0xf;
 		sampling = false;
 		eight_khz = false;
 	}
 
-	u32 dma(u32 cmd) override
+	virtual u32 dma(u32 cmd) override
 	{
 		switch (cmd)
 		{
@@ -900,27 +874,26 @@ struct maple_sega_purupuru : maple_base
 	u16 AST = 19, AST_ms = 5000;
 	u32 VIBSET;
 
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_PurupuruPack;
 	}
 
-	void serialize(Serializer& ser) const override
-	{
-		maple_base::serialize(ser);
-		ser << AST;
-		ser << AST_ms;
-		ser << VIBSET;
-	}
-	void deserialize(Deserializer& deser) override
-	{
-		maple_base::deserialize(deser);
-		deser >> AST;
-		deser >> AST_ms;
-		deser >> VIBSET;
-	}
-
-	u32 dma(u32 cmd) override
+   virtual bool maple_serialize(void **data, unsigned int *total_size) override
+   {
+      REICAST_S(AST);
+      REICAST_S(AST_ms);
+      REICAST_S(VIBSET);
+      return true ;
+   }
+   virtual bool maple_unserialize(void **data, unsigned int *total_size) override
+   {
+      REICAST_US(AST);
+      REICAST_US(AST_ms);
+      REICAST_US(VIBSET);
+      return true ;
+   }
+	virtual u32 dma(u32 cmd) override
 	{
 		switch (cmd)
 		{
@@ -1037,14 +1010,18 @@ struct maple_sega_purupuru : maple_base
 	}
 };
 
+u8 kb_shift; 		// shift keys pressed (bitmask)
+u8 kb_led; 			// leds currently lit
+u8 kb_key[6]={0};	// normal keys pressed
+
 struct maple_keyboard : maple_base
 {
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_Keyboard;
 	}
 
-	u32 dma(u32 cmd) override
+	virtual u32 dma(u32 cmd) override
 	{
 		switch (cmd)
 		{
@@ -1056,22 +1033,7 @@ struct maple_keyboard : maple_base
 
 			//struct data
 			//3*4
-			w8((u8)settings.input.keyboardLangId);
-			switch (settings.input.keyboardLangId)
-			{
-			case KeyboardLayout::JP:
-				w8(2);	// 92 keys
-				break;
-			case KeyboardLayout::US:
-				w8(5);	// 104 keys
-				break;
-			default:
-				w8(6);	// 105 keys
-				break;
-			}
-			w8(0);
-			w8(0x80);	// keyboard-controlled LEDs
-
+			w32(0x80000502);	// US, 104 keys
 			w32(0);
 			w32(0);
 			//1	area code
@@ -1093,21 +1055,18 @@ struct maple_keyboard : maple_base
 			return cmd == MDC_DeviceRequest ? MDRS_DeviceStatus : MDRS_DeviceStatusAll;
 
 		case MDCF_GetCondition:
+			w32(MFID_6_Keyboard);
+			//struct data
+			//int8 shift          ; shift keys pressed (bitmask)	//1
+			w8(kb_shift);
+			//int8 led            ; leds currently lit			//1
+			w8(kb_led);
+			//int8 key[6]         ; normal keys pressed			//6
+			for (int i = 0; i < 6; i++)
 			{
-				u8 shift;
-				u8 keys[6];
-				config->GetKeyboardInput(shift, keys);
-
-				w32(MFID_6_Keyboard);
-				//struct data
-				//int8 shift          ; shift keys pressed (bitmask)	//1
-				w8(shift);
-				//int8 led            ; leds currently lit			//1
-				w8(0);
-				//int8 key[6]         ; normal keys pressed			//6
-				for (int i = 0; i < 6; i++)
-					w8(keys[i]);
+				w8(kb_key[i]);
 			}
+
 			return MDRS_DataTransfer;
 
 		case MDC_DeviceReset:
@@ -1123,19 +1082,47 @@ struct maple_keyboard : maple_base
 	}
 };
 
+// Mouse buttons
+// bit 0: Button C
+// bit 1: Right button (B)
+// bit 2: Left button (A)
+// bit 3: Wheel button
+u32 mo_buttons = 0xFFFFFFFF;
+// Relative mouse coordinates [-512:511]
+f32 mo_x_delta;
+f32 mo_y_delta;
+f32 mo_wheel_delta;
+// Absolute mouse coordinates
+// Range [0:639] [0:479]
+// but may be outside this range if the pointer is offscreen or outside the 4:3 window.
+s32 mo_x_abs;
+s32 mo_y_abs;
+// previous mouse coordinates for relative motion
+s32 mo_x_prev = -1;
+s32 mo_y_prev = -1;
+// physical mouse coordinates (relative to window/screen)
+s32 mo_x_phy;
+s32 mo_y_phy;
+
 struct maple_mouse : maple_base
 {
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_Mouse;
 	}
 
-	static u16 mo_cvt(int delta)
+	static u16 mo_cvt(f32 delta)
 	{
-		return (u16)std::min(0x3FF, std::max(0, delta + 0x200));
+		delta += 0x200;
+		if (delta <= 0)
+			delta = 0;
+		else if (delta > 0x3FF)
+			delta = 0x3FF;
+
+		return (u16)lroundf(delta);
 	}
 
-	u32 dma(u32 cmd) override
+	virtual u32 dma(u32 cmd) override
 	{
 		switch (cmd)
 		{
@@ -1161,45 +1148,38 @@ struct maple_mouse : maple_base
 			wstr(maple_sega_brand, 60);
 
 			// Low-consumption standby current (2)
-			w16(0x0190);	// 40 mA
+			w16(0x0069);	// 10.5 mA
 
 			// Maximum current consumption (2)
-			w16(0x01f4);	// 50 mA
+			w16(0x0120);	// 28.8 mA
 
 			return cmd == MDC_DeviceRequest ? MDRS_DeviceStatus : MDRS_DeviceStatusAll;
 
 		case MDCF_GetCondition:
-			{
-				u8 buttons;
-				int x, y, wheel;
-				config->GetMouseInput(buttons, x, y, wheel);
+			w32(MFID_9_Mouse);
+			//struct data
+			//int32 buttons       ; digital buttons bitfield (little endian)
+			w32(mo_buttons);
+			//int16 axis1         ; horizontal movement (0-$3FF) (little endian)
+			w16(mo_cvt(mo_x_delta));
+			//int16 axis2         ; vertical movement (0-$3FF) (little endian)
+			w16(mo_cvt(mo_y_delta));
+			//int16 axis3         ; mouse wheel movement (0-$3FF) (little endian)
+			w16(mo_cvt(mo_wheel_delta));
+			//int16 axis4         ; ? movement (0-$3FF) (little endian)
+			w16(mo_cvt(0));
+			//int16 axis5         ; ? movement (0-$3FF) (little endian)
+			w16(mo_cvt(0));
+			//int16 axis6         ; ? movement (0-$3FF) (little endian)
+			w16(mo_cvt(0));
+			//int16 axis7         ; ? movement (0-$3FF) (little endian)
+			w16(mo_cvt(0));
+			//int16 axis8         ; ? movement (0-$3FF) (little endian)
+			w16(mo_cvt(0));
 
-				w32(MFID_9_Mouse);
-				// buttons (RLDUSABC, where A is left btn, B is right, and S is middle/scrollwheel)
-				w8(buttons);
-				// options
-				w8(0);
-				// axes overflow
-				w8(0);
-				// reserved
-				w8(0);
-				//int16 axis1         ; horizontal movement (0-$3FF) (little endian)
-				w16(mo_cvt(x));
-				//int16 axis2         ; vertical movement (0-$3FF) (little endian)
-				w16(mo_cvt(y));
-				//int16 axis3         ; mouse wheel movement (0-$3FF) (little endian)
-				w16(mo_cvt(wheel));
-				//int16 axis4         ; ? movement (0-$3FF) (little endian)
-				w16(mo_cvt(0));
-				//int16 axis5         ; ? movement (0-$3FF) (little endian)
-				w16(mo_cvt(0));
-				//int16 axis6         ; ? movement (0-$3FF) (little endian)
-				w16(mo_cvt(0));
-				//int16 axis7         ; ? movement (0-$3FF) (little endian)
-				w16(mo_cvt(0));
-				//int16 axis8         ; ? movement (0-$3FF) (little endian)
-				w16(mo_cvt(0));
-			}
+			mo_x_delta=0;
+			mo_y_delta=0;
+			mo_wheel_delta = 0;
 
 			return MDRS_DataTransfer;
 
@@ -1218,21 +1198,18 @@ struct maple_mouse : maple_base
 
 struct maple_lightgun : maple_base
 {
-	virtual u32 transform_kcode(u32 kcode)
-	{
-		mutualExclusion(kcode, DC_DPAD_UP | DC_DPAD_DOWN);
-		mutualExclusion(kcode, DC_DPAD_LEFT | DC_DPAD_RIGHT);
+	virtual u32 transform_kcode(u32 kcode) {
 		if ((kcode & DC_BTN_RELOAD) == 0)
 			kcode &= ~DC_BTN_A;	// trigger
 		return kcode | 0xFF01;
 	}
 
-	MapleDeviceType get_device_type() override
+	virtual MapleDeviceType get_device_type() override
 	{
 		return MDT_LightGun;
 	}
 
-	u32 dma(u32 cmd) override
+	virtual u32 dma(u32 cmd) override
 	{
 		switch (cmd)
 		{
@@ -1300,26 +1277,22 @@ struct maple_lightgun : maple_base
 		}
 	}
 
-	bool get_lightgun_pos() override
+	virtual bool get_lightgun_pos() override
 	{
 		PlainJoystickState pjs;
 		config->GetInput(&pjs);
-		int x, y;
-		config->GetAbsCoordinates(x, y);
 
 		if ((pjs.kcode & DC_BTN_RELOAD) == 0)
 			read_lightgun_position(-1, -1);
 		else
-			read_lightgun_position(x, y);
+			read_lightgun_position(mo_x_abs, mo_y_abs);
 		return true;
 	}
 };
 
 struct atomiswave_lightgun : maple_lightgun
 {
-	u32 transform_kcode(u32 kcode) override {
-		mutualExclusion(kcode, AWAVE_UP_KEY | AWAVE_DOWN_KEY);
-		mutualExclusion(kcode, AWAVE_LEFT_KEY | AWAVE_RIGHT_KEY);
+	virtual u32 transform_kcode(u32 kcode) override {
 		// No need for reload on AW
 		return (kcode & AWAVE_TRIGGER_KEY) == 0 ? ~AWAVE_BTN0_KEY : ~0;
 	}
@@ -1384,4 +1357,3 @@ maple_device* maple_Create(MapleDeviceType type)
 
 	return rv;
 }
-

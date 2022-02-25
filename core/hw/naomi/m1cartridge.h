@@ -15,14 +15,14 @@ class M1Cartridge : public NaomiCartridge
 public:
 	M1Cartridge(u32 size);
 
-	u32 ReadMem(u32 address, u32 size) override
+	virtual u32 ReadMem(u32 address, u32 size) override
 	{
 		if ((address & 0xff) == 0x14)
 			return actel_id;
 		return NaomiCartridge::ReadMem(address, size);
 	}
 
-	void* GetDmaPtr(u32 &size) override
+	virtual void* GetDmaPtr(u32 &size) override
 	{
 		if (encryption)
 		{
@@ -33,14 +33,14 @@ public:
 			return NaomiCartridge::GetDmaPtr(size);
 	}
 
-	void AdvancePtr(u32 size) override;
-	void Serialize(Serializer& ser) const override;
-	void Deserialize(Deserializer& deser) override;
+	virtual void AdvancePtr(u32 size) override;
+	virtual void Serialize(void** data, unsigned int* total_size) override;
+	virtual void Unserialize(void** data, unsigned int* total_size) override;
 
 	void setActelId(u32 actel_id) { this->actel_id = actel_id; }
 
 protected:
-	void DmaOffsetChanged(u32 dma_offset) override
+	virtual void DmaOffsetChanged(u32 dma_offset) override
 	{
 		rom_cur_address = dma_offset & 0x1fffffff;
 		if ((dma_offset & 0x20000000) == 0 && rom_cur_address < RomSize)

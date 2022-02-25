@@ -91,8 +91,8 @@ static void sb_write_zero(u32 addr, u32 data)
 static void sb_write_gdrom_unlock(u32 addr, u32 data)
 {
 	/* CS writes 0x42fe, AtomisWave 0xa677, Naomi Dev BIOS 0x3ff */
-	if (data != 0 && data != 0x001fffff && data != 0x42fe && data != 0xa677 && data != 0x3ff)
-		WARN_LOG(HOLLY, "ERROR: Unexpected GD-ROM unlock code: %x", data);
+	verify(data==0 || data==0x001fffff || data==0x42fe || data == 0xa677
+			|| data == 0x3ff);
 }
 
 void sb_rio_register(u32 reg_addr, RegIO flags, RegReadAddrFP* rf, RegWriteAddrFP* wf)
@@ -146,8 +146,8 @@ static void sb_write_SB_SFRES(u32 addr, u32 data)
 {
 	if ((u16)data==0x7611)
 	{
-		NOTICE_LOG(SH4, "SB/HOLLY: System reset requested");
-		emu.requestReset();
+		INFO_LOG(SH4, "SB/HOLLY: System reset requested");
+		dc_request_reset();
 	}
 }
 
@@ -581,8 +581,10 @@ void sb_Init()
 	maple_Init();
 	aica_sb_Init();
 
-	bba_Init();
-	ModemInit();
+	if (settings.network.EmulateBBA)
+		bba_Init();
+	else
+		ModemInit();
 }
 
 void sb_Reset(bool hard)
@@ -596,8 +598,10 @@ void sb_Reset(bool hard)
 	SB_FFST_rc = 0;
 	SB_FFST = 0;
 
-	bba_Reset(hard);
-	ModemReset();
+	if (settings.network.EmulateBBA)
+		bba_Reset(hard);
+	else
+		ModemTerm();
 
 	asic_reg_Reset(hard);
 	if (settings.platform.system == DC_PLATFORM_DREAMCAST)
@@ -611,8 +615,10 @@ void sb_Reset(bool hard)
 
 void sb_Term()
 {
-	bba_Term();
-	ModemTerm();
+	if (settings.network.EmulateBBA)
+		bba_Term();
+	else
+		ModemTerm();
 	aica_sb_Term();
 	maple_Term();
 	pvr_sb_Term();

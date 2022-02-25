@@ -4,23 +4,11 @@
 #include "rend/TexCache.h"
 #include "wsi/gl_context.h"
 #include "glcache.h"
-#include "postprocess.h"
-#include "rend/shader_util.h"
-#ifndef LIBRETRO
-#include "rend/imgui_driver.h"
-#endif
 
 #include <unordered_map>
 #include <glm/glm.hpp>
 
-#ifndef GL_TEXTURE_MAX_ANISOTROPY
-#define GL_TEXTURE_MAX_ANISOTROPY         0x84FE
-#endif
-#ifndef GL_MAX_TEXTURE_MAX_ANISOTROPY
-#define GL_MAX_TEXTURE_MAX_ANISOTROPY     0x84FF
-#endif
-
-#define glCheck() do { if (unlikely(config::OpenGlChecks)) { verify(glGetError()==GL_NO_ERROR); } } while(0)
+#define glCheck() do { if (unlikely(settings.validate.OpenGlChecks)) { verify(glGetError()==GL_NO_ERROR); } } while(0)
 
 #define VERTEX_POS_ARRAY 0
 #define VERTEX_COL_BASE_ARRAY 1
@@ -96,23 +84,15 @@ struct gl_ctx
 	struct
 	{
 		GLuint geometry,modvols,idxs,idxs2;
-		GLuint mainVAO;
-		GLuint modvolVAO;
+		GLuint vao;
 	} vbo;
 
 	struct
 	{
-		u32 texAddress = ~0;
+		u32 TexAddr;
 		GLuint depthb;
 		GLuint tex;
 		GLuint fbo;
-		GLuint pbo;
-		u32 pboSize;
-		bool directXfer;
-		u32 width;
-		u32 height;
-		u32 fb_w_ctrl;
-		u32 linestride;
 	} rtt;
 
 	struct
@@ -123,7 +103,6 @@ struct gl_ctx
 		GLuint fbo;
 		int width;
 		int height;
-		GLuint origFbo;
 	} ofbo;
 
 	const char *gl_version;
@@ -136,8 +115,6 @@ struct gl_ctx
 	bool GL_OES_packed_depth_stencil_supported;
 	bool GL_OES_depth24_supported;
 	bool highp_float_supported;
-	float max_anisotropy;
-	bool mesa_nouveau;
 
 	size_t get_index_size() { return index_type == GL_UNSIGNED_INT ? sizeof(u32) : sizeof(u16); }
 };
@@ -145,8 +122,13 @@ struct gl_ctx
 extern gl_ctx gl;
 extern GLuint fbTextureId;
 
-BaseTextureCacheData *gl_GetTexture(TSP tsp, TCW tcw);
-
+u64 gl_GetTexture(TSP tsp,TCW tcw);
+struct text_info {
+	u16* pdata;
+	u32 width;
+	u32 height;
+	u32 textype; // 0 565, 1 1555, 2 4444
+};
 enum ModifierVolumeMode { Xor, Or, Inclusion, Exclusion, ModeCount };
 
 void gl_load_osd_resources();
@@ -154,7 +136,6 @@ void gl_free_osd_resources();
 bool ProcessFrame(TA_context* ctx);
 void UpdateFogTexture(u8 *fog_table, GLenum texture_slot, GLint fog_image_format);
 void UpdatePaletteTexture(GLenum texture_slot);
-void termGLCommon();
 void findGLVersion();
 void GetFramebufferScaling(float& scale_x, float& scale_y, float& scissoring_scale_x, float& scissoring_scale_y);
 void GetFramebufferSize(float& dc_width, float& dc_height);
@@ -162,11 +143,12 @@ void SetupMatrices(float dc_width, float dc_height,
 				   float scale_x, float scale_y, float scissoring_scale_x, float scissoring_scale_y,
 				   float &ds2s_offs_x, glm::mat4& normal_mat, glm::mat4& scissor_mat);
 
+text_info raw_GetTexture(TSP tsp, TCW tcw);
 void SetCull(u32 CullMode);
 s32 SetTileClip(u32 val, GLint uniform);
 void SetMVS_Mode(ModifierVolumeMode mv_mode, ISP_Modvol ispc);
 
-GLuint BindRTT(bool withDepthBuffer = true);
+void BindRTT(u32 addy, u32 fbw, u32 fbh, u32 channels, u32 fmt);
 void ReadRTTBuffer();
 void RenderFramebuffer();
 void DrawFramebuffer();
@@ -239,12 +221,12 @@ class TextureCacheData final : public BaseTextureCacheData
 {
 public:
 	GLuint texID;   //gl texture
-	std::string GetId() override { return std::to_string(texID); }
-	void UploadToGPU(int width, int height, u8 *temp_tex_buffer, bool mipmapped, bool mipmapsIncluded = false) override;
-	bool Delete() override;
+	virtual std::string GetId() override { return std::to_string(texID); }
+	virtual void UploadToGPU(int width, int height, u8 *temp_tex_buffer, bool mipmapped, bool mipmapsIncluded = false) override;
+	virtual bool Delete() override;
 };
 
-class GlTextureCache final : public BaseTextureCache<TextureCacheData>
+class TextureCache final : public BaseTextureCache<TextureCacheData>
 {
 public:
 	void Cleanup()
@@ -261,7 +243,7 @@ public:
 private:
 	std::vector<GLuint> texturesToDelete;
 };
-extern GlTextureCache TexCache;
+extern TextureCache TexCache;
 
 extern const u32 Zfunction[8];
 extern const u32 SrcBlendGL[], DstBlendGL[];
@@ -269,10 +251,10 @@ extern const u32 SrcBlendGL[], DstBlendGL[];
 struct OpenGLRenderer : Renderer
 {
 	bool Init() override;
-	void Resize(int w, int h) override { width = w; height = h; }
+	void Resize(int w, int h) override { screen_width = w; screen_height = h; }
 	void Term() override;
 
-	bool Process(TA_context* ctx) override;
+	bool Process(TA_context* ctx) override { return ProcessFrame(ctx); }
 
 	bool Render() override;
 
@@ -280,52 +262,18 @@ struct OpenGLRenderer : Renderer
 
 	void DrawOSD(bool clear_screen) override { OSD_DRAW(clear_screen); }
 
-	BaseTextureCacheData *GetTexture(TSP tsp, TCW tcw) override
+	virtual u64 GetTexture(TSP tsp, TCW tcw) override
 	{
 		return gl_GetTexture(tsp, tcw);
 	}
 
-	bool Present() override
+	virtual bool Present() override
 	{
 		if (!frameRendered)
 			return false;
-#ifndef LIBRETRO
-		imguiDriver->setFrameRendered();
-#endif
 		frameRendered = false;
 		return true;
 	}
 
-	virtual GLenum getFogTextureSlot() const {
-		return GL_TEXTURE1;
-	}
-	virtual GLenum getPaletteTextureSlot() const {
-		return GL_TEXTURE2;
-	}
-
 	bool frameRendered = false;
-	int width;
-	int height;
 };
-
-void initQuad();
-void termQuad();
-void drawQuad(GLuint texId, bool rotate = false, bool swapY = false);
-
-extern const char* ShaderCompatSource;
-extern const char *VertexCompatShader;
-extern const char *PixelCompatShader;
-
-class OpenGlSource : public ShaderSource
-{
-public:
-	OpenGlSource() : ShaderSource(gl.glsl_version_header) {
-		addConstant("TARGET_GL", gl.gl_version);
-		addSource(ShaderCompatSource);
-	}
-};
-
-#ifdef LIBRETRO
-extern "C" struct retro_hw_render_callback hw_render;
-void termVmuLightgun();
-#endif

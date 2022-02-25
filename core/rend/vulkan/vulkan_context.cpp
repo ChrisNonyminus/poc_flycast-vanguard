@@ -24,20 +24,17 @@
 #include "../gui.h"
 #ifdef USE_SDL
 #include <sdl/sdl.h>
-#include <SDL_vulkan.h>
+#include <SDL2/SDL_vulkan.h>
 #endif
 #include "compiler.h"
 #include "texture.h"
 #include "utils.h"
 #include "emulator.h"
-#include "oslib/oslib.h"
-#include "vulkan_driver.h"
-
-void ReInitOSD();
 
 VulkanContext *VulkanContext::contextInstance;
 
-#ifdef VK_DEBUG
+static const char *PipelineCacheFileName = "vulkan_pipeline.cache";
+
 #ifndef __ANDROID__
 VKAPI_ATTR static VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes,
 									 VkDebugUtilsMessengerCallbackDataEXT const * pCallbackData, void * /*pUserData*/)
@@ -125,17 +122,14 @@ static void CheckImGuiResult(VkResult err)
 	if (err != VK_SUCCESS)
 		WARN_LOG(RENDERER, "ImGui Vulkan error %d", err);
 }
-#endif
 
 bool VulkanContext::InitInstance(const char** extensions, uint32_t extensions_count)
 {
-#ifndef TARGET_IPHONE
 	if (volkInitialize() != VK_SUCCESS)
 	{
 		ERROR_LOG(RENDERER, "Cannot load Vulkan libraries");
 		return false;
 	}
-#endif
 	try
 	{
 		bool vulkan11 = false;
@@ -156,8 +150,9 @@ bool VulkanContext::InitInstance(const char** extensions, uint32_t extensions_co
 #ifdef VK_DEBUG
 #ifndef __ANDROID__
 		vext.push_back("VK_EXT_debug_utils");
-		vext.push_back("VK_EXT_debug_report");
-		layer_names.push_back("VK_LAYER_KHRONOS_validation");
+//		layer_names.push_back("VK_LAYER_KHRONOS_validation");
+		layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
+		layer_names.push_back("VK_LAYER_LUNARG_assistant_layer");
 #else
 		vext.push_back("VK_EXT_debug_report");	// NDK <= 19?
 		layer_names.push_back("VK_LAYER_GOOGLE_threading");
@@ -171,9 +166,7 @@ bool VulkanContext::InitInstance(const char** extensions, uint32_t extensions_co
 		// create a UniqueInstance
 		instance = vk::createInstanceUnique(instanceCreateInfo);
 
-#ifndef TARGET_IPHONE
 		volkLoadInstance(static_cast<VkInstance>(*instance));
-#endif
 
 #ifdef VK_DEBUG
 #ifndef __ANDROID__
@@ -228,7 +221,6 @@ bool VulkanContext::InitInstance(const char** extensions, uint32_t extensions_co
 		uniformBufferAlignment = properties->limits.minUniformBufferOffsetAlignment;
 		storageBufferAlignment = properties->limits.minStorageBufferOffsetAlignment;
 		maxStorageBufferRange = properties->limits.maxStorageBufferRange;
-		maxSamplerAnisotropy =  properties->limits.maxSamplerAnisotropy;
 		unifiedMemory = properties->deviceType == vk::PhysicalDeviceType::eIntegratedGpu;
 		vendorID = properties->vendorID;
 		NOTICE_LOG(RENDERER, "Vulkan API %s. Device %s", vulkan11 ? "1.1" : "1.0", properties->deviceName);
@@ -258,8 +250,6 @@ bool VulkanContext::InitInstance(const char** extensions, uint32_t extensions_co
 		physicalDevice.getFeatures(&features);
 		fragmentStoresAndAtomics = features.fragmentStoresAndAtomics;
 		samplerAnisotropy = features.samplerAnisotropy;
-		if (!fragmentStoresAndAtomics)
-			NOTICE_LOG(RENDERER, "Fragment stores & atomic not supported: no per-pixel sorting");
 
 		ShaderCompiler::Init();
 
@@ -276,9 +266,46 @@ bool VulkanContext::InitInstance(const char** extensions, uint32_t extensions_co
 	return false;
 }
 
+vk::Format VulkanContext::FindDepthFormat()
+{
+	const vk::Format depthFormats[] = { vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint, vk::Format::eD16UnormS8Uint };
+	vk::ImageTiling tiling;
+	depthFormat = vk::Format::eUndefined;
+	for (size_t i = 0; i < ARRAY_SIZE(depthFormats); i++)
+	{
+		vk::FormatProperties formatProperties = physicalDevice.getFormatProperties(depthFormats[i]);
+
+		if (formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eDepthStencilAttachment)
+		{
+			tiling = vk::ImageTiling::eOptimal;
+			depthFormat = depthFormats[i];
+			break;
+		}
+	}
+	if (depthFormat == vk::Format::eUndefined)
+	{
+		// Try to find a linear format
+		for (size_t i = 0; i < ARRAY_SIZE(depthFormats); i++)
+		{
+			vk::FormatProperties formatProperties = physicalDevice.getFormatProperties(depthFormats[i]);
+
+			if (formatProperties.linearTilingFeatures & vk::FormatFeatureFlagBits::eDepthStencilAttachment)
+			{
+				tiling = vk::ImageTiling::eLinear;
+				depthFormat = depthFormats[i];
+				break;
+			}
+		}
+		if (depthFormat == vk::Format::eUndefined)
+			die("No supported depth/stencil format found");
+	}
+	NOTICE_LOG(RENDERER, "Using depth format %s tiling %s", vk::to_string(depthFormat).c_str(), vk::to_string(tiling).c_str());
+
+	return depthFormat;
+}
+
 void VulkanContext::InitImgui()
 {
-	imguiDriver = std::unique_ptr<ImGuiDriver>(new VulkanDriver());
 	gui_init();
 	ImGui_ImplVulkan_InitInfo initInfo = {};
 	initInfo.Instance = (VkInstance)*instance;
@@ -384,23 +411,13 @@ bool VulkanContext::InitDevice()
 				deviceExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
 				dedicatedAllocationSupported = true;
 			}
-			else if (!strcmp(property.extensionName, "VK_KHR_portability_subset"))
-				deviceExtensions.push_back("VK_KHR_portability_subset");
 #ifdef VK_DEBUG
-			else if (!strcmp(property.extensionName, VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
+			else if (!strcmp(property.extensionName, VK_EXT_DEBUG_MARKER_EXTENSION_NAME)
+					|| !strcmp(property.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
+					|| !strcmp(property.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
 			{
 				NOTICE_LOG(RENDERER, "Debug extension %s available", property.extensionName);
-				deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-			}
-			else if(!strcmp(property.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
-			{
-				NOTICE_LOG(RENDERER, "Debug extension %s available", property.extensionName);
-				deviceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-			}
-			else if (!strcmp(property.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
-			{
-				NOTICE_LOG(RENDERER, "Debug extension %s available", property.extensionName);
-				deviceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+				deviceExtensions.push_back(property.extensionName);
 			}
 #endif
 		}
@@ -418,10 +435,8 @@ bool VulkanContext::InitDevice()
 		device = physicalDevice.createDeviceUnique(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), 1, &deviceQueueCreateInfo,
 				0, layers, deviceExtensions.size(), &deviceExtensions[0], &features));
 
-#ifndef TARGET_IPHONE
 		// This links entry points directly from the driver and isn't absolutely necessary
 		volkLoadDevice(static_cast<VkDevice>(*device));
-#endif
 
 	    // Queues
 	    graphicsQueue = device->getQueue(graphicsQueueIndex, 0);
@@ -431,7 +446,7 @@ bool VulkanContext::InitDevice()
         vk::DescriptorPoolSize pool_sizes[] =
         {
             { vk::DescriptorType::eSampler, 2 },
-            { vk::DescriptorType::eCombinedImageSampler, 15000 },
+            { vk::DescriptorType::eCombinedImageSampler, 4000 },
             { vk::DescriptorType::eSampledImage, 2 },
             { vk::DescriptorType::eStorageImage, 12 },
             { vk::DescriptorType::eUniformTexelBuffer, 2 },
@@ -446,31 +461,28 @@ bool VulkanContext::InitDevice()
 	    		10000, ARRAY_SIZE(pool_sizes), pool_sizes));
 
 
-	    std::string cachePath = hostfs::getShaderCachePath("vulkan_pipeline.cache");
-	    FILE *f = nowide::fopen(cachePath.c_str(), "rb");
+	    std::string cachePath = get_readonly_data_path(PipelineCacheFileName);
+	    FILE *f = fopen(cachePath.c_str(), "rb");
 	    if (f == nullptr)
 	    	pipelineCache = device->createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
 	    else
 	    {
-	    	std::fseek(f, 0, SEEK_END);
-	    	size_t cacheSize = std::ftell(f);
-	    	std::fseek(f, 0, SEEK_SET);
+	    	fseek(f, 0, SEEK_END);
+	    	size_t cacheSize = ftell(f);
+	    	fseek(f, 0, SEEK_SET);
 	    	u8 *cacheData = new u8[cacheSize];
-	    	if (std::fread(cacheData, 1, cacheSize, f) != cacheSize)
+	    	if (fread(cacheData, 1, cacheSize, f) != cacheSize)
 	    		cacheSize = 0;
-	    	std::fclose(f);
+	    	fclose(f);
     		pipelineCache = device->createPipelineCacheUnique(vk::PipelineCacheCreateInfo(vk::PipelineCacheCreateFlags(), cacheSize, cacheData));
     		delete [] cacheData;
     		INFO_LOG(RENDERER, "Vulkan pipeline cache loaded from %s: %zd bytes", cachePath.c_str(), cacheSize);
 	    }
-	    allocator.Init(physicalDevice, *device, *instance);
+	    allocator.Init(physicalDevice, *device);
 
 	    shaderManager = std::unique_ptr<ShaderManager>(new ShaderManager());
-	    quadPipeline = std::unique_ptr<QuadPipeline>(new QuadPipeline(true, false));
-	    quadPipelineWithAlpha = std::unique_ptr<QuadPipeline>(new QuadPipeline(false, false));
+	    quadPipeline = std::unique_ptr<QuadPipeline>(new QuadPipeline());
 	    quadDrawer = std::unique_ptr<QuadDrawer>(new QuadDrawer());
-	    quadRotatePipeline = std::unique_ptr<QuadPipeline>(new QuadPipeline(true, true));
-	    quadRotateDrawer = std::unique_ptr<QuadDrawer>(new QuadDrawer());
 
 		CreateSwapChain();
 
@@ -496,7 +508,6 @@ void VulkanContext::CreateSwapChain()
 	{
 		device->waitIdle();
 
-		overlay->Term();
 		framebuffers.clear();
 		drawFences.clear();
 		imageAcquiredSemaphores.clear();
@@ -543,38 +554,39 @@ void VulkanContext::CreateSwapChain()
 			}
 			SetWindowSize(swapchainExtent.width, swapchainExtent.height);
 			resized = false;
-			if (!IsValid())
+			if (swapchainExtent.width == 0 || swapchainExtent.height == 0)
 				throw InvalidVulkanContext();
 
 			// The FIFO present mode is guaranteed by the spec to be supported
 			vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
 			// Use FIFO on mobile, prefer Mailbox on desktop
+#if HOST_CPU != CPU_ARM && HOST_CPU != CPU_ARM64 && !defined(__ANDROID__)
 			for (auto& presentMode : physicalDevice.getSurfacePresentModesKHR(GetSurface()))
 			{
-#if HOST_CPU != CPU_ARM && HOST_CPU != CPU_ARM64 && !defined(__ANDROID__)
-				if (swapOnVSync && presentMode == vk::PresentModeKHR::eMailbox
-						&& vendorID != VENDOR_ATI && vendorID != VENDOR_AMD)
+				if (presentMode == vk::PresentModeKHR::eMailbox)
 				{
 					INFO_LOG(RENDERER, "Using mailbox present mode");
 					swapchainPresentMode = vk::PresentModeKHR::eMailbox;
 					break;
 				}
-#endif
-				if (!swapOnVSync && presentMode == vk::PresentModeKHR::eImmediate)
+#ifdef TEST_AUTOMATION
+				if (presentMode == vk::PresentModeKHR::eImmediate)
 				{
 					INFO_LOG(RENDERER, "Using immediate present mode");
 					swapchainPresentMode = vk::PresentModeKHR::eImmediate;
 					break;
 				}
+#endif
 			}
-			if (swapOnVSync && config::DupeFrames && settings.display.refreshRate > 60.f)
-				swapInterval = settings.display.refreshRate / 60.f;
-			else
-				swapInterval = 1;
+#endif
 
 			vk::SurfaceTransformFlagBitsKHR preTransform = (surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity) ? vk::SurfaceTransformFlagBitsKHR::eIdentity : surfaceCapabilities.currentTransform;
 
-			u32 imageCount = std::max(3u * swapInterval, surfaceCapabilities.minImageCount);
+			vk::CompositeAlphaFlagBitsKHR compositeAlpha =
+					(surfaceCapabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePreMultiplied) ? vk::CompositeAlphaFlagBitsKHR::ePreMultiplied :
+					(surfaceCapabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePostMultiplied) ? vk::CompositeAlphaFlagBitsKHR::ePostMultiplied :
+					(surfaceCapabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eInherit) ? vk::CompositeAlphaFlagBitsKHR::eInherit : vk::CompositeAlphaFlagBitsKHR::eOpaque;
+			u32 imageCount = std::max(2u, surfaceCapabilities.minImageCount);
 			if (surfaceCapabilities.maxImageCount != 0)
 				imageCount = std::min(imageCount, surfaceCapabilities.maxImageCount);
 			vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eColorAttachment;
@@ -583,7 +595,7 @@ void VulkanContext::CreateSwapChain()
 			usage |= vk::ImageUsageFlagBits::eTransferSrc;
 #endif
 			vk::SwapchainCreateInfoKHR swapChainCreateInfo(vk::SwapchainCreateFlagsKHR(), GetSurface(), imageCount, colorFormat, vk::ColorSpaceKHR::eSrgbNonlinear,
-					swapchainExtent, 1, usage, vk::SharingMode::eExclusive, 0, nullptr, preTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, swapchainPresentMode, true, nullptr);
+					swapchainExtent, 1, usage, vk::SharingMode::eExclusive, 0, nullptr, preTransform, compositeAlpha, swapchainPresentMode, true, nullptr);
 
 			u32 queueFamilyIndices[2] = { graphicsQueueIndex, presentQueueIndex };
 			if (graphicsQueueIndex != presentQueueIndex)
@@ -628,7 +640,7 @@ void VulkanContext::CreateSwapChain()
 		    commandBuffers.push_back(std::move(device->allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo(*commandPools.back(), vk::CommandBufferLevel::ePrimary, 1)).front()));
 		}
 
-	    depthFormat = findDepthFormat(physicalDevice);
+	    FindDepthFormat();
 
 	    // Render pass
 	    vk::AttachmentDescription attachmentDescription = vk::AttachmentDescription(vk::AttachmentDescriptionFlags(), colorFormat, vk::SampleCountFlagBits::e1,
@@ -656,17 +668,13 @@ void VulkanContext::CreateSwapChain()
 	    	renderCompleteSemaphores.push_back(device->createSemaphoreUnique(vk::SemaphoreCreateInfo()));
 	    	imageAcquiredSemaphores.push_back(device->createSemaphoreUnique(vk::SemaphoreCreateInfo()));
 	    }
-	    quadPipeline->Init(shaderManager.get(), *renderPass, 0);
-	    quadPipelineWithAlpha->Init(shaderManager.get(), *renderPass, 0);
+	    quadPipeline->Init(shaderManager.get(), *renderPass);
 	    quadDrawer->Init(quadPipeline.get());
-	    quadRotatePipeline->Init(shaderManager.get(), *renderPass, 0);
-	    quadRotateDrawer->Init(quadRotatePipeline.get());
-	    overlay->Init(quadPipelineWithAlpha.get());
+	    vmus->Init(quadPipeline.get());
 
 	    InitImgui();
 
 	    currentImage = GetSwapChainSize() - 1;
-	    ReInitOSD();
 
 	    INFO_LOG(RENDERER, "Vulkan swap chain created: %d x %d, swap chain size %d", width, height, (int)imageViews.size());
 	}
@@ -678,27 +686,22 @@ void VulkanContext::CreateSwapChain()
 	}
 }
 
-bool VulkanContext::init()
+bool VulkanContext::Init()
 {
-	GraphicsContext::instance = this;
-
 	std::vector<const char *> extensions;
 	extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #if defined(USE_SDL)
-	if (!sdl_recreate_window(SDL_WINDOW_VULKAN))
-		return false;
+	sdl_recreate_window(SDL_WINDOW_VULKAN);
     uint32_t extensionsCount = 0;
     SDL_Vulkan_GetInstanceExtensions((SDL_Window *)window, &extensionsCount, NULL);
-    extensions.resize(extensionsCount + extensions.size());
-    SDL_Vulkan_GetInstanceExtensions((SDL_Window *)window, &extensionsCount, &extensions[extensions.size() - extensionsCount]);
+    extensions.resize(extensionsCount + 1);
+    SDL_Vulkan_GetInstanceExtensions((SDL_Window *)window, &extensionsCount, &extensions[1]);
 #elif defined(_WIN32)
     extern void CreateMainWindow();
     CreateMainWindow();
 	extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
-	extensions.push_back(VK_MVK_IOS_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_METAL_EXT)
-	extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
+#elif defined(__APPLE__)
+	extensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
 #elif defined(SUPPORT_X11)
 	extensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
 #elif defined(__ANDROID__)
@@ -711,15 +714,7 @@ bool VulkanContext::init()
     VkSurfaceKHR surface;
     if (SDL_Vulkan_CreateSurface((SDL_Window *)window, (VkInstance)*instance, &surface) == 0)
     	return false;
-    this->surface.reset(vk::SurfaceKHR(surface));
-    SDL_Window *sdlWin = (SDL_Window *)window;
-    int w, h;
-    SDL_GetWindowSize(sdlWin, &w, &h);
-    SDL_Vulkan_GetDrawableSize(sdlWin, &settings.display.width, &settings.display.height);
-    settings.display.pointScale = (float)settings.display.width / w;
-	float hdpi, vdpi;
-	if (!SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(sdlWin), nullptr, &hdpi, &vdpi))
-		screen_dpi = (int)roundf(std::max(hdpi, vdpi));
+    this->surface.reset(surface);
 #elif defined(_WIN32)
 	vk::Win32SurfaceCreateInfoKHR createInfo(vk::Win32SurfaceCreateFlagsKHR(), GetModuleHandle(NULL), (HWND)window);
 	surface = instance->createWin32SurfaceKHRUnique(createInfo);
@@ -729,17 +724,8 @@ bool VulkanContext::init()
 #elif defined(__ANDROID__)
 	vk::AndroidSurfaceCreateInfoKHR createInfo(vk::AndroidSurfaceCreateFlagsKHR(), (struct ANativeWindow*)window);
 	surface = instance->createAndroidSurfaceKHRUnique(createInfo);
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
-	vk::IOSSurfaceCreateInfoMVK createInfo(vk::IOSSurfaceCreateFlagsMVK(), window);
-	surface = instance->createIOSSurfaceMVKUnique(createInfo);
-#elif defined(VK_USE_PLATFORM_METAL_EXT)
-	vk::MetalSurfaceCreateInfoEXT createInfo(vk::MetalSurfaceCreateFlagsEXT(), window);
-	surface = instance->createMetalSurfaceEXTUnique(createInfo);
-#else
-#error "Unknown Vulkan platform"
 #endif
-	overlay = std::unique_ptr<VulkanOverlay>(new VulkanOverlay());
-	textureCache = std::unique_ptr<TextureCache>(new TextureCache());
+	vmus = std::unique_ptr<VulkanVMUs>(new VulkanVMUs());
 
 	return InitDevice();
 }
@@ -749,6 +735,7 @@ void VulkanContext::NewFrame()
 	if (resized || HasSurfaceDimensionChanged())
 	{
 		CreateSwapChain();
+		rend_resize(screen_width, screen_height);
 		lastFrameView = vk::ImageView();
 	}
 	if (!IsValid())
@@ -759,7 +746,6 @@ void VulkanContext::NewFrame()
 	device->resetCommandPool(*commandPools[currentImage], vk::CommandPoolResetFlagBits::eReleaseResources);
 	vk::CommandBuffer commandBuffer = *commandBuffers[currentImage];
 	commandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-	textureCache->SetCurrentIndex(GetCurrentImageIndex());
 	verify(!rendering);
 	rendering = true;
 }
@@ -768,13 +754,13 @@ void VulkanContext::BeginRenderPass()
 {
 	if (!IsValid())
 		return;
-	const vk::ClearValue clear_colors[] = { getBorderColor(), vk::ClearDepthStencilValue{ 0.f, 0 } };
+	const vk::ClearValue clear_colors[] = { vk::ClearColorValue(std::array<float, 4>{0.f, 0.f, 0.f, 1.f}), vk::ClearDepthStencilValue{ 0.f, 0 } };
 	vk::CommandBuffer commandBuffer = *commandBuffers[currentImage];
 	commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(*renderPass, *framebuffers[currentImage], vk::Rect2D({0, 0}, {width, height}), 2, clear_colors),
 			vk::SubpassContents::eInline);
 }
 
-void VulkanContext::EndFrame(vk::CommandBuffer overlayCmdBuffer)
+void VulkanContext::EndFrame(const std::vector<vk::UniqueCommandBuffer> *cmdBuffers)
 {
 	if (!IsValid())
 		return;
@@ -783,8 +769,8 @@ void VulkanContext::EndFrame(vk::CommandBuffer overlayCmdBuffer)
 	commandBuffer.end();
 	vk::PipelineStageFlags wait_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 	std::vector<vk::CommandBuffer> allCmdBuffers;
-	if (overlayCmdBuffer)
-		allCmdBuffers.push_back(overlayCmdBuffer);
+	if (cmdBuffers != nullptr)
+		allCmdBuffers = vk::uniqueToRaw(*cmdBuffers);
 	allCmdBuffers.push_back(commandBuffer);
 	vk::SubmitInfo submitInfo(1, &(*imageAcquiredSemaphores[currentSemaphore]), &wait_stage, allCmdBuffers.size(),allCmdBuffers.data(),
 			1, &(*renderCompleteSemaphores[currentSemaphore]));
@@ -802,14 +788,6 @@ void VulkanContext::Present() noexcept
 			DoSwapAutomation();
 			presentQueue.presentKHR(vk::PresentInfoKHR(1, &(*renderCompleteSemaphores[currentSemaphore]), 1, &(*swapChain), &currentImage));
 			currentSemaphore = (currentSemaphore + 1) % imageViews.size();
-
-			if (lastFrameView && IsValid() && !gui_is_open())
-				for (int i = 1; i < swapInterval; i++)
-				{
-					PresentFrame(vk::Image(), lastFrameView, lastFrameExtent);
-					presentQueue.presentKHR(vk::PresentInfoKHR(1, &(*renderCompleteSemaphores[currentSemaphore]), 1, &(*swapChain), &currentImage));
-					currentSemaphore = (currentSemaphore + 1) % imageViews.size();
-				}
 		} catch (const vk::SystemError& e) {
 			// Happens when resizing the window
 			INFO_LOG(RENDERER, "vk::SystemError %s", e.what());
@@ -817,46 +795,33 @@ void VulkanContext::Present() noexcept
 		}
 		renderDone = false;
 	}
-	if (swapOnVSync == (settings.input.fastForwardMode || !config::VSync))
-	{
-		swapOnVSync = (!settings.input.fastForwardMode && config::VSync);
-		resized = true;
-	}
 	if (resized)
 		try {
 			CreateSwapChain();
-			lastFrameView = vk::ImageView();
 		} catch (const InvalidVulkanContext& err) {
 		}
 }
 
-void VulkanContext::DrawFrame(vk::ImageView imageView, const vk::Extent2D& extent)
+void VulkanContext::DrawFrame(vk::ImageView imageView, vk::Extent2D extent)
 {
+	float marginWidth = ((float)extent.height / extent.width * width / height - 1.f) / 2.f;
 	QuadVertex vtx[] = {
-		{ { -1, -1, 0 }, { 0, 0 } },
-		{ {  1, -1, 0 }, { 1, 0 } },
-		{ { -1,  1, 0 }, { 0, 1 } },
-		{ {  1,  1, 0 }, { 1, 1 } },
+		{ { -1, -1, 0 }, { 0 - marginWidth, 0 } },
+		{ {  1, -1, 0 }, { 1 + marginWidth, 0 } },
+		{ { -1,  1, 0 }, { 0 - marginWidth, 1 } },
+		{ {  1,  1, 0 }, { 1 + marginWidth, 1 } },
 	};
 
 	vk::CommandBuffer commandBuffer = GetCurrentCommandBuffer();
-	if (config::Rotate90)
-		quadRotatePipeline->BindPipeline(commandBuffer);
-	else
-		quadPipeline->BindPipeline(commandBuffer);
+	quadPipeline->BindPipeline(commandBuffer);
 
-	float marginWidth;
-	if (config::Rotate90)
-		marginWidth = ((float)width - (float)extent.height / extent.width * height) / 2.f;
-	else
-		marginWidth = ((float)width - (float)extent.width / extent.height * height) / 2.f;
-	vk::Viewport viewport(marginWidth, 0, width - marginWidth * 2.f, height);
+	float blendConstants[4] = { 1.0, 1.0, 1.0, 1.0 };
+	commandBuffer.setBlendConstants(blendConstants);
+
+	vk::Viewport viewport(0, 0, width, height);
 	commandBuffer.setViewport(0, 1, &viewport);
-	commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(std::max(0.f, marginWidth), 0), vk::Extent2D(width - marginWidth * 2.f, height)));
-	if (config::Rotate90)
-		quadRotateDrawer->Draw(commandBuffer, imageView, vtx);
-	else
-		quadDrawer->Draw(commandBuffer, imageView, vtx);
+	commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D(width, height)));
+	quadDrawer->Draw(commandBuffer, imageView, vtx);
 }
 
 void VulkanContext::WaitIdle() const
@@ -868,14 +833,14 @@ void VulkanContext::WaitIdle() const
 	}
 }
 
-std::string VulkanContext::getDriverName()
+std::string VulkanContext::GetDriverName() const
 {
 	vk::PhysicalDeviceProperties props;
 	physicalDevice.getProperties(&props);
 	return std::string(props.deviceName);
 }
 
-std::string VulkanContext::getDriverVersion()
+std::string VulkanContext::GetDriverVersion() const
 {
 	vk::PhysicalDeviceProperties props;
 	physicalDevice.getProperties(&props);
@@ -884,20 +849,20 @@ std::string VulkanContext::getDriverVersion()
 			+ std::to_string(VK_VERSION_PATCH(props.driverVersion));
 }
 
-vk::CommandBuffer VulkanContext::PrepareOverlay(bool vmu, bool crosshair)
+const std::vector<vk::UniqueCommandBuffer> *VulkanContext::PrepareVMUs()
 {
-	return overlay->Prepare(*commandPools[GetCurrentImageIndex()], vmu, crosshair, *textureCache);
+	return vmus->PrepareVMUs(*commandPools[GetCurrentImageIndex()]);
 }
 
- void VulkanContext::DrawOverlay(float scaling, bool vmu, bool crosshair)
+ void VulkanContext::DrawVMUs(float scaling)
 {
 	 if (IsValid())
-		 overlay->Draw(GetCurrentCommandBuffer(), vk::Extent2D(width, height), scaling, vmu, crosshair);
+		 vmus->DrawVMUs(vk::Extent2D(width, height), scaling);
 }
 
 extern Renderer *renderer;
 
-void VulkanContext::PresentFrame(vk::Image image, vk::ImageView imageView, const vk::Extent2D& extent) noexcept
+void VulkanContext::PresentFrame(vk::ImageView imageView, vk::Extent2D extent) noexcept
 {
 	lastFrameView = imageView;
 	lastFrameExtent = extent;
@@ -906,16 +871,19 @@ void VulkanContext::PresentFrame(vk::Image image, vk::ImageView imageView, const
 	{
 		try {
 			NewFrame();
-			auto overlayCmdBuffer = PrepareOverlay(config::FloatVMUs, true);
+			const std::vector<vk::UniqueCommandBuffer> *vmuCmdBuffers = nullptr;
+			if (settings.rend.FloatVMUs)
+				vmuCmdBuffers = PrepareVMUs();
 
 			BeginRenderPass();
 
 			if (lastFrameView) // Might have been nullified if swap chain recreated
 				DrawFrame(imageView, extent);
 
-			DrawOverlay(gui_get_scaling(), config::FloatVMUs, true);
+			if (settings.rend.FloatVMUs)
+				DrawVMUs(gui_get_scaling());
 			renderer->DrawOSD(false);
-			EndFrame(overlayCmdBuffer);
+			EndFrame(vmuCmdBuffers);
 		} catch (const InvalidVulkanContext& err) {
 		}
 	}
@@ -927,14 +895,12 @@ void VulkanContext::PresentLastFrame()
 		DrawFrame(lastFrameView, lastFrameExtent);
 }
 
-void VulkanContext::term()
+void VulkanContext::Term()
 {
-	GraphicsContext::instance = nullptr;
 	lastFrameView = nullptr;
 	if (!device)
 		return;
 	WaitIdle();
-	imguiDriver.reset();
 	ImGui_ImplVulkan_Shutdown();
 	gui_term();
 	if (device && pipelineCache)
@@ -942,17 +908,16 @@ void VulkanContext::term()
         std::vector<u8> cacheData = device->getPipelineCacheData(*pipelineCache);
         if (!cacheData.empty())
         {
-            std::string cachePath = hostfs::getShaderCachePath("vulkan_pipeline.cache");
-            FILE *f = nowide::fopen(cachePath.c_str(), "wb");
+            std::string cachePath = get_writable_data_path(PipelineCacheFileName);
+            FILE *f = fopen(cachePath.c_str(), "wb");
             if (f != nullptr)
             {
-                (void)std::fwrite(&cacheData[0], 1, cacheData.size(), f);
-                std::fclose(f);
+                (void)fwrite(&cacheData[0], 1, cacheData.size(), f);
+                fclose(f);
             }
         }
     }
-	overlay.reset();
-	textureCache.reset();
+	vmus.reset();
 	ShaderCompiler::Term();
 	swapChain.reset();
 	imageViews.clear();
@@ -960,9 +925,6 @@ void VulkanContext::term()
 	renderPass.reset();
 	quadDrawer.reset();
 	quadPipeline.reset();
-	quadPipelineWithAlpha.reset();
-	quadRotateDrawer.reset();
-	quadRotatePipeline.reset();
 	shaderManager.reset();
 	descriptorPool.reset();
 	commandBuffers.clear();
@@ -974,7 +936,7 @@ void VulkanContext::term()
 #ifndef USE_SDL
 	surface.reset();
 #else
-	::vkDestroySurfaceKHR((VkInstance)*instance, (VkSurfaceKHR)surface.release(), nullptr);
+	::vkDestroySurfaceKHR(*instance, surface.release(), nullptr);
 #endif
 	pipelineCache.reset();
 	device.reset();
@@ -986,6 +948,10 @@ void VulkanContext::term()
 #endif
 #endif
 	instance.reset();
+#ifdef _WIN32
+	extern void DestroyMainWindow();
+	DestroyMainWindow();
+#endif
 }
 
 void VulkanContext::DoSwapAutomation()
@@ -1081,7 +1047,7 @@ void VulkanContext::DoSwapAutomation()
 			u8* img = (u8*)device->mapMemory(*deviceMemory, 0, VK_WHOLE_SIZE);
 			img += subresourceLayout.offset;
 
-			u8 *end = img + settings.display.width * settings.display.height * 4;
+			u8 *end = img + screen_width * screen_height * 4;
 			if (!supportsBlit && colorFormat == vk::Format::eB8G8R8A8Unorm)
 			{
 				for (u8 *p = img; p < end; p += 4)
@@ -1097,7 +1063,7 @@ void VulkanContext::DoSwapAutomation()
 				for (u8 *p = img; p < end; p += 4)
 					p[3] = 0xff;
 			}
-			dump_screenshot(img, settings.display.width, settings.display.height, true, subresourceLayout.rowPitch, false);
+			dump_screenshot(img, screen_width, screen_height, true, subresourceLayout.rowPitch, false);
 
 			device->unmapMemory(*deviceMemory);
 		}
@@ -1141,47 +1107,12 @@ void VulkanContext::SetWindowSize(u32 width, u32 height)
 		// In this case, the context becomes invalid but we keep the previous
 		// dimensions to not confuse the renderer and imgui
 		if (width != 0)
-			settings.display.width = width;
+			screen_width = width;
 
 		if (height != 0)
-			settings.display.height = height;
+			screen_height = height;
 
-		resize();
+		SetResized();
 	}
 }
 
-VulkanContext::VulkanContext()
-{
-	verify(contextInstance == nullptr);
-	contextInstance = this;
-}
-
-VulkanContext::~VulkanContext()
-{
-	verify(contextInstance == this);
-	contextInstance = nullptr;
-}
-
-void ImGui_ImplVulkan_RenderDrawData(ImDrawData *draw_data)
-{
-	VulkanContext *context = VulkanContext::Instance();
-	if (!context->IsValid())
-		return;
-	try {
-		bool rendering = context->IsRendering();
-		vk::CommandBuffer vmuCmdBuffer;
-		if (!rendering)
-		{
-			context->NewFrame();
-			vmuCmdBuffer = context->PrepareOverlay(true, false);
-			context->BeginRenderPass();
-			context->PresentLastFrame();
-			context->DrawOverlay(gui_get_scaling(), true, false);
-		}
-		// Record Imgui Draw Data and draw funcs into command buffer
-		ImGui_ImplVulkan_RenderDrawData(draw_data, (VkCommandBuffer)context->GetCurrentCommandBuffer());
-		if (!rendering)
-			context->EndFrame(vmuCmdBuffer);
-	} catch (const InvalidVulkanContext& err) {
-	}
-}

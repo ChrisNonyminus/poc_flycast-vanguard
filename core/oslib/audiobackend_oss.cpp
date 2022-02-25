@@ -1,5 +1,5 @@
-#ifdef USE_OSS
 #include "audiostream.h"
+#ifdef USE_OSS
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/soundcard.h>

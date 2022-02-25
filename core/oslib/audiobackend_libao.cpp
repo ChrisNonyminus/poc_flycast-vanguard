@@ -1,5 +1,6 @@
-#ifdef USE_LIBAO
 #include "audiostream.h"
+#ifdef USE_LIBAO
+
 #include <ao/ao.h>
 
 static ao_device *aodevice;

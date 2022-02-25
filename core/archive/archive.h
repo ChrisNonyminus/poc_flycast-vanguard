@@ -25,14 +25,14 @@
 class ArchiveFile
 {
 public:
-	virtual ~ArchiveFile() = default;
+	virtual ~ArchiveFile() {}
 	virtual u32 Read(void *buffer, u32 length) = 0;
 };
 
 class Archive
 {
 public:
-	virtual ~Archive() = default;
+	virtual ~Archive() {}
 	virtual ArchiveFile *OpenFile(const char *name) = 0;
 	virtual ArchiveFile *OpenFileByCrc(u32 crc) = 0;
 

@@ -58,12 +58,19 @@ typedef BOOL (WINAPI * PFNWGLSWAPINTERVALEXTPROC) (int interval);
 class WGLGraphicsContext : public GLGraphicsContext
 {
 public:
-	bool init();
-	void term() override;
-	void swap();
+	~WGLGraphicsContext() { Term(); }
+
+	bool Init();
+	void Term();
+	void Swap();
+	bool IsSwapBufferPreserved() const { return true; }
+	void SetWindow(HWND hwnd) { this->ourWindow = hwnd; }
+	void SetDeviceContext(HDC hdc) { this->ourWindowHandleToDeviceContext = hdc; }
 
 private:
 	HGLRC ourOpenGLRenderingContext = NULL;
+	HDC ourWindowHandleToDeviceContext = NULL;
+	HWND ourWindow = NULL;
 };
 
 extern WGLGraphicsContext theGLContext;

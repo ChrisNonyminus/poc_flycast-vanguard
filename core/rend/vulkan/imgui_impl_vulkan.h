@@ -13,11 +13,7 @@
 
 #pragma once
 
-#if !defined(TARGET_IPHONE)
 #include <volk/volk.h>
-#else
-#include "vulkan/vulkan.hpp"
-#endif
 
 #define IMGUI_VK_QUEUED_FRAMES      3
 

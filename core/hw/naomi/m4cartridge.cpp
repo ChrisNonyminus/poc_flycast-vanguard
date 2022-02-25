@@ -9,7 +9,6 @@
  */
 
 #include "m4cartridge.h"
-#include "serialize.h"
 
 
 // Decoder for M4-type NAOMI cart encryption
@@ -151,7 +150,7 @@ bool M4Cartridge::Read(u32 offset, u32 size, void *dst) {
 		return NaomiCartridge::Read(offset & 0x1ffffffe, size, dst);
 }
 
-void *M4Cartridge::GetDmaPtr(u32 &size)
+void *M4Cartridge::GetDmaPtr(u32 &limit)
 {
 	static u8 retzero[2] = { 0, 0 };
 
@@ -159,7 +158,7 @@ void *M4Cartridge::GetDmaPtr(u32 &size)
 		u32 fpr_num = m4id & 0x7f;
 
 		if (((rom_cur_address >> 26) & 0x07) < fpr_num) {
-			size = std::min(size, 2u);
+			limit = std::min(limit, (u32)2);
 			return &cfidata[rom_cur_address & 0xffff];
 		}
 	}
@@ -177,7 +176,7 @@ void *M4Cartridge::GetDmaPtr(u32 &size)
 	}
 	if (encryption)
 	{
-		size = std::min(size, (u32)sizeof(buffer));
+		limit = std::min(limit, (u32)sizeof(buffer));
 		return buffer;
 
 	}
@@ -185,12 +184,12 @@ void *M4Cartridge::GetDmaPtr(u32 &size)
 	{
 		if ((DmaOffset & 0x1ffffffe) < RomSize)
 		{
-			size = std::min(size, RomSize - (DmaOffset & 0x1ffffffe));
+			limit = std::min(limit, RomSize - (DmaOffset & 0x1ffffffe));
 			return RomPtr + (DmaOffset & 0x1ffffffe);
 		}
 		else
 		{
-			size = 2;
+			limit = 2;
 			return retzero;
 		}
 	}
@@ -270,7 +269,8 @@ bool M4Cartridge::Write(u32 offset, u32 size, u32 data)
 
 M4Cartridge::~M4Cartridge()
 {
-	free(m_key_data);
+	if (m_key_data != NULL)
+		free(m_key_data);
 }
 
 std::string M4Cartridge::GetGameId()
@@ -295,30 +295,31 @@ std::string M4Cartridge::GetGameId()
 	return game_id;
 }
 
-void M4Cartridge::Serialize(Serializer& ser) const
+void M4Cartridge::Serialize(void** data, unsigned int* total_size)
 {
-	ser << buffer;
-	ser << rom_cur_address;
-	ser << buffer_actual_size;
-	ser << iv;
-	ser << counter;
-	ser << encryption;
-	ser << cfi_mode;
-	ser << xfer_ready;
+	REICAST_S(buffer);
+	REICAST_S(rom_cur_address);
+	REICAST_S(buffer_actual_size);
+	REICAST_S(iv);
+	REICAST_S(counter);
+	REICAST_S(encryption);
+	REICAST_S(cfi_mode);
+	REICAST_S(xfer_ready);
 
-	NaomiCartridge::Serialize(ser);
+	NaomiCartridge::Serialize(data, total_size);
 }
 
-void M4Cartridge::Deserialize(Deserializer& deser)
+void M4Cartridge::Unserialize(void** data, unsigned int* total_size)
 {
-	deser >> buffer;
-	deser >> rom_cur_address;
-	deser >> buffer_actual_size;
-	deser >> iv;
-	deser >> counter;
-	deser >> encryption;
-	deser >> cfi_mode;
-	deser >> xfer_ready;
+	REICAST_US(buffer);
+	REICAST_US(rom_cur_address);
+	REICAST_US(buffer_actual_size);
+	REICAST_US(iv);
+	REICAST_US(counter);
+	REICAST_US(encryption);
+	REICAST_US(cfi_mode);
+	REICAST_US(xfer_ready);
 
-	NaomiCartridge::Deserialize(deser);
+	NaomiCartridge::Unserialize(data, total_size);
 }
+

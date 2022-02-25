@@ -25,6 +25,8 @@
 #define SH_CURTHREAD            1
 #define SH_CURPROC              2
 
+extern const u32 mmu_mask[4];
+
 static bool read_mem32(u32 addr, u32& data)
 {
 	u32 pa;
@@ -358,17 +360,16 @@ static bool wince_resolve_address(u32 va, TLB_Entry &entry)
 	// WinCE hack
 	if ((va & 0x80000000) == 0)
 	{
-		const u32 ram_mask = RAM_MASK;
-		u32 page_group = *(u32 *)&mem_b[(CCN_TTB + ((va >> 25) << 2)) & ram_mask];
+		u32 page_group = ReadMem32_nommu(CCN_TTB + ((va >> 25) << 2));
 		u32 page = ((va >> 16) & 0x1ff) << 2;
-		u32 paddr = *(u32 *)&mem_b[(page_group + page) & ram_mask];
+		u32 paddr = ReadMem32_nommu(page_group + page);
 		if (paddr & 0x80000000)
 		{
-			u32 whatever = *(u32 *)&mem_b[(r_bank[4] + 0x14) & ram_mask];
-			if (whatever != *(u32 *)&mem_b[paddr & ram_mask])
+			u32 whatever = ReadMem32_nommu(r_bank[4] + 0x14);
+			if (whatever != ReadMem32_nommu(paddr))
 			{
 				paddr += 12;
-				u32 ptel = *(u32 *)&mem_b[(paddr + ((va >> 10) & 0x3c)) & ram_mask];
+				u32 ptel = ReadMem32_nommu(paddr + ((va >> 10) & 0x3c));
 				//FIXME CCN_PTEA = paddr >> 29;
 				if (ptel != 0)
 				{
@@ -407,3 +408,5 @@ static bool wince_resolve_address(u32 va, TLB_Entry &entry)
 
 	return false;
 }
+
+

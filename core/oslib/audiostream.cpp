@@ -1,10 +1,15 @@
 #include "audiostream.h"
+#include "cfg/cfg.h"
+
+#include <algorithm>
 #include <memory>
 
-struct SoundFrame { s16 l; s16 r; };
+struct SoundFrame { s16 l;s16 r; };
+constexpr u32 SAMPLE_COUNT =  512;
 
-static SoundFrame Buffer[SAMPLE_COUNT];
-static u32 writePtr;  // next sample index
+static SoundFrame RingBuffer[SAMPLE_COUNT];
+
+static u32 WritePtr;  //last WRITTEN sample
 
 static audiobackend_t *audiobackend_current = nullptr;
 static std::unique_ptr<std::vector<audiobackend_t *>> audiobackends;	// Using a pointer to avoid out of order init
@@ -14,7 +19,7 @@ static bool eight_khz;
 
 u32 GetAudioBackendCount()
 {
-	return audiobackends != nullptr ? (u32)audiobackends->size() : 0;
+	return audiobackends != nullptr ? audiobackends->size() : 0;
 }
 
 audiobackend_t* GetAudioBackend(int num)
@@ -47,10 +52,10 @@ audiobackend_t* GetAudioBackend(const std::string& slug)
 	{
 		if (slug == "auto")
 		{
-			// Don't select the null or OpenSL/Oboe drivers
+			// Don't select the null driver
 			audiobackend_t *autoselection = nullptr;
 			for (auto backend : *audiobackends)
-				if (backend->slug != "null" && backend->slug != "OpenSL" && backend->slug != "Oboe")
+				if (backend->slug != "null")
 				{
 					autoselection = backend;
 					break;
@@ -77,26 +82,39 @@ audiobackend_t* GetAudioBackend(const std::string& slug)
 	return nullptr;
 }
 
+static u32 PushAudio(void* frame, u32 amt, bool wait)
+{
+	if (audiobackend_current != nullptr)
+		return audiobackend_current->push(frame, amt, wait);
+
+	return 0;
+}
+
 void WriteSample(s16 r, s16 l)
 {
-	Buffer[writePtr].r = r * config::AudioVolume.dbPower();
-	Buffer[writePtr].l = l * config::AudioVolume.dbPower();
+	const u32 ptr=(WritePtr+1)%SAMPLE_COUNT;
+	RingBuffer[ptr].r=r;
+	RingBuffer[ptr].l=l;
+	WritePtr=ptr;
 
-	if (++writePtr == SAMPLE_COUNT)
-	{
-		if (audiobackend_current != nullptr)
-			audiobackend_current->push(Buffer, SAMPLE_COUNT, config::LimitFPS);
-		writePtr = 0;
-	}
+	if (WritePtr == SAMPLE_COUNT - 1)
+		PushAudio(RingBuffer,SAMPLE_COUNT, settings.aica.LimitFPS);
 }
 
 void InitAudio()
 {
-	TermAudio();
+	if (cfgLoadInt("audio", "disable", 0)) {
+		INFO_LOG(AUDIO, "WARNING: Audio disabled in config!");
+		return;
+	}
+
+	cfgSaveInt("audio", "disable", 0);
+
+	verify(audiobackend_current == nullptr);
 
 	SortAudioBackends();
 
-	std::string audiobackend_slug = config::AudioBackend;
+	std::string audiobackend_slug = settings.audio.backend;
 	audiobackend_current = GetAudioBackend(audiobackend_slug);
 	if (audiobackend_current == nullptr) {
 		INFO_LOG(AUDIO, "WARNING: Running without audio!");

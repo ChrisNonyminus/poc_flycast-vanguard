@@ -1,24 +1,22 @@
 /*
 **	naomi.h
 */
+
 #pragma once
-#include "types.h"
 
 void naomi_reg_Init();
 void naomi_reg_Term();
-void naomi_reg_Reset(bool hard);
-void naomi_Serialize(Serializer& ser);
-void naomi_Deserialize(Deserializer& deser);
+void naomi_reg_Reset(bool Manual);
 
-u32  ReadMem_naomi(u32 Addr, u32 size);
-void WriteMem_naomi(u32 Addr, u32 data, u32 size);
+u32  ReadMem_naomi(u32 Addr, u32 sz);
+void WriteMem_naomi(u32 Addr, u32 data, u32 sz);
 
-void NaomiBoardIDWrite(u16 Data);
-void NaomiBoardIDWriteControl(u16 Data);
+void NaomiBoardIDWrite(const u16 Data);
+void NaomiBoardIDWriteControl(const u16 Data);
 u16 NaomiBoardIDRead();
 u16 NaomiGameIDRead();
-void NaomiGameIDWrite(u16 Data);
-void naomi_process(u32 command,u32 offsetl,u32 parameterl, u32 parameterh);
+void NaomiGameIDWrite(const u16 Data);
+void naomi_process(u32 r3c,u32 r40,u32 r44, u32 r48);
 
 extern u32 reg_dimm_command;	// command, written, 0x1E03 some flag ?
 extern u32 reg_dimm_offsetl;

@@ -19,9 +19,7 @@
     along with reicast.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifdef _WIN32
-#include <ws2tcpip.h>
-#endif
+#if !defined(_MSC_VER) && !defined(TARGET_NO_THREADS)
 
 #include "stdclass.h"
 #include "oslib/oslib.h"
@@ -48,8 +46,6 @@ extern "C" {
 #include "miniupnp.h"
 #include "reios/reios.h"
 #include "hw/naomi/naomi_cart.h"
-#include "cfg/option.h"
-#include "emulator.h"
 
 #include <map>
 #include <mutex>
@@ -277,7 +273,7 @@ static int modem_write(pico_device *dev, const void *data, int len)
 			in_buffer_lock.unlock();
 			if (!pico_thread_running)
 				return 0;
-			PICO_IDLE();
+			usleep(5000);
 			in_buffer_lock.lock();
 		}
 		in_buffer.push(*p++);
@@ -571,63 +567,55 @@ static void read_native_sockets()
 	}
 
 	// Check connecting outbound TCP sockets
-	fd_set write_fds{};
-	fd_set error_fds{};
+	fd_set write_fds;
 	FD_ZERO(&write_fds);
-	FD_ZERO(&error_fds);
 	int max_fd = -1;
 	for (auto it = tcp_connecting_sockets.begin(); it != tcp_connecting_sockets.end(); it++)
 	{
 		FD_SET(it->second, &write_fds);
-		FD_SET(it->second, &error_fds);
 		max_fd = std::max(max_fd, (int)it->second);
 	}
-	if (max_fd > -1)
+	timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+	if (select(max_fd + 1, NULL, &write_fds, NULL, &tv) > 0)
 	{
-		timeval tv{};
-		int rc = select(max_fd + 1, nullptr, &write_fds, &error_fds, &tv);
-		if (rc == -1)
-			perror("select");
-		else if (rc > 0)
+		for (auto it = tcp_connecting_sockets.begin(); it != tcp_connecting_sockets.end(); )
 		{
-			for (auto it = tcp_connecting_sockets.begin(); it != tcp_connecting_sockets.end(); )
+			if (!FD_ISSET(it->second, &write_fds))
 			{
-				if (!FD_ISSET(it->second, &write_fds) && !FD_ISSET(it->second, &error_fds))
-				{
-					it++;
-					continue;
-				}
-				int error;
+				it++;
+				continue;
+			}
 #ifdef _WIN32
-				char *value = (char *)&error;
+			char value;
 #else
-				int *value = &error;
+			int value;
 #endif
-				socklen_t l = sizeof(int);
-				if (getsockopt(it->second, SOL_SOCKET, SO_ERROR, value, &l) < 0 || error != 0)
-				{
-					char peer[30];
-					pico_ipv4_to_string(peer, it->first->local_addr.ip4.addr);
-					INFO_LOG(MODEM, "TCP connection to %s:%d failed: %s", peer, short_be(it->first->local_port), strerror(get_last_error()));
-					pico_socket_close(it->first);
-					closesocket(it->second);
-				}
-				else
-				{
-					set_tcp_nodelay(it->second);
+			socklen_t l = sizeof(int);
+			if (getsockopt(it->second, SOL_SOCKET, SO_ERROR, &value, &l) < 0 || value)
+			{
+				char peer[30];
+				pico_ipv4_to_string(peer, it->first->local_addr.ip4.addr);
+				INFO_LOG(MODEM, "TCP connection to %s:%d failed: %s", peer, short_be(it->first->local_port), strerror(get_last_error()));
+				pico_socket_close(it->first);
+				closesocket(it->second);
+			}
+			else
+			{
+				set_tcp_nodelay(it->second);
 
-					tcp_sockets.emplace(std::piecewise_construct,
+				tcp_sockets.emplace(std::piecewise_construct,
 				              std::forward_as_tuple(it->first),
 				              std::forward_as_tuple(it->first, it->second));
 
-					read_from_dc_socket(it->first, it->second);
-				}
-				it = tcp_connecting_sockets.erase(it);
+				read_from_dc_socket(it->first, it->second);
 			}
+			it = tcp_connecting_sockets.erase(it);
 		}
 	}
 
-	static char buf[1500];
+	char buf[1500];
 	pico_msginfo msginfo;
 
 	// Read UDP sockets
@@ -832,7 +820,7 @@ static void *pico_thread_func(void *)
     {
     	pico_stack_init();
     	pico_stack_inited = true;
-#ifdef _WIN32
+#if _WIN32
 		static WSADATA wsaData;
 		if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
 			WARN_LOG(MODEM, "WSAStartup failed");
@@ -904,11 +892,11 @@ static void *pico_thread_func(void *)
     }
 
 	u32 addr;
-	pico_string_to_ipv4(config::DNS.get().c_str(), &addr);
+	pico_string_to_ipv4(settings.network.dns.c_str(), &addr);
 	memcpy(&dnsaddr.addr, &addr, sizeof(addr));
 
 	// Create ppp/eth device
-	if (!config::EmulateBBA)
+	if (!settings.network.EmulateBBA)
 	{
 		// PPP
 		pico_dev = pico_ppp_create();
@@ -1042,7 +1030,7 @@ static void *pico_thread_func(void *)
     	read_native_sockets();
     	pico_stack_tick();
     	check_dns_entries();
-		PICO_IDLE();
+    	usleep(5000);
     }
 
     for (auto it = tcp_listening_sockets.begin(); it != tcp_listening_sockets.end(); it++)
@@ -1053,7 +1041,7 @@ static void *pico_thread_func(void *)
 
 	if (pico_dev)
 	{
-		if (!config::EmulateBBA)
+		if (!settings.network.EmulateBBA)
 		{
 			pico_ppp_destroy(pico_dev);
 		}
@@ -1076,7 +1064,6 @@ static cThread pico_thread(pico_thread_func, NULL);
 
 bool start_pico()
 {
-	emu.setNetworkState(true);
 	if (pico_thread_running)
 		return false;
 	pico_thread_running = true;
@@ -1087,7 +1074,18 @@ bool start_pico()
 
 void stop_pico()
 {
-	emu.setNetworkState(false);
 	pico_thread_running = false;
 	pico_thread.WaitToEnd();
 }
+
+#else
+
+#include "types.h"
+
+bool start_pico() { return false; }
+void stop_pico() { }
+void write_pico(u8 b) { }
+int read_pico() { return -1; }
+void pico_receive_eth_frame(const u8* frame, u32 size) {}
+
+#endif

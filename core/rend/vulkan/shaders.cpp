@@ -21,9 +21,17 @@
 #include "vulkan.h"
 #include "shaders.h"
 #include "compiler.h"
-#include "utils.h"
 
-static const char VertexShaderSource[] = R"(
+static const char VertexShaderSource[] = R"(#version 450
+
+#define pp_Gouraud %d
+
+#if pp_Gouraud == 0
+#define INTERPOLATION flat
+#else
+#define INTERPOLATION smooth
+#endif
+
 layout (std140, set = 0, binding = 0) uniform VertexShaderUniforms
 {
 	mat4 normal_matrix;
@@ -34,31 +42,48 @@ layout (location = 1) in uvec4        in_base;
 layout (location = 2) in uvec4        in_offs;
 layout (location = 3) in mediump vec2 in_uv;
 
-layout (location = 0) INTERPOLATION out highp vec4 vtx_base;
-layout (location = 1) INTERPOLATION out highp vec4 vtx_offs;
-layout (location = 2) noperspective out highp vec3 vtx_uv;
+layout (location = 0) INTERPOLATION out lowp vec4 vtx_base;
+layout (location = 1) INTERPOLATION out lowp vec4 vtx_offs;
+layout (location = 2)               out mediump vec2 vtx_uv;
 
 void main()
 {
-	vec4 vpos = uniformBuffer.normal_matrix * in_pos;
 	vtx_base = vec4(in_base) / 255.0;
 	vtx_offs = vec4(in_offs) / 255.0;
-	vtx_uv = vec3(in_uv * vpos.z, vpos.z);
-#if pp_Gouraud == 1
-	vtx_base *= vpos.z;
-	vtx_offs *= vpos.z;
-#endif
-	vpos.w = 1.0;
-	vpos.z = 0.0;
+	vtx_uv = in_uv;
+	vec4 vpos = uniformBuffer.normal_matrix * in_pos;
+	vpos.w = 1.0 / vpos.z;
+	vpos.z = vpos.w;
+	vpos.xy *= vpos.w; 
 	gl_Position = vpos;
 }
 )";
 
-static const char FragmentShaderSource[] = R"(
+static const char FragmentShaderSource[] = R"(#version 450
+
+#define cp_AlphaTest %d
+#define pp_ClipInside %d
+#define pp_UseAlpha %d
+#define pp_Texture %d
+#define pp_IgnoreTexA %d
+#define pp_ShadInstr %d
+#define pp_Offset %d
+#define pp_FogCtrl %d
+#define pp_Gouraud %d
+#define pp_BumpMap %d
+#define ColorClamping %d
+#define pp_TriLinear %d
+#define pp_Palette %d
 #define PI 3.1415926
 
 layout (location = 0) out vec4 FragColor;
 #define gl_FragColor FragColor
+
+#if pp_Gouraud == 0
+#define INTERPOLATION flat
+#else
+#define INTERPOLATION smooth
+#endif
 
 layout (std140, set = 0, binding = 1) uniform FragmentShaderUniforms
 {
@@ -85,9 +110,9 @@ layout (set = 0, binding = 3) uniform sampler2D palette;
 #endif
 
 // Vertex input
-layout (location = 0) INTERPOLATION in highp vec4 vtx_base;
-layout (location = 1) INTERPOLATION in highp vec4 vtx_offs;
-layout (location = 2) noperspective in highp vec3 vtx_uv;
+layout (location = 0) INTERPOLATION in lowp vec4 vtx_base;
+layout (location = 1) INTERPOLATION in lowp vec4 vtx_offs;
+layout (location = 2)               in mediump vec2 vtx_uv;
 
 #if pp_FogCtrl != 2
 layout (set = 0, binding = 2) uniform sampler2D fog_table;
@@ -114,9 +139,9 @@ vec4 colorClamp(vec4 col)
 
 #if pp_Palette == 1
 
-vec4 palettePixel(sampler2D tex, vec3 coords)
+vec4 palettePixel(sampler2D tex, vec2 coords)
 {
-	vec4 c = vec4(textureProj(tex, coords).r * 255.0 / 1023.0 + pushConstants.palette_index, 0.5, 0.0, 0.0);
+	vec4 c = vec4(texture(tex, coords).r * 255.0 / 1023.0 + pushConstants.palette_index, 0.5, 0.0, 0.0);
 	return texture(palette, c.xy);
 }
 
@@ -131,12 +156,7 @@ void main()
 			discard;
 	#endif
 	
-	highp vec4 color = vtx_base;
-	highp vec4 offset = vtx_offs;
-	#if pp_Gouraud == 1
-		color /= vtx_uv.z;
-		offset /= vtx_uv.z;
-	#endif
+	vec4 color = vtx_base;
 	#if pp_UseAlpha == 0
 		color.a = 1.0;
 	#endif
@@ -146,7 +166,7 @@ void main()
 	#if pp_Texture == 1
 	{
 		#if pp_Palette == 0
-			vec4 texcol = textureProj(tex, vtx_uv);
+			vec4 texcol = texture(tex, vtx_uv);
 		#else
 			vec4 texcol = palettePixel(tex, vtx_uv);
 		#endif
@@ -154,7 +174,7 @@ void main()
 		#if pp_BumpMap == 1
 			float s = PI / 2.0 * (texcol.a * 15.0 * 16.0 + texcol.r * 15.0) / 255.0;
 			float r = 2.0 * PI * (texcol.g * 15.0 * 16.0 + texcol.b * 15.0) / 255.0;
-			texcol.a = clamp(offset.a + offset.r * sin(s) + offset.g * cos(s) * cos(r - 2.0 * PI * offset.b), 0.0, 1.0);
+			texcol.a = clamp(vtx_offs.a + vtx_offs.r * sin(s) + vtx_offs.g * cos(s) * cos(r - 2.0 * PI * vtx_offs.b), 0.0, 1.0);
 			texcol.rgb = vec3(1.0, 1.0, 1.0);	
 		#else
 			#if pp_IgnoreTexA == 1
@@ -164,7 +184,6 @@ void main()
 			#if cp_AlphaTest == 1
 				if (uniformBuffer.cp_AlphaTestValue > texcol.a)
 					discard;
-				texcol.a = 1.0;
 			#endif 
 		#endif
 		#if pp_ShadInstr == 0
@@ -191,7 +210,7 @@ void main()
 		
 		#if pp_Offset == 1 && pp_BumpMap == 0
 		{
-			color.rgb += offset.rgb;
+			color.rgb += vtx_offs.rgb;
 		}
 		#endif
 	}
@@ -201,12 +220,12 @@ void main()
 	
 	#if pp_FogCtrl == 0
 	{
-		color.rgb = mix(color.rgb, uniformBuffer.sp_FOG_COL_RAM.rgb, fog_mode2(vtx_uv.z)); 
+		color.rgb = mix(color.rgb, uniformBuffer.sp_FOG_COL_RAM.rgb, fog_mode2(gl_FragCoord.w)); 
 	}
 	#endif
 	#if pp_FogCtrl == 1 && pp_Offset==1 && pp_BumpMap == 0
 	{
-		color.rgb = mix(color.rgb, uniformBuffer.sp_FOG_COL_VERT.rgb, offset.a);
+		color.rgb = mix(color.rgb, uniformBuffer.sp_FOG_COL_VERT.rgb, vtx_offs.a);
 	}
 	#endif
 	
@@ -214,36 +233,46 @@ void main()
 	color *= pushConstants.trilinearAlpha;
 	#endif
 	
+	#if cp_AlphaTest == 1
+		color.a = 1.0;
+	#endif 
 	//color.rgb = vec3(gl_FragCoord.w * uniformBuffer.sp_FOG_DENSITY / 128.0);
 
-	highp float w = vtx_uv.z * 100000.0;
+	float w = gl_FragCoord.w * 100000.0;
 	gl_FragDepth = log2(1.0 + w) / 34.0;
 
 	gl_FragColor = color;
 }
 )";
 
-extern const char ModVolVertexShaderSource[] = R"(
+extern const char ModVolVertexShaderSource[] = R"(#version 450
+
 layout (std140, set = 0, binding = 0) uniform VertexShaderUniforms
 {
 	mat4 normal_matrix;
 } uniformBuffer;
 
-layout (location = 0) in vec4 in_pos;
-layout (location = 0) noperspective out highp float depth;
+layout (location = 0) in vec4         in_pos;
 
 void main()
 {
-	vec4 vpos = uniformBuffer.normal_matrix * in_pos;
-	depth = vpos.z;
-	vpos.w = 1.0;
-	vpos.z = 0.0;
+	vec4 vpos = in_pos;
+	if (vpos.z < 0.0 || vpos.z > 3.4e37)
+	{
+		gl_Position = vec4(0.0, 0.0, 1.0, 1.0 / vpos.z);
+		return;
+	}
+
+	vpos = uniformBuffer.normal_matrix * vpos;
+	vpos.w = 1.0 / vpos.z;
+	vpos.z = vpos.w;
+	vpos.xy *= vpos.w; 
 	gl_Position = vpos;
 }
 )";
 
-static const char ModVolFragmentShaderSource[] = R"(
-layout (location = 0) noperspective in highp float depth;
+static const char ModVolFragmentShaderSource[] = R"(#version 450
+
 layout (location = 0) out vec4 FragColor;
 
 layout (push_constant) uniform pushBlock
@@ -253,13 +282,14 @@ layout (push_constant) uniform pushBlock
 
 void main()
 {
-	highp float w = depth * 100000.0;
+	float w = gl_FragCoord.w * 100000.0;
 	gl_FragDepth = log2(1.0 + w) / 34.0;
 	FragColor = vec4(0.0, 0.0, 0.0, pushConstants.sp_ShaderColor);
 }
 )";
 
-static const char QuadVertexShaderSource[] = R"(
+static const char QuadVertexShaderSource[] = R"(#version 450
+
 layout (location = 0) in vec3 in_pos;
 layout (location = 1) in vec2 in_uv;
 
@@ -267,38 +297,25 @@ layout (location = 0) out vec2 outUV;
 
 void main()
 {
-#if ROTATE == 0
 	gl_Position = vec4(in_pos, 1.0);
-#else
-	gl_Position = vec4(in_pos.y, -in_pos.x, in_pos.z, 1.0);
-#endif
 	outUV = in_uv;
 }
 )";
 
-static const char QuadFragmentShaderSource[] = R"(
-layout (set = 0, binding = 0) uniform sampler2D tex;
+static const char QuadFragmentShaderSource[] = R"(#version 450 
 
-layout (push_constant) uniform pushBlock
-{
-	vec4 color;
-} pushConstants;
-
+layout (binding = 0) uniform sampler2D tex;
 layout (location = 0) in vec2 inUV;
 layout (location = 0) out vec4 FragColor;
 
 void main() 
 {
-#if IGNORE_TEX_ALPHA == 1
-	FragColor.rgb = pushConstants.color.rgb * texture(tex, inUV).rgb;
-	FragColor.a = pushConstants.color.a;
-#else
-	FragColor = pushConstants.color * texture(tex, inUV);
-#endif
+	FragColor = texture(tex, inUV);
 }
 )";
 
-static const char OSDVertexShaderSource[] = R"(
+static const char OSDVertexShaderSource[] = R"(#version 450 
+
 layout (location = 0) in vec4 inPos;
 layout (location = 1) in uvec4 inColor;
 layout (location = 2) in vec2 inUV;
@@ -313,7 +330,8 @@ void main()
 }
 )";
 
-static const char OSDFragmentShaderSource[] = R"(
+static const char OSDFragmentShaderSource[] = R"(#version 450 
+
 layout (binding = 0) uniform sampler2D tex;
 layout (location = 0) in lowp vec4 inColor;
 layout (location = 1) in mediump vec2 inUV;
@@ -327,66 +345,48 @@ void main()
 
 vk::UniqueShaderModule ShaderManager::compileShader(const VertexShaderParams& params)
 {
-	VulkanSource src;
-	src.addConstant("pp_Gouraud", (int)params.gouraud)
-			.addSource(GouraudSource)
-			.addSource(VertexShaderSource);
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, src.generate());
+	char buf[sizeof(VertexShaderSource) * 2];
+
+	sprintf(buf, VertexShaderSource, (int)params.gouraud);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, buf);
 }
 
 vk::UniqueShaderModule ShaderManager::compileShader(const FragmentShaderParams& params)
 {
-	VulkanSource src;
-	src.addConstant("cp_AlphaTest", (int)params.alphaTest)
-		.addConstant("pp_ClipInside", (int)params.insideClipTest)
-		.addConstant("pp_UseAlpha", (int)params.useAlpha)
-		.addConstant("pp_Texture", (int)params.texture)
-		.addConstant("pp_IgnoreTexA", (int)params.ignoreTexAlpha)
-		.addConstant("pp_ShadInstr", params.shaderInstr)
-		.addConstant("pp_Offset", (int)params.offset)
-		.addConstant("pp_FogCtrl", params.fog)
-		.addConstant("pp_Gouraud", (int)params.gouraud)
-		.addConstant("pp_BumpMap", (int)params.bumpmap)
-		.addConstant("ColorClamping", (int)params.clamping)
-		.addConstant("pp_TriLinear", (int)params.trilinear)
-		.addConstant("pp_Palette", (int)params.palette)
-		.addSource(GouraudSource)
-		.addSource(FragmentShaderSource);
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, src.generate());
+	char buf[sizeof(FragmentShaderSource) * 2];
+
+	sprintf(buf, FragmentShaderSource, (int)params.alphaTest, (int)params.insideClipTest, (int)params.useAlpha, (int)params.texture,
+			(int)params.ignoreTexAlpha, params.shaderInstr, (int)params.offset, params.fog, (int)params.gouraud,
+			(int)params.bumpmap, (int)params.clamping, (int)params.trilinear, (int)params.palette);
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, buf);
 }
 
 vk::UniqueShaderModule ShaderManager::compileModVolVertexShader()
 {
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, VulkanSource().addSource(ModVolVertexShaderSource).generate());
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, ModVolVertexShaderSource);
 }
 
 vk::UniqueShaderModule ShaderManager::compileModVolFragmentShader()
 {
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, VulkanSource().addSource(ModVolFragmentShaderSource).generate());
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, ModVolFragmentShaderSource);
 }
 
-vk::UniqueShaderModule ShaderManager::compileQuadVertexShader(bool rotate)
+vk::UniqueShaderModule ShaderManager::compileQuadVertexShader()
 {
-	VulkanSource src;
-	src.addConstant("ROTATE", (int)rotate)
-			.addSource(QuadVertexShaderSource);
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, src.generate());
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, QuadVertexShaderSource);
 }
 
-vk::UniqueShaderModule ShaderManager::compileQuadFragmentShader(bool ignoreTexAlpha)
+vk::UniqueShaderModule ShaderManager::compileQuadFragmentShader()
 {
-	VulkanSource src;
-	src.addConstant("IGNORE_TEX_ALPHA", (int)ignoreTexAlpha)
-			.addSource(QuadFragmentShaderSource);
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment,src.generate());
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, QuadFragmentShaderSource);
 }
 
 vk::UniqueShaderModule ShaderManager::compileOSDVertexShader()
 {
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, VulkanSource().addSource(OSDVertexShaderSource).generate());
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eVertex, OSDVertexShaderSource);
 }
 
 vk::UniqueShaderModule ShaderManager::compileOSDFragmentShader()
 {
-	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, VulkanSource().addSource(OSDFragmentShaderSource).generate());
+	return ShaderCompiler::Compile(vk::ShaderStageFlagBits::eFragment, OSDFragmentShaderSource);
 }

@@ -1,39 +1,30 @@
 /*
-	Copyright 2018 flyinghead
-
-	This file is part of Flycast.
-
-    Flycast is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
-
-    Flycast is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Flycast.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * abuffer.cpp
+ *
+ *  Created on: May 26, 2018
+ *      Author: raph
+ */
 #include "gl4.h"
 #include "rend/gles/glcache.h"
 
-static GLuint pixels_buffer;
-static GLuint pixels_pointers;
-static GLuint atomic_buffer;
-static gl4PipelineShader g_abuffer_final_shader;
-static gl4PipelineShader g_abuffer_clear_shader;
-static gl4PipelineShader g_abuffer_tr_modvol_shaders[ModeCount];
-static GLuint g_quadBuffer;
-static GLuint g_quadIndexBuffer;
-static GLuint g_quadVertexArray;
+GLuint pixels_buffer;
+GLuint pixels_pointers;
+GLuint atomic_buffer;
+gl4PipelineShader g_abuffer_final_shader;
+gl4PipelineShader g_abuffer_clear_shader;
+gl4PipelineShader g_abuffer_tr_modvol_shaders[ModeCount];
+static GLuint g_quadBuffer = 0;
+static GLuint g_quadVertexArray = 0;
 
-constexpr int MAX_PIXELS_PER_FRAGMENT = 32;
+GLuint pixel_buffer_size = 512 * 1024 * 1024;	// Initial size 512 MB
 
-static const char *final_shader_source = R"(
+#define MAX_PIXELS_PER_FRAGMENT "32"
+
+static const char *final_shader_source = SHADER_HEADER
+"#define MAX_PIXELS_PER_FRAGMENT " MAX_PIXELS_PER_FRAGMENT
+R"(
 layout(binding = 0) uniform sampler2D tex;
-uniform float shade_scale_factor;
+uniform highp float shade_scale_factor;
 
 out vec4 FragColor;
 
@@ -42,12 +33,9 @@ uint pixel_list[MAX_PIXELS_PER_FRAGMENT];
 
 int fillAndSortFragmentArray(ivec2 coords)
 {
+	// Load fragments into a local memory array for sorting
 	uint idx = imageLoad(abufferPointerImg, coords).x;
-	if (idx == EOL)
-		return 0;
-	int count = 1;
-	pixel_list[0] = idx;
-	idx = pixels[idx].next;
+	int count = 0;
 	for (; idx != EOL && count < MAX_PIXELS_PER_FRAGMENT; count++)
 	{
 		const Pixel p = pixels[idx];
@@ -59,13 +47,11 @@ int fillAndSortFragmentArray(ivec2 coords)
 		{
 			pixel_list[j + 1] = pixel_list[j];
 			j--;
-			if (j >= 0)
-				jp = pixels[pixel_list[j]];
+			jp = pixels[pixel_list[j]];
 		}
 		pixel_list[j + 1] = idx;
 		idx = p.next;
 	}
-
 	return count;
 }
 
@@ -96,7 +82,7 @@ vec4 resolveAlphaBlend(ivec2 coords) {
 			srcColor = secondaryBuffer;
 		else
 		{
-			srcColor = unpackColors(pixel.color);
+			srcColor = pixel.color;
 			if (shadowed)
 				srcColor.rgb *= shade_scale_factor;
 		}
@@ -181,7 +167,8 @@ void main(void)
 }
 )";
 
-static const char *clear_shader_source = R"(
+static const char *clear_shader_source = SHADER_HEADER
+R"(
 void main(void)
 {
 	ivec2 coords = ivec2(gl_FragCoord.xy);
@@ -194,8 +181,10 @@ void main(void)
 }
 )";
 
-static const char *tr_modvol_shader_source = R"(
-noperspective in vec3 vtx_uv;
+static const char *tr_modvol_shader_source = SHADER_HEADER
+"#define MAX_PIXELS_PER_FRAGMENT " MAX_PIXELS_PER_FRAGMENT
+R"(
+#define MV_MODE %d
 
 // Must match ModifierVolumeMode enum values
 #define MV_XOR		 0
@@ -205,6 +194,9 @@ noperspective in vec3 vtx_uv;
 
 void main(void)
 {
+#if MV_MODE == MV_XOR || MV_MODE == MV_OR
+	setFragDepth();
+#endif
 	ivec2 coords = ivec2(gl_FragCoord.xy);
 	
 	uint idx = imageLoad(abufferPointerImg, coords).x;
@@ -216,10 +208,10 @@ void main(void)
 		if (getShadowEnable(pp))
 		{
 #if MV_MODE == MV_XOR
-			if (vtx_uv.z >= pixel.depth)
+			if (gl_FragDepth >= pixel.depth)
 				atomicXor(pixels[idx].seq_num, SHADOW_STENCIL);
 #elif MV_MODE == MV_OR
-			if (vtx_uv.z >= pixel.depth)
+			if (gl_FragDepth >= pixel.depth)
 				atomicOr(pixels[idx].seq_num, SHADOW_STENCIL);
 #elif MV_MODE == MV_INCLUSION
 			uint prev_val = atomicAnd(pixels[idx].seq_num, ~(SHADOW_STENCIL));
@@ -239,16 +231,16 @@ void main(void)
 }
 )";
 
-static const char* VertexShaderSource = R"(
-in vec3 in_pos;
+static const char* VertexShaderSource =
+R"(#version 430
+
+in highp vec3 in_pos;
 
 void main()
 {
 	gl_Position = vec4(in_pos, 1.0);
 }
 )";
-
-static void abufferDrawQuad();
 
 void initABuffer()
 {
@@ -270,7 +262,7 @@ void initABuffer()
 		// get the max buffer size
 		GLint64 size;
 		glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &size);
-		GLsizeiptr pixel_buffer_size = std::min<GLsizeiptr>((u64)config::PixelBufferSize, size);
+		pixel_buffer_size = (GLuint)std::min((GLint64)pixel_buffer_size, size);
 
 		// Create the buffer
 		glGenBuffers(1, &pixels_buffer);
@@ -296,67 +288,33 @@ void initABuffer()
 		glCheck();
 	}
 
-	OpenGl4Source vertexShader;
-	vertexShader.addSource(VertexShaderSource);
 	if (g_abuffer_final_shader.program == 0)
-	{
-		OpenGl4Source finalShader;
-		finalShader.addConstant("MAX_PIXELS_PER_FRAGMENT", MAX_PIXELS_PER_FRAGMENT)
-				.addSource(ShaderHeader)
-				.addSource(final_shader_source);
-		gl4CompilePipelineShader(&g_abuffer_final_shader, finalShader.generate().c_str(), vertexShader.generate().c_str());
-	}
+		gl4CompilePipelineShader(&g_abuffer_final_shader, final_shader_source, VertexShaderSource);
 	if (g_abuffer_clear_shader.program == 0)
-	{
-		OpenGl4Source clearShader;
-		clearShader.addSource(ShaderHeader)
-				.addSource(clear_shader_source);
-		gl4CompilePipelineShader(&g_abuffer_clear_shader, clearShader.generate().c_str(), vertexShader.generate().c_str());
-	}
+		gl4CompilePipelineShader(&g_abuffer_clear_shader, clear_shader_source, VertexShaderSource);
 	if (g_abuffer_tr_modvol_shaders[0].program == 0)
 	{
-		OpenGl4Source modVolShader;
-		modVolShader.addConstant("MAX_PIXELS_PER_FRAGMENT", MAX_PIXELS_PER_FRAGMENT)
-			.addSource(ShaderHeader)
-			.addSource(tr_modvol_shader_source);
+		char source[16384];
 		for (int mode = 0; mode < ModeCount; mode++)
 		{
-			modVolShader.setConstant("MV_MODE", mode);
-			g_abuffer_tr_modvol_shaders[mode].pp_Gouraud = false;
-			gl4CompilePipelineShader(&g_abuffer_tr_modvol_shaders[mode], modVolShader.generate().c_str(), nullptr);
+			sprintf(source, tr_modvol_shader_source, mode);
+			gl4CompilePipelineShader(&g_abuffer_tr_modvol_shaders[mode], source, VertexShaderSource);
 		}
-	}
-	if (g_quadBuffer == 0)
-	{
-		glGenBuffers(1, &g_quadBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, g_quadBuffer); glCheck();
-		static const float vertices[] = {
-				-1,  1, 1,
-				-1, -1, 1,
-				 1,  1, 1,
-				 1, -1, 1,
-		};
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	}
-	if (g_quadIndexBuffer == 0)
-	{
-		glGenBuffers(1, &g_quadIndexBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_quadIndexBuffer);
-		static const GLushort indices[] = { 0, 1, 2, 1, 3 };
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	}
 
 	if (g_quadVertexArray == 0)
-	{
 		glGenVertexArrays(1, &g_quadVertexArray);
+	if (g_quadBuffer == 0)
+	{
 		glBindVertexArray(g_quadVertexArray);
-		glBindBuffer(GL_ARRAY_BUFFER, g_quadBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_quadIndexBuffer);
+		glGenBuffers(1, &g_quadBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, g_quadBuffer); glCheck();
+
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); glCheck();
 		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	glCheck();
 
@@ -397,11 +355,6 @@ void termABuffer()
 		glDeleteBuffers(1, &g_quadBuffer);
 		g_quadBuffer = 0;
 	}
-	if (g_quadIndexBuffer != 0)
-	{
-		glDeleteBuffers(1, &g_quadIndexBuffer);
-		g_quadIndexBuffer = 0;
-	}
 	glcache.DeleteProgram(g_abuffer_final_shader.program);
 	g_abuffer_final_shader.program = 0;
 	glcache.DeleteProgram(g_abuffer_clear_shader.program);
@@ -423,12 +376,22 @@ void reshapeABuffer(int w, int h)
 	initABuffer();
 }
 
-static void abufferDrawQuad()
+void abufferDrawQuad()
 {
 	glBindVertexArray(g_quadVertexArray);
-	glBindBuffer(GL_ARRAY_BUFFER, g_quadBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_quadIndexBuffer);
-	glDrawElements(GL_TRIANGLE_STRIP, 5, GL_UNSIGNED_SHORT, (GLvoid *)0);
+
+	float vertices[] = {
+			-1,  1, 1,
+			-1, -1, 1,
+			 1,  1, 1,
+			 1, -1, 1,
+	};
+	GLushort indices[] = { 0, 1, 2, 1, 3 };
+
+	glBindBuffer(GL_ARRAY_BUFFER, g_quadBuffer); glCheck();
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW); glCheck();
+
+	glDrawElements(GL_TRIANGLE_STRIP, 5, GL_UNSIGNED_SHORT, indices); glCheck();
 	glBindVertexArray(0);
 	glCheck();
 }
@@ -438,7 +401,6 @@ void DrawTranslucentModVols(int first, int count)
 	if (count == 0 || pvrrc.modtrig.used() == 0)
 		return;
 	glBindVertexArray(gl4.vbo.modvol_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, gl4.vbo.modvols);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, 0);

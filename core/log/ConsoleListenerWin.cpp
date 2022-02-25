@@ -7,9 +7,13 @@
 
 #include "ConsoleListener.h"
 
-ConsoleListener::ConsoleListener() = default;
+ConsoleListener::ConsoleListener()
+{
+}
 
-ConsoleListener::~ConsoleListener() = default;
+ConsoleListener::~ConsoleListener()
+{
+}
 
 void ConsoleListener::Log(LogTypes::LOG_LEVELS level, const char* text)
 {

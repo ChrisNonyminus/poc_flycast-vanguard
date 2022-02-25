@@ -22,7 +22,6 @@
 
 #ifdef USE_EGL
 #include "types.h"
-#include "cfg/option.h"
 
 #ifdef __ANDROID__
 #include <android/native_window.h> // requires ndk r5 or newer
@@ -40,17 +39,17 @@
 
 EGLGraphicsContext theGLContext;
 
-bool EGLGraphicsContext::makeCurrent()
+bool EGLGraphicsContext::MakeCurrent()
 {
 	if (surface == EGL_NO_SURFACE || context == EGL_NO_CONTEXT)
 		return false;
 	return eglMakeCurrent(display, surface, surface, context);
 }
 
-bool EGLGraphicsContext::init()
+bool EGLGraphicsContext::Init()
 {
 	//try to get a display
-	display = eglGetDisplay((EGLNativeDisplayType)display);
+	display = eglGetDisplay(nativeDisplay);
 
 	//if failed, get the default display (this will not happen in win32)
 	if (display == EGL_NO_DISPLAY)
@@ -67,13 +66,10 @@ bool EGLGraphicsContext::init()
 	if (surface == EGL_NO_SURFACE)
 	{
 		EGLint pi32ConfigAttribs[]  = {
-				EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+				EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_SWAP_BEHAVIOR_PRESERVED_BIT,
 				EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 				EGL_DEPTH_SIZE, 24,
 				EGL_STENCIL_SIZE, 8,
-				EGL_RED_SIZE, 8,
-				EGL_GREEN_SIZE, 8,
-				EGL_BLUE_SIZE, 8,
 				EGL_NONE
 		};
 
@@ -82,8 +78,19 @@ bool EGLGraphicsContext::init()
 		EGLConfig config;
 		if (!eglChooseConfig(display, pi32ConfigAttribs, &config, 1, &num_config) || (num_config != 1))
 		{
-			ERROR_LOG(RENDERER, "EGL Error: eglChooseConfig failed");
-			return false;
+			// Fall back to non preserved swap buffers
+			EGLint pi32ConfigFallbackAttribs[] = {
+					EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+					EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+					EGL_DEPTH_SIZE, 24,
+					EGL_STENCIL_SIZE, 8,
+					EGL_NONE
+			};
+			if (!eglChooseConfig(display, pi32ConfigFallbackAttribs, &config, 1, &num_config) || (num_config != 1))
+			{
+				ERROR_LOG(RENDERER, "EGL Error: eglChooseConfig failed");
+				return false;
+			}
 		}
 #ifdef __ANDROID__
 		EGLint format;
@@ -92,9 +99,9 @@ bool EGLGraphicsContext::init()
 			ERROR_LOG(RENDERER, "eglGetConfigAttrib() returned error %x", eglGetError());
 			return false;
 		}
-		ANativeWindow_setBuffersGeometry((ANativeWindow *)window, 0, 0, format);
+		ANativeWindow_setBuffersGeometry((ANativeWindow *)nativeWindow, 0, 0, format);
 #endif
-		surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)window, NULL);
+		surface = eglCreateWindowSurface(display, config, nativeWindow, NULL);
 
 		if (surface == EGL_NO_SURFACE)
 		{
@@ -117,7 +124,7 @@ bool EGLGraphicsContext::init()
 			context = eglCreateContext(display, config, NULL, contextAttrs);
 			if (context != EGL_NO_CONTEXT)
 			{
-				makeCurrent();
+				MakeCurrent();
 				if (gl3wInit())
 					ERROR_LOG(RENDERER, "gl3wInit() failed");
 			}
@@ -145,7 +152,7 @@ bool EGLGraphicsContext::init()
 // EGL only supports runtime loading with android? TDB
 			load_gles_symbols();
 #else
-			makeCurrent();
+			MakeCurrent();
 			if (gl3wInit())
 				INFO_LOG(RENDERER, "gl3wInit() failed");
 #endif
@@ -158,7 +165,7 @@ bool EGLGraphicsContext::init()
 		load_gles_symbols();
 	}
 
-	if (!makeCurrent())
+	if (!MakeCurrent())
 	{
 		ERROR_LOG(RENDERER, "eglMakeCurrent() failed: %x", eglGetError());
 		return false;
@@ -167,27 +174,32 @@ bool EGLGraphicsContext::init()
 	EGLint w,h;
 	eglQuerySurface(display, surface, EGL_WIDTH, &w);
 	eglQuerySurface(display, surface, EGL_HEIGHT, &h);
-	NOTICE_LOG(RENDERER, "eglQuerySurface: %d - %d", w, h);
 
-	settings.display.width = w;
-	settings.display.height = h;
+	screen_width = w;
+	screen_height = h;
 
+	// Required when doing partial redraws
+	swap_buffer_preserved = true;
+	if (!eglSurfaceAttrib(display, surface, EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED))
+	{
+		INFO_LOG(RENDERER, "Swap buffers are not preserved. Last frame copy enabled");
+		swap_buffer_preserved = false;
+	}
 #ifdef TARGET_PANDORA
 	fbdev = open("/dev/fb0", O_RDONLY);
 #else
-	swapOnVSync = config::VSync;
-	eglSwapInterval(display, (int)swapOnVSync);
+	eglSwapInterval(display, 1);
 #endif
 
-	postInit();
+	PostInit();
 
 	INFO_LOG(RENDERER, "EGL config: %p, %p, %p %dx%d", context, display, surface, w, h);
 	return true;
 }
 
-void EGLGraphicsContext::term()
+void EGLGraphicsContext::Term()
 {
-	preTerm();
+	PreTerm();
 	eglMakeCurrent(display, NULL, NULL, EGL_NO_CONTEXT);
 	if (context != EGL_NO_CONTEXT)
 		eglDestroyContext(display, context);
@@ -206,14 +218,18 @@ void EGLGraphicsContext::term()
 	display = EGL_NO_DISPLAY;
 }
 
-void EGLGraphicsContext::swap()
+void EGLGraphicsContext::Swap()
 {
+#ifdef TEST_AUTOMATION
 	do_swap_automation();
-	if (swapOnVSync == (settings.input.fastForwardMode || !config::VSync))
+#endif
+#if 0 && defined(TARGET_PANDORA)
+	if (fbdev >= 0)
 	{
-		swapOnVSync = (!settings.input.fastForwardMode && config::VSync);
-		eglSwapInterval(display, (int)swapOnVSync);
+		int arg = 0;
+		ioctl(fbdev,FBIO_WAITFORVSYNC,&arg);
 	}
+#endif
 	eglSwapBuffers(display, surface);
 }
 #endif // USE_EGL

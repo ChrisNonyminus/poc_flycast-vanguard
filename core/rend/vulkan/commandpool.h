@@ -26,24 +26,26 @@ class CommandPool
 public:
 	void Init()
 	{
-		if (commandPools.size() > chainSize)
+		size_t size = VulkanContext::Instance()->GetSwapChainSize();
+
+		if (commandPools.size() > size)
 		{
-			commandPools.resize(chainSize);
-			fences.resize(chainSize);
+			commandPools.resize(size);
+			fences.resize(size);
 		}
 		else
 		{
-			while (commandPools.size() < chainSize)
+			while (commandPools.size() < size)
 			{
 				commandPools.push_back(VulkanContext::Instance()->GetDevice().createCommandPoolUnique(
 						vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eTransient, VulkanContext::Instance()->GetGraphicsQueueFamilyIndex())));
 				fences.push_back(VulkanContext::Instance()->GetDevice().createFenceUnique(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled)));
 			}
 		}
-		if (freeBuffers.size() != chainSize)
-			freeBuffers.resize(chainSize);
-		if (inFlightBuffers.size() != chainSize)
-			inFlightBuffers.resize(chainSize);
+		if (freeBuffers.size() != size)
+			freeBuffers.resize(size);
+		if (inFlightBuffers.size() != size)
+			inFlightBuffers.resize(size);
 	}
 
 	void Term()
@@ -57,12 +59,13 @@ public:
 	void EndFrame()
 	{
 		std::vector<vk::CommandBuffer> commandBuffers = vk::uniqueToRaw(inFlightBuffers[index]);
-		VulkanContext::Instance()->SubmitCommandBuffers((u32)commandBuffers.size(), commandBuffers.data(), *fences[index]);
+		VulkanContext::Instance()->GetGraphicsQueue().submit(
+				vk::SubmitInfo(0, nullptr, nullptr, commandBuffers.size(), commandBuffers.data()), *fences[index]);
 	}
 
 	void BeginFrame()
 	{
-		index = (index + 1) % chainSize;
+		index = (index + 1) % VulkanContext::Instance()->GetSwapChainSize();
 		VulkanContext::Instance()->GetDevice().waitForFences(1, &fences[index].get(), true, UINT64_MAX);
 		VulkanContext::Instance()->GetDevice().resetFences(1, &fences[index].get());
 		std::vector<vk::UniqueCommandBuffer>& inFlight = inFlightBuffers[index];
@@ -104,6 +107,4 @@ private:
 	std::vector<std::vector<vk::UniqueCommandBuffer>> inFlightBuffers;
 	std::vector<vk::UniqueCommandPool> commandPools;
 	std::vector<vk::UniqueFence> fences;
-	// size should be the same as used by client: 2 for renderer (texCommandPool)
-	static constexpr size_t chainSize = 2;
 };

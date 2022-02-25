@@ -63,6 +63,22 @@ struct MemoryRegion {
     uint32_t size;
 };
 
+/*
+ * Byte swapping utilities
+ */
+static inline uint16_t bswap16(uint16_t x)
+{
+    return (((x & 0x00ff) << 8) |
+            ((x & 0xff00) >> 8));
+}
+
+static inline uint32_t bswap32(uint32_t x)
+{
+    return (((x & 0x000000ffU) << 24) |
+            ((x & 0x0000ff00U) <<  8) |
+            ((x & 0x00ff0000U) >>  8) |
+            ((x & 0xff000000U) >> 24));
+}
 #define glue(a, b) _glue(a, b)
 #define _glue(a, b) a ## b
 
@@ -165,7 +181,7 @@ struct PCIDevice {
 };
 
 void pci_set_irq(PCIDevice *pci_dev, int level);
-void pci_register_bar(PCIDevice *pci_dev, int region_num, uint8_t type, MemoryRegion *memory);
+void pci_register_bar(PCIDevice *pci_dev, int region_num, uint8_t attr, MemoryRegion *memory);
 
 void pci_dma_read(PCIDevice *dev, dma_addr_t addr, void *buf, dma_addr_t len);
 void pci_dma_write(PCIDevice *dev, dma_addr_t addr, const void *buf, dma_addr_t len);
@@ -214,5 +230,5 @@ ssize_t rtl8139_receive(RTL8139State *s, const uint8_t *buf, size_t size);
 
 RTL8139State *rtl8139_init(NICConf *conf);
 void rtl8139_destroy(RTL8139State *state);
-void rtl8139_serialize(RTL8139State *state, Serializer& ser);
-bool rtl8139_deserialize(RTL8139State *state, Deserializer& deser);
+void rtl8139_serialize(RTL8139State *state, void **data, unsigned int *total_size);
+bool rtl8139_unserialize(RTL8139State *state, void **data, unsigned int *total_size);

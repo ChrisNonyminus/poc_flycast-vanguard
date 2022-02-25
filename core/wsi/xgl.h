@@ -28,19 +28,20 @@
 class XGLGraphicsContext : public GLGraphicsContext
 {
 public:
-	~XGLGraphicsContext() { term(); XFree(framebufferConfigs); }
+	~XGLGraphicsContext() { Term(); XFree(framebufferConfigs); }
 
-	bool init();
-	void term() override;
-	void swap();
+	bool Init();
+	void Term();
+	void Swap();
+	bool IsSwapBufferPreserved() const { return true; }
 	bool ChooseVisual(Display* x11Display, XVisualInfo** visual, int* depth);
+	void SetDisplayAndWindow(Display *display, GLXDrawable window) { this->display = display; this->window = window; }
 
 private:
+	GLXDrawable window;
+	Display *display;
 	GLXContext context;
 	GLXFBConfig* framebufferConfigs = nullptr;
-	PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
-	int (*glXSwapIntervalMESA)(unsigned int interval) = nullptr;
-	bool swapOnVSync = false;
 };
 
 extern XGLGraphicsContext theGLContext;

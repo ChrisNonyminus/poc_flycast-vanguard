@@ -28,24 +28,22 @@ class VulkanRenderer final : public BaseVulkanRenderer
 public:
 	bool Init() override
 	{
-		NOTICE_LOG(RENDERER, "VulkanRenderer::Init");
+		DEBUG_LOG(RENDERER, "VulkanRenderer::Init");
+		BaseVulkanRenderer::Init();
 
 		textureDrawer.Init(&samplerManager, &shaderManager, &textureCache);
 		textureDrawer.SetCommandPool(&texCommandPool);
 
-		screenDrawer.Init(&samplerManager, &shaderManager, viewport);
+		screenDrawer.Init(&samplerManager, &shaderManager);
 		screenDrawer.SetCommandPool(&texCommandPool);
-		BaseInit(screenDrawer.GetRenderPass());
 
 		return true;
 	}
 
 	void Resize(int w, int h) override
 	{
-		if ((u32)w == viewport.width && (u32)h == viewport.height)
-			return;
 		BaseVulkanRenderer::Resize(w, h);
-		screenDrawer.Init(&samplerManager, &shaderManager, viewport);
+		screenDrawer.Init(&samplerManager, &shaderManager);
 	}
 
 	void Term() override
@@ -65,11 +63,6 @@ public:
 				drawer = &screenDrawer;
 
 			drawer->Draw(fogTexture.get(), paletteTexture.get());
-
-#ifdef LIBRETRO
-			if (!pvrrc.isRTT)
-				overlay->Draw(screenDrawer.GetCurrentCommandBuffer(), viewport, (int)config::RenderResolution / 480.f, true, true);
-#endif
 
 			drawer->EndRenderPass();
 
@@ -96,10 +89,4 @@ private:
 Renderer* rend_Vulkan()
 {
 	return new VulkanRenderer();
-}
-
-void ReInitOSD()
-{
-	if (renderer != nullptr)
-		((BaseVulkanRenderer *)renderer)->ReInitOSD();
 }

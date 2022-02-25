@@ -2,7 +2,6 @@
 #include "dispmanx.h"
 #include "types.h"
 #include "wsi/context.h"
-#include "cfg/option.h"
 
 #include <bcm_host.h>
 #include <EGL/egl.h>
@@ -26,8 +25,8 @@ void dispmanx_window_create()
 
 	graphics_get_display_size(0 /* LCD */, &screen_width, &screen_height);
 
-	window_width  = cfgLoadInt("window", "width", 0);
-	window_height = cfgLoadInt("window", "height", 0);
+	window_width = settings.dispmanx.Width;
+	window_height = settings.dispmanx.Height;
 
 	if(window_width < 1)
 		window_width = screen_width;
@@ -39,7 +38,7 @@ void dispmanx_window_create()
 	src_rect.width = window_width << 16;
 	src_rect.height = window_height << 16;
 
-	if (config::DispmanxMaintainAspect)
+	if(settings.dispmanx.Keep_Aspect)
 	{
 		float screen_aspect = (float)screen_width / screen_height;
 		float window_aspect = (float)window_width / window_height;
@@ -77,6 +76,8 @@ void dispmanx_window_create()
 	native_window.height = window_height;
 	vc_dispmanx_update_submit_sync( dispman_update );
 
-	initRenderApi(&native_window, (void *)dispman_display);
+	theGLContext.SetNativeWindow((EGLNativeWindowType)&native_window);
+	theGLContext.SetNativeDisplay((EGLNativeDisplayType)dispman_display);
+	InitRenderApi();
 }
 #endif

@@ -18,7 +18,6 @@
  */
 
 #include "common.h"
-#include "stdclass.h"
 #include <sstream>
 
 extern std::string OS_dirname(std::string file);
@@ -45,38 +44,35 @@ static u32 getSectorSize(const std::string& type) {
 			return 0;
 }
 
-Disc* cue_parse(const char* file, std::vector<u8> *digest)
+Disc* cue_parse(const char* file)
 {
-	if (get_file_extension(file) != "cue")
+	// Only try to open .cue files
+	size_t len = strlen(file);
+	if (len > 4 && stricmp( &file[len - 4], ".cue"))
 		return nullptr;
 
-	FILE *fsource = nowide::fopen(file, "rb");
+	core_file* fsource = core_fopen(file);
 
 	if (fsource == nullptr)
-	{
-		WARN_LOG(COMMON, "Cannot open file '%s' errno %d", file, errno);
-		throw FlycastException(std::string("Cannot open CUE file ") + file);
-	}
+		return nullptr;
 
-	size_t cue_len = flycast::fsize(fsource);
+	size_t cue_len = core_fsize(fsource);
 
 	char cue_data[64 * 1024] = { 0 };
 
 	if (cue_len >= sizeof(cue_data))
 	{
-		std::fclose(fsource);
-		throw FlycastException("CUE parse error: CUE file too big");
+		WARN_LOG(GDROM, "CUE parse error: CUE file too big");
+		core_fclose(fsource);
+		return nullptr;
 	}
 
-	if (std::fread(cue_data, 1, cue_len, fsource) != cue_len)
-		WARN_LOG(GDROM, "Failed or truncated read of cue file '%s'", file);
-	std::fclose(fsource);
+	core_fread(fsource, cue_data, cue_len);
+	core_fclose(fsource);
 
-	std::istringstream istream(cue_data);
+	std::istringstream cuesheet(cue_data);
 
 	std::string basepath = OS_dirname(file);
-
-	MD5Sum md5;
 
 	Disc* disc = new Disc();
 	u32 current_fad = 150;
@@ -84,11 +80,9 @@ Disc* cue_parse(const char* file, std::vector<u8> *digest)
 	u32 track_number = -1;
 	std::string track_type;
 	u32 session_number = 0;
-	std::string line;
 
-	while (std::getline(istream, line))
+	while (!cuesheet.eof())
 	{
-		std::stringstream cuesheet(line);
 		std::string token;
 		cuesheet >> token;
 
@@ -110,7 +104,7 @@ Disc* cue_parse(const char* file, std::vector<u8> *digest)
 						current_fad += 11400;
 
 					Session ses;
-					ses.FirstTrack = (u8)disc->tracks.size() + 1;
+					ses.FirstTrack = disc->tracks.size() + 1;
 					ses.StartFAD = current_fad;
 					disc->sessions.push_back(ses);
 					DEBUG_LOG(GDROM, "session[%zd]: 1st track: %d FAD:%d", disc->sessions.size(), ses.FirstTrack, ses.StartFAD);
@@ -122,10 +116,7 @@ Disc* cue_parse(const char* file, std::vector<u8> *digest)
 				if (token == "HIGH-DENSITY")
 					current_fad = 45000 + 150;
 				else if (token != "SINGLE-DENSITY")
-				{
-					INFO_LOG(GDROM, "CUE parse: unrecognized REM token %s. Expected SINGLE-DENSITY, HIGH-DENSITY or SESSION", token.c_str());
-					continue;
-				}
+					WARN_LOG(GDROM, "CUE parse error: unrecognized REM token %s. Expected SINGLE-DENSITY, HIGH-DENSITY or SESSION", token.c_str());
 				cuesheet >> token;
 				if (token != "AREA")
 					WARN_LOG(GDROM, "CUE parse error: unrecognized REM token %s. Expected AREA", token.c_str());
@@ -171,30 +162,30 @@ Disc* cue_parse(const char* file, std::vector<u8> *digest)
 			if (index_num == 1)
 			{
 				Track t;
+				t.ADDR = 0;
 				t.StartFAD = current_fad;
 				t.CTRL = (track_type == "AUDIO" || track_type == "CDG") ? 0 : 4;
 				std::string path = basepath + normalize_path_separator(track_filename);
-				FILE *track_file = nowide::fopen(path.c_str(), "rb");
+				core_file* track_file = core_fopen(path.c_str());
 				if (track_file == nullptr)
 				{
+					WARN_LOG(GDROM, "CUE file: cannot open track %d: %s", track_number, path.c_str());
 					delete disc;
-					throw FlycastException("CUE file: cannot open track " + path);
+					return nullptr;
 				}
 				u32 sector_size = getSectorSize(track_type);
 				if (sector_size == 0)
 				{
-					std::fclose(track_file);
+					WARN_LOG(GDROM, "CUE file: track %d has unknown sector type: %s", track_number, track_type.c_str());
 					delete disc;
-					throw FlycastException("CUE file: track has unknown sector type: " + track_type);
+					return nullptr;
 				}
-				if (flycast::fsize(track_file) % sector_size != 0)
+				if (core_fsize(track_file) % sector_size != 0)
 					WARN_LOG(GDROM, "Warning: Size of track %s is not multiple of sector size %d", track_filename.c_str(), sector_size);
-				current_fad = t.StartFAD + (u32)flycast::fsize(track_file) / sector_size;
+				current_fad = t.StartFAD + (u32)core_fsize(track_file) / sector_size;
 				t.EndFAD = current_fad - 1;
 				DEBUG_LOG(GDROM, "file[%zd] \"%s\": session %d type %s FAD:%d -> %d", disc->tracks.size() + 1, track_filename.c_str(), session_number, track_type.c_str(), t.StartFAD, t.EndFAD);
 				
-				if (digest != nullptr)
-					md5.add(track_file);
 				t.file = new RawTrackFile(track_file, 0, t.StartFAD, sector_size);
 				disc->tracks.push_back(t);
 				
@@ -206,8 +197,9 @@ Disc* cue_parse(const char* file, std::vector<u8> *digest)
 	}
 	if (disc->tracks.empty())
 	{
+		WARN_LOG(GDROM, "CUE parse error: failed to parse or invalid file with 0 tracks");
 		delete disc;
-		throw FlycastException("CUE parse error: failed to parse or invalid file with 0 tracks");
+		return nullptr;
 	}
 
 	if (session_number == 0)
@@ -224,8 +216,6 @@ Disc* cue_parse(const char* file, std::vector<u8> *digest)
 	for (Track& t : disc->tracks)
 		if (t.CTRL == 0)
 			t.StartFAD += 150;
-	if (digest != nullptr)
-		*digest = md5.getDigest();
 
 	return disc;
 }

@@ -27,13 +27,13 @@ class ZipArchive : public Archive
 {
 public:
 	ZipArchive() : zip(NULL) {}
-	~ZipArchive() override;
+	virtual ~ZipArchive();
 
-	ArchiveFile* OpenFile(const char* name) override;
-	ArchiveFile* OpenFileByCrc(u32 crc) override;
+	virtual ArchiveFile* OpenFile(const char* name) override;
+	virtual ArchiveFile* OpenFileByCrc(u32 crc) override;
 
 private:
-	bool Open(const char* path) override;
+	virtual bool Open(const char* path) override;
 
 	struct zip *zip;
 };
@@ -42,8 +42,8 @@ class ZipArchiveFile : public ArchiveFile
 {
 public:
 	ZipArchiveFile(struct zip_file *zip_file) : zip_file(zip_file) {}
-	~ZipArchiveFile() override { zip_fclose(zip_file); }
-	u32 Read(void* buffer, u32 length) override;
+	virtual ~ZipArchiveFile() { zip_fclose(zip_file); }
+	virtual u32 Read(void* buffer, u32 length) override;
 
 private:
 	struct zip_file *zip_file;

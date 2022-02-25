@@ -212,6 +212,7 @@ struct CommonData_struct
 	u32 :16;
 };
 
+//should be 0x15C8 in size
 struct DSPData_struct
 {
 	//+0x000
@@ -221,13 +222,13 @@ struct DSPData_struct
 	u32 MADRS[64];		//15:0
 	
 	//+0x300
-	u8 _PAD0[0x100];
+	u8 PAD0[0x100];
 
 	//+0x400
 	u32 MPRO[128*4];	//15:0
 	
 	//+0xC00
-	u8 _PAD1[0x400];
+	u8 PAD1[0x400];
 
 	//+0x1000
 	struct 
@@ -259,8 +260,6 @@ struct DSPData_struct
 	//+0x15C0
 	u32 EXTS[2];		//15:0
 };
-static_assert(sizeof(DSPData_struct) == 0x15C8, "Wrong DSPData size");
-
 union InterruptInfo
 {
 	struct
@@ -303,32 +302,40 @@ extern InterruptInfo* SCIRE;
 extern CommonData_struct* CommonData;
 extern DSPData_struct*	  DSPData;
 
+void UpdateAICA(u32 Cycles);
+
+void AICA_Init();
+void AICA_Term();
+
+//u32 ReadAicaReg(u32 reg);
+void WriteAicaReg8(u32 reg,u32 data);
+
 template<u32 sz>
 void WriteAicaReg(u32 reg,u32 data);
 
+////
+//Timers :)
+struct AicaTimerData
+{
+	union
+	{
+		struct
+		{
+			u32 count:8;
+			u32 md:3;
+			u32 nil:5;
+			u32 pad:16;
+		};
+		u32 data;
+	};
+};
 class AicaTimer
 {
-	struct AicaTimerData
-	{
-		union
-		{
-			struct
-			{
-				u32 count:8;
-				u32 md:3;
-				u32 nil:5;
-				u32 pad:16;
-			};
-			u32 data;
-		};
-	};
-	AicaTimerData* data;
-	u32 id;
-
 public:
+	AicaTimerData* data;
 	s32 c_step;
 	u32 m_step;
-
+	u32 id;
 	void Init(u8* regbase,u32 timer)
 	{
 		data=(AicaTimerData*)&regbase[0x2890 + timer*4];
@@ -336,7 +343,6 @@ public:
 		m_step=1<<(data->md);
 		c_step=m_step;
 	}
-
 	void StepTimer(u32 samples)
 	{
 		do

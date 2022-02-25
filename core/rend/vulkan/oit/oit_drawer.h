@@ -57,7 +57,7 @@ protected:
 		else
 			while (descriptorSets.size() < GetContext()->GetSwapChainSize())
 			{
-				descriptorSets.emplace_back();
+				descriptorSets.push_back(OITDescriptorSets());
 				descriptorSets.back().Init(samplerManager,
 						pipelineManager->GetPipelineLayout(),
 						pipelineManager->GetPerFrameDSLayout(),
@@ -72,8 +72,7 @@ protected:
 		colorAttachments[1].reset();
 		tempFramebuffers[0].reset();
 		tempFramebuffers[1].reset();
-		depthAttachments[0].reset();
-		depthAttachments[1].reset();
+		depthAttachment.reset();
 		mainBuffers.clear();
 		descriptorSets.clear();
 	}
@@ -100,7 +99,7 @@ protected:
 		}
 		if (mainBuffers[bufferIndex]->bufferSize < size)
 		{
-			u32 newSize = (u32)mainBuffers[bufferIndex]->bufferSize;
+			u32 newSize = mainBuffers[bufferIndex]->bufferSize;
 			while (newSize < size)
 				newSize *= 2;
 			INFO_LOG(RENDERER, "Increasing main buffer size %d -> %d", (u32)mainBuffers[bufferIndex]->bufferSize, newSize);
@@ -117,15 +116,15 @@ protected:
 
 	vk::Rect2D viewport;
 	std::array<std::unique_ptr<FramebufferAttachment>, 2> colorAttachments;
-	std::array<std::unique_ptr<FramebufferAttachment>, 2> depthAttachments;
+	std::unique_ptr<FramebufferAttachment> depthAttachment;
 	vk::CommandBuffer currentCommandBuffer;
 	std::vector<bool> clearNeeded;
 
 private:
-	void DrawPoly(const vk::CommandBuffer& cmdBuffer, u32 listType, bool autosort, Pass pass,
+	void DrawPoly(const vk::CommandBuffer& cmdBuffer, u32 listType, bool sortTriangles, Pass pass,
 			const PolyParam& poly, u32 first, u32 count);
 	void DrawList(const vk::CommandBuffer& cmdBuffer, u32 listType, bool sortTriangles, Pass pass,
-			const List<PolyParam>& polys, u32 first, u32 last);
+			const List<PolyParam>& polys, u32 first, u32 count);
 	template<bool Translucent>
 	void DrawModifierVolumes(const vk::CommandBuffer& cmdBuffer, int first, int count);
 	void UploadMainBuffer(const OITDescriptorSets::VertexShaderUniforms& vertexUniforms,
@@ -159,16 +158,16 @@ private:
 class OITScreenDrawer : public OITDrawer
 {
 public:
-	void Init(SamplerManager *samplerManager, OITShaderManager *shaderManager, OITBuffers *oitBuffers,
-			const vk::Extent2D& viewport)
+	void Init(SamplerManager *samplerManager, OITShaderManager *shaderManager, OITBuffers *oitBuffers)
 	{
 		if (!screenPipelineManager)
 			screenPipelineManager = std::unique_ptr<OITPipelineManager>(new OITPipelineManager());
 		screenPipelineManager->Init(shaderManager, oitBuffers);
 		OITDrawer::Init(samplerManager, screenPipelineManager.get(), oitBuffers);
 
-		MakeFramebuffers(viewport);
-		GetContext()->PresentFrame(vk::Image(), vk::ImageView(), viewport);
+		currentScreenScaling = 0;
+		MakeFramebuffers();
+		GetContext()->PresentFrame(vk::ImageView(), viewport.extent);
 	}
 	void Term()
 	{
@@ -178,8 +177,8 @@ public:
 		OITDrawer::Term();
 	}
 
-	vk::CommandBuffer NewFrame() override;
-	void EndFrame() override
+	virtual vk::CommandBuffer NewFrame() override;
+	virtual void EndFrame() override
 	{
 		currentCommandBuffer.endRenderPass();
 		currentCommandBuffer.end();
@@ -194,25 +193,23 @@ public:
 		if (!frameRendered)
 			return false;
 		frameRendered = false;
-		GetContext()->PresentFrame(finalColorAttachments[GetCurrentImage()]->GetImage(),
-				finalColorAttachments[GetCurrentImage()]->GetImageView(), viewport.extent);
+		GetContext()->PresentFrame(finalColorAttachments[GetCurrentImage()]->GetImageView(), viewport.extent);
 		NewImage();
 
 		return true;
 	}
-	vk::RenderPass GetRenderPass() const { return screenPipelineManager->GetRenderPass(false, true); }
-	vk::CommandBuffer GetCurrentCommandBuffer() const { return currentCommandBuffer; }
 
 protected:
-	vk::Framebuffer GetFinalFramebuffer() const override { return *framebuffers[GetCurrentImage()]; }
-	vk::Format GetColorFormat() const override { return GetContext()->GetColorFormat(); }
+	virtual vk::Framebuffer GetFinalFramebuffer() const override { return *framebuffers[GetCurrentImage()]; }
+	virtual vk::Format GetColorFormat() const override { return GetContext()->GetColorFormat(); }
 
 private:
-	void MakeFramebuffers(const vk::Extent2D& viewport);
+	void MakeFramebuffers();
 
 	std::vector<std::unique_ptr<FramebufferAttachment>> finalColorAttachments;
 	std::vector<vk::UniqueFramebuffer> framebuffers;
 	std::unique_ptr<OITPipelineManager> screenPipelineManager;
+	int currentScreenScaling = 0;
 	std::vector<bool> transitionNeeded;
 	bool frameRendered = false;
 };
@@ -238,12 +235,12 @@ public:
 		OITDrawer::Term();
 	}
 
-	void EndFrame() override;
+	virtual void EndFrame() override;
 
 protected:
-	vk::CommandBuffer NewFrame() override;
-	vk::Framebuffer GetFinalFramebuffer() const override { return *framebuffers[GetCurrentImage()]; }
-	vk::Format GetColorFormat() const override { return vk::Format::eR8G8B8A8Unorm; }
+	virtual vk::CommandBuffer NewFrame() override;
+	virtual vk::Framebuffer GetFinalFramebuffer() const override { return *framebuffers[GetCurrentImage()]; }
+	virtual vk::Format GetColorFormat() const override { return vk::Format::eR8G8B8A8Unorm; }
 
 private:
 	u32 textureAddr = 0;

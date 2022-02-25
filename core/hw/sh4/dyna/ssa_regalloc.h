@@ -28,12 +28,12 @@
 
 #define ssa_printf(...) DEBUG_LOG(DYNAREC, __VA_ARGS__)
 
-template<typename nreg_t, typename nregf_t>
+template<typename nreg_t, typename nregf_t, bool explode_spans = true>
 class RegAlloc
 {
 public:
-	RegAlloc() = default;
-	virtual ~RegAlloc() = default;
+	RegAlloc() {}
+	virtual ~RegAlloc() {}
 
 	void DoAlloc(RuntimeBlockInfo* block, const nreg_t* regs_avail, const nregf_t* regsf_avail)
 	{
@@ -244,7 +244,7 @@ public:
 	}
 
 	void Cleanup() {
-		verify(final_opend || block->oplist.empty());
+		verify(final_opend || block->oplist.size() == 0);
 		final_opend = false;
 		FlushAllRegs(true);
 		verify(reg_alloced.empty());
@@ -491,7 +491,7 @@ private:
 
 			// Find the first use, but ignore vec ops
 			int first_use = -1;
-			for (u32 i = opnum + (source ? 0 : 1); i < (u32)block->oplist.size(); i++)
+			for (size_t i = opnum + (source ? 0 : 1); i < block->oplist.size(); i++)
 			{
 				op = &block->oplist[i];
 				// Vector ops don't use reg alloc

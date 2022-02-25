@@ -20,52 +20,30 @@
 */
 #pragma once
 #include "types.h"
-#include "context.h"
 
-#ifdef TEST_AUTOMATION
 void do_swap_automation();
-#else
-static inline void do_swap_automation() {}
-#endif
+// FIXME
+extern int screen_width, screen_height;
 
-class GLGraphicsContext : public GraphicsContext
+class GLGraphicsContext
 {
 public:
-	int getMajorVersion() const {
-		return majorVersion;
-	}
-	int getMinorVersion() const {
-		return minorVersion;
-	}
-	bool isGLES() const {
-		return _isGLES;
-	}
-	std::string getDriverName() override;
-	std::string getDriverVersion() override;
-
-	bool hasPerPixel() override
-	{
-		return !isGLES()
-				&& (getMajorVersion() > 4
-						|| (getMajorVersion() == 4 && getMinorVersion() >= 3));
-	}
+	int GetMajorVersion() const { return majorVersion; }
+	int GetMinorVersion() const { return minorVersion; }
+	bool IsGLES() const { return isGLES; }
 
 protected:
-	void postInit();
-	void preTerm();
+	void PostInit();
+	void PreTerm();
 	void findGLVersion();
 
 private:
 	int majorVersion = 0;
 	int minorVersion = 0;
-	bool _isGLES = false;
+	bool isGLES = false;
 };
 
-#if defined(LIBRETRO)
-
-#include "libretro.h"
-
-#elif defined(TARGET_IPHONE)
+#if defined(__APPLE__)
 
 #include "osx.h"
 
@@ -73,7 +51,7 @@ private:
 
 #include "sdl.h"
 
-#elif defined(GLES) || defined(__ANDROID__) || defined(__SWITCH__)
+#elif defined(GLES) || defined(__ANDROID__)
 
 #include "egl.h"
 

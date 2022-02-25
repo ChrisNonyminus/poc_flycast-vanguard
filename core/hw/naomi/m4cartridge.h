@@ -18,15 +18,15 @@
 class M4Cartridge: public NaomiCartridge {
 public:
 	M4Cartridge(u32 size) : NaomiCartridge(size) { }
-	~M4Cartridge() override;
+	~M4Cartridge();
 
-	void Init(LoadProgress *progress = nullptr, std::vector<u8> *digest = nullptr) override
+	virtual void Init() override
 	{
 		device_start();
 		device_reset();
 	}
 
-	u32 ReadMem(u32 address, u32 size) override
+	virtual u32 ReadMem(u32 address, u32 size) override
 	{
 		if ((address & 0xff) == 0x34)
 			return m4id & 0xff80;
@@ -39,21 +39,21 @@ public:
 
 		return data;
 	}
-	bool Read(u32 offset, u32 size, void *dst) override;
-	bool Write(u32 offset, u32 size, u32 data) override;
+	virtual bool Read(u32 offset, u32 size, void *dst) override;
+	virtual bool Write(u32 offset, u32 size, u32 data) override;
 
-	void* GetDmaPtr(u32 &size) override;
-	void AdvancePtr(u32 size) override;
-	std::string GetGameId() override;
-	void Serialize(Serializer& ser) const override;
-	void Deserialize(Deserializer& deser) override;
+	virtual void* GetDmaPtr(u32 &size) override;
+	virtual void AdvancePtr(u32 size) override;
+	virtual std::string GetGameId() override;
+	virtual void Serialize(void** data, unsigned int* total_size) override;
+	virtual void Unserialize(void** data, unsigned int* total_size) override;
 
 	void SetKey(u32 key) override { this->m4id = key; }
 	void SetKeyData(u8 *key_data) override { this->m_key_data = key_data; }
 
 protected:
-	void DmaOffsetChanged(u32 dma_offset) override;
-	void PioOffsetChanged(u32 pio_offset) override;
+	virtual void DmaOffsetChanged(u32 dma_offset) override;
+	virtual void PioOffsetChanged(u32 pio_offset) override;
 
 private:
 	void device_start();

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef REIOS_H
+#define REIOS_H
 
 #include "types.h"
 #include "hw/flashrom/flashrom.h"
@@ -40,3 +41,5 @@ struct ip_meta_t
 extern ip_meta_t ip_meta;
 
 #define REIOS_OPCODE 0x085B
+
+#endif //REIOS_H
