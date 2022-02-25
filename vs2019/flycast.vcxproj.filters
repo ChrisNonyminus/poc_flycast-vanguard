@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="M:\sourcecode\flycast\core\emulator.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\nullDC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\sdl\sdl.cpp">
@@ -10,73 +10,94 @@
     <ClCompile Include="M:\sourcecode\flycast\core\deps\chdpsr\cdipsr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_arp.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\bitstream.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_dev_ppp.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\cdrom.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_dhcp_common.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\chd.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_dhcp_server.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\flac.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_dns_client.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\chdr\huffman.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_dns_common.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\coreio\coreio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_ethernet.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\md5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_fragments.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\sha1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_icmp4.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\crypto\sha256.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_ipv4.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\bitmath.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_socket_tcp.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\bitreader.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_socket_udp.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\cpu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_strings.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\crc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_tcp.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_udp.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed_intrin_sse2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_device.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\fixed_intrin_ssse3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_frame.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\float.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_md5.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\format.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_protocol.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_socket.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_avx2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_socket_multicast.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_stack.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\picotcp\stack\pico_tree.c">
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\lpc_intrin_sse41.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\md5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\memory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\metadata_iterators.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\metadata_object.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\stream_decoder.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\window.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\deps\flac\src\libFLAC\windows_unicode_filenames.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\deps\lzma\7zArcIn.c">
@@ -169,9 +190,6 @@
     <ClCompile Include="M:\sourcecode\flycast\core\deps\xbrz\xbrz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\md5\md5.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\archive\7zArchive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -179,9 +197,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\archive\rzip.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\archive\ZipArchive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\cfg\cfg.cpp">
@@ -193,7 +208,7 @@
     <ClCompile Include="M:\sourcecode\flycast\core\cfg\ini.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\cfg\option.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\emitter\x86_emitter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\aica.cpp">
@@ -208,9 +223,6 @@
     <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_arm32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_arm64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -220,10 +232,10 @@
     <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_x64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\dsp_x86.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\sgc_if.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\aica\sgc_if.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm7.cpp">
@@ -232,28 +244,16 @@
     <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm_mem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm7_rec_arm32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm7_rec_arm64.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm7_rec_x64.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\arm7_rec.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\vbaARM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\arm7\virt_arm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\bba\bba.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\bba\rtl8139c.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\flashrom\flashrom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\gdrom\gdrom_response.cpp">
@@ -286,10 +286,10 @@
     <ClCompile Include="M:\sourcecode\flycast\core\hw\maple\maple_jvs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\_vmem.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\vmem32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\mem_watch.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\mem\_vmem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\modem\modem.cpp">
@@ -325,7 +325,7 @@
     <ClCompile Include="M:\sourcecode\flycast\core\hw\naomi\naomi_roms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\drkPvr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\hw\pvr\pvr_mem.cpp">
@@ -454,25 +454,22 @@
     <ClCompile Include="M:\sourcecode\flycast\core\input\gamepad_device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\input\keyboard_device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\input\mapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\input\mouse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\windows\fault_handler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\windows\unwind_info.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\windows\win_vmem.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\linux\common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\dispmanx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\evdev.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\joystick.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\linux-dist\x11.cpp">
@@ -493,16 +490,10 @@
     <ClCompile Include="M:\sourcecode\flycast\core\network\dns.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\network\ggpo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\network\miniupnp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\network\naomi_network.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\network\net_handshake.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\network\picoppp.cpp">
@@ -523,9 +514,6 @@
     <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_null.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_oboe.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiobackend_omx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -539,12 +527,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\oslib\audiostream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\oslib\oslib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\lua\lua.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\profiler\profiler.cpp">
@@ -565,13 +547,10 @@
     <ClCompile Include="M:\sourcecode\flycast\core\reios\reios_elf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\wsi\libretro.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\wsi\switcher.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\wsi\egl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl4funcs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl_context.cpp">
@@ -583,6 +562,9 @@
     <ClCompile Include="M:\sourcecode\flycast\core\wsi\sdl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\wsi\switcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\wsi\wgl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -592,7 +574,16 @@
     <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl32funcs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\wsi\gl4funcs.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\cheats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\dispframe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\serialize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\stdclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gldraw.cpp">
@@ -604,40 +595,22 @@
     <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\gltex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\quad.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\postprocess.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\imgui_impl_opengl3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gles\opengl_driver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\abuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gldraw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gles.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\cheats.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\nullDC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\serialize.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\stdclass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rend\CustomTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_android.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\mainui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rend\osd.cpp">
@@ -649,19 +622,16 @@
     <ClCompile Include="M:\sourcecode\flycast\core\rend\TexCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\abuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_android.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gldraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_cheats.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\gui_util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\mainui.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\gl4\gltex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_drawer.cpp">
@@ -688,6 +658,9 @@
     <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\drawer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\pipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -703,97 +676,19 @@
     <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vmallocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\overlay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_renderer.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vmu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\imgui_impl_dx11.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\dx11_overlay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\dx11_renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\dx11_renderstate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\dx11_shaders.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\dx11_texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\dx11context.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\dx11context_lr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\oit\dx11_oitrenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\rend\dx11\oit\dx11_oitshaders.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\rec-x64\rec_x64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\bitvector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\game_input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\input_queue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\platform_linux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\platform_windows.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\poll.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\sync.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\timesync.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\backends\p2p.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\backends\spectator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\backends\synctest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\network\udp_proto.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\network\udp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="M:\sourcecode\flycast\core\windows\rawinput.cpp">
+    <ClCompile Include="M:\sourcecode\flycast\core\windows\win_vmem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M:\sourcecode\flycast\core\windows\winmain.cpp">
@@ -813,106 +708,34 @@
     <ClInclude Include="M:\sourcecode\flycast\core\deps\chdpsr\cdipsr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_arm9.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\bitstream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_atsamd21j18.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\cdrom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_avr.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\chd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_cortex_m.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\coretypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_dos.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\flac.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_esp8266.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\chdr\huffman.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_generic_gcc.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\coreio\coreio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_linux.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\md5.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_mbed.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\sha1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_msp430.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_msvc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_none.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_pic24.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_pic32.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\arch\pico_posix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\heap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_addressing.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_defines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_defines_msvc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_device.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_eth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_frame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_md5.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_module_eth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_protocol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_queue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_socket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_socket_multicast.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_stack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\include\pico_tree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_dhcp_common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\picotcp\modules\pico_dhcp_server.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\deps\crypto\sha256.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\archive\7zArchive.h">
@@ -924,16 +747,100 @@
     <ClInclude Include="M:\sourcecode\flycast\core\archive\rzip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\archive\ZipArchive.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_coding.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\cfg\option.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_disasm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_emitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\arm_registers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Branches.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_DataOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Extend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_LoadStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Multiply.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Parallel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Special.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_Status.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VDataOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VLoadStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\E_VRegXfer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_Branches.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_fp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_LoadStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_psuedo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\arm_emitter\H_state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\cfg\cfg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\cfg\ini.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_class_names.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_class_names_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_descriptors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\generated_indexes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_emitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_matcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_classes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\emitter\x86_op_table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\aica\aica.h">
@@ -957,10 +864,10 @@
     <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm_mem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm7_rec.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm-new.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\arm-new.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\arm7\virt_arm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\bba\bba.h">
@@ -999,10 +906,10 @@
     <ClInclude Include="M:\sourcecode\flycast\core\hw\maple\maple_if.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\_vmem.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\vmem32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\mem_watch.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\mem\_vmem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\modem\modem.h">
@@ -1053,9 +960,6 @@
     <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\helper_classes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\pvr\pvr_mem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1095,6 +999,9 @@
     <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\ngen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\regalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\dyna\shil_canonical.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1120,6 +1027,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\mmu_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\modules\modules.h">
@@ -1149,6 +1059,9 @@
     <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_mmr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\hw\sh4\sh4_opcode_list.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1159,6 +1072,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\imgread\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\imgread\gd_driver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\input\gamepad.h">
@@ -1173,12 +1089,6 @@
     <ClInclude Include="M:\sourcecode\flycast\core\input\mapping.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\input\mouse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\windows\comptr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\dispmanx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1186,6 +1096,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\icon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\joystick.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\linux-dist\x11.h">
@@ -1197,28 +1110,22 @@
     <ClInclude Include="M:\sourcecode\flycast\core\log\BitSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\log\Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\log\StringUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\log\ConsoleListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\log\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\log\LogManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\network\ggpo.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\log\StringUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\network\miniupnp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\network\naomi_network.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\network\net_handshake.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\network\net_platform.h">
@@ -1230,16 +1137,7 @@
     <ClInclude Include="M:\sourcecode\flycast\core\oslib\audiostream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\oslib\directory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\oslib\host_context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\oslib\oslib.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\lua\lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\profiler\profiler.h">
@@ -1266,9 +1164,6 @@
     <ClInclude Include="M:\sourcecode\flycast\core\wsi\context.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\wsi\libretro.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\wsi\egl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1290,24 +1185,6 @@
     <ClInclude Include="M:\sourcecode\flycast\core\wsi\gl32funcs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\glcache.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\gles.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\postprocess.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\imgui_impl_opengl3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\opengl_driver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gl4\gl4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\build.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1317,19 +1194,34 @@
     <ClInclude Include="M:\sourcecode\flycast\core\emulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\serialize.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\stdclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\debug\gdb_server.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\glcache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\gles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gles\imgui_impl_opengl3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\rend\CustomTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\game_scanner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_android.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\rend\osd.h">
@@ -1344,25 +1236,7 @@
     <ClInclude Include="M:\sourcecode\flycast\core\rend\TexCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\game_scanner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\imgui_driver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_android.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_chat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\gui_util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\mainui.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\gl4\gl4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\oit\oit_buffer.h">
@@ -1392,6 +1266,9 @@
     <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\drawer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\pipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1413,7 +1290,7 @@
     <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vmallocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\overlay.h">
+    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vmu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_context.h">
@@ -1422,109 +1299,7 @@
     <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\vulkan_driver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\vulkan\imgui_impl_vulkan.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\imgui_impl_dx11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11_driver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11_overlay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11_renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11_renderstate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11_shaders.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11_texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\dx11context_lr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\oit\dx11_oitbuffers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rend\dx11\oit\dx11_oitshaders.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\rec-x64\xbyak_base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\rec-x64\x64_regalloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\bitvector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\game_input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\input_queue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\platform_linux.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\platform_windows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\ggpo_poll.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\ring_buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\static_buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\sync.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\timesync.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\ggpo_types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\backends\backend.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\backends\p2p.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\backends\spectator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\backends\synctest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\network\udp_msg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\network\udp_proto.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\deps\ggpo\lib\ggpo\network\udp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="M:\sourcecode\flycast\core\windows\rawinput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M:\sourcecode\flycast\core\windows\win_keyboard.h">
@@ -1538,12 +1313,16 @@
     <CustomBuild Include="M:\sourcecode\flycast\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <MASM Include="M:\sourcecode\flycast\core\rec-x64\msvc.asm" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="M:\sourcecode\flycast\core\hw\sh4\dyna" />
     <None Include="M:\sourcecode\flycast\core\hw\sh4\interpr" />
     <None Include="M:\sourcecode\flycast\core\hw\sh4\modules" />
+    <None Include="M:\sourcecode\flycast\core\imgread\SCSIDEFS.H" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="M:\sourcecode\flycast\shell\windows\flycast.rc">
+    <ResourceCompile Include="M:\sourcecode\flycast\shell\windows\reicast.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
   </ItemGroup>

@@ -20,32 +20,45 @@ ALSA_INCLUDE_DIR:PATH=ALSA_INCLUDE_DIR-NOTFOUND
 //The ALSA (asound) library
 ALSA_LIBRARY:FILEPATH=ALSA_LIBRARY-NOTFOUND
 
+//Enable building amd64 assembly implementation
+AMD64:BOOL=OFF
+
 //Enable address sanitizer
 ASAN:BOOL=OFF
 
-//Build documentation
-BUILD_DOC:BOOL=OFF
-
-//Build examples
-BUILD_EXAMPLES:BOOL=OFF
+//Enable building i686 assembly implementation
+ASM686:BOOL=OFF
 
 //Build external dependencies in /External
-BUILD_EXTERNAL:BOOL=OFF
-
-//Compile libchdr with link-time optimization if supported
-BUILD_LTO:BOOL=OFF
-
-//Build regression tests
-BUILD_REGRESS:BOOL=OFF
-
-//Build tools in the src directory (zipcmp, zipmerge, ziptool)
-BUILD_TOOLS:BOOL=OFF
+BUILD_EXTERNAL:BOOL=ON
 
 //Path to a program.
 CCACHE_FOUND:FILEPATH=CCACHE_FOUND-NOTFOUND
 
 //Path to a program.
-CMAKE_AR:FILEPATH=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30037/bin/Hostx64/x64/lib.exe
+CMAKE_AR:FILEPATH=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/bin/Hostx64/x64/lib.exe
+
+//ASM_MASM compiler
+CMAKE_ASM_MASM_COMPILER:FILEPATH=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/bin/Hostx64/x64/ml64.exe
+
+//Flags used by the ASM_MASM compiler during all build types.
+CMAKE_ASM_MASM_FLAGS:STRING=
+
+//Flags used by the ASM_MASM compiler during DEBUG builds.
+CMAKE_ASM_MASM_FLAGS_DEBUG:STRING=
+
+//Flags used by the ASM_MASM compiler during MINSIZEREL builds.
+CMAKE_ASM_MASM_FLAGS_MINSIZEREL:STRING=
+
+//Flags used by the ASM_MASM compiler during RELEASE builds.
+CMAKE_ASM_MASM_FLAGS_RELEASE:STRING=
+
+//Flags used by the ASM_MASM compiler during RELWITHDEBINFO builds.
+CMAKE_ASM_MASM_FLAGS_RELWITHDEBINFO:STRING=
+
+//For backwards compatibility, what version of CMake commands and
+// syntax should this version of CMake try to support.
+CMAKE_BACKWARDS_COMPATIBILITY:STRING=2.4
 
 //Semicolon separated list of supported configuration types, only
 // supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything
@@ -155,7 +168,7 @@ CMAKE_INSTALL_SHAREDSTATEDIR:PATH=com
 CMAKE_INSTALL_SYSCONFDIR:PATH=etc
 
 //Path to a program.
-CMAKE_LINKER:FILEPATH=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30037/bin/Hostx64/x64/link.exe
+CMAKE_LINKER:FILEPATH=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.28.29333/bin/Hostx64/x64/link.exe
 
 //Flags used by the linker during the creation of modules during
 // all build types.
@@ -178,7 +191,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=/INCREMENTAL:NO
 CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 
 //Path to a program.
-CMAKE_MT:FILEPATH=CMAKE_MT-NOTFOUND
+CMAKE_MT:FILEPATH=M:/Program Files/Microsoft Platform SDK/Bin/mt.exe
 
 //Value Computed by CMake
 CMAKE_PROJECT_DESCRIPTION:STATIC=
@@ -205,7 +218,7 @@ CMAKE_PROJECT_VERSION_PATCH:STATIC=3
 CMAKE_PROJECT_VERSION_TWEAK:STATIC=
 
 //RC compiler
-CMAKE_RC_COMPILER:FILEPATH=rc
+CMAKE_RC_COMPILER:FILEPATH=M:/Program Files/Microsoft Platform SDK/Bin/RC.Exe
 
 //Flags for Windows Resource Compiler during all build types.
 CMAKE_RC_FLAGS:STRING=-DWIN32
@@ -275,18 +288,6 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=OFF
 
-//Path to a program.
-CYGWIN_BAT:FILEPATH=CYGWIN_BAT-NOTFOUND
-
-//Documentation format
-DOCUMENTATION_FORMAT:STRING=mdoc
-
-//Enable use of BZip2
-ENABLE_BZIP2:BOOL=OFF
-
-//Enable use of CommonCrypto
-ENABLE_COMMONCRYPTO:BOOL=OFF
-
 //Enables testing
 ENABLE_CTEST:BOOL=OFF
 
@@ -297,23 +298,11 @@ ENABLE_GLSLANG_BINARIES:BOOL=ON
 // executable for binary-size testing.
 ENABLE_GLSLANG_JS:BOOL=OFF
 
-//Enable use of GnuTLS
-ENABLE_GNUTLS:BOOL=OFF
-
 //Enables HLSL input support
 ENABLE_HLSL:BOOL=ON
 
 //Enable full logging
 ENABLE_LOG:BOOL=OFF
-
-//Enable use of LZMA
-ENABLE_LZMA:BOOL=OFF
-
-//Enable use of mbed TLS
-ENABLE_MBEDTLS:BOOL=OFF
-
-//Enable use of OpenSSL
-ENABLE_OPENSSL:BOOL=OFF
 
 //Enable OProfile
 ENABLE_OPROFILE:BOOL=OFF
@@ -330,23 +319,29 @@ ENABLE_RTTI:BOOL=OFF
 //Enables building of SPVRemapper
 ENABLE_SPVREMAPPER:BOOL=ON
 
-//Enable use of Windows cryptography libraries
-ENABLE_WINDOWS_CRYPTO:BOOL=OFF
-
-//Enable use of Zstandard
-ENABLE_ZSTD:BOOL=OFF
+//Single output directory for building all executables.
+EXECUTABLE_OUTPUT_PATH:PATH=
 
 //Git command line client
-GIT_EXECUTABLE:FILEPATH=C:/devkitPro/msys2/usr/bin/git.exe
+GIT_EXECUTABLE:FILEPATH=C:/Program Files/Git/cmd/git.exe
 
-//Install static libraries
-INSTALL_STATIC_LIBS:BOOL=OFF
+//Installation directory for executables
+INSTALL_BIN_DIR:PATH=install/bin
 
-//Build libretro core
-LIBRETRO:BOOL=OFF
+//Installation directory for headers
+INSTALL_INC_DIR:PATH=install/include
 
-//Install libzip and the related files
-LIBZIP_DO_INSTALL:BOOL=OFF
+//Installation directory for libraries
+INSTALL_LIB_DIR:PATH=install/lib
+
+//Installation directory for manual pages
+INSTALL_MAN_DIR:PATH=install/share/man
+
+//Installation directory for pkgconfig (.pc) files
+INSTALL_PKGCONFIG_DIR:PATH=install/share/pkgconfig
+
+//Single output directory for building all libraries.
+LIBRARY_OUTPUT_PATH:PATH=
 
 //Specify VC++ CRT to use for Debug configurations.
 LLVM_USE_CRT_DEBUG:STRING=MDd
@@ -361,15 +356,6 @@ LLVM_USE_CRT_RELEASE:STRING=MD
 LLVM_USE_CRT_RELWITHDEBINFO:STRING=MD
 
 //Path to a file.
-LUA_INCLUDE_DIR:PATH=LUA_INCLUDE_DIR-NOTFOUND
-
-//Path to a library.
-LUA_LIBRARY:FILEPATH=LUA_LIBRARY-NOTFOUND
-
-//Path to a program.
-MDOCTOOL:FILEPATH=C:/devkitPro/msys2/usr/bin/groff.exe
-
-//Path to a file.
 MINIUPNP_INCLUDE_DIR:PATH=MINIUPNP_INCLUDE_DIR-NOTFOUND
 
 //Path to a library.
@@ -377,9 +363,6 @@ MINIUPNP_LIBRARY:FILEPATH=MINIUPNP_LIBRARY-NOTFOUND
 
 //Path to a library.
 MINIUPNP_STATIC_LIBRARY:FILEPATH=MINIUPNP_STATIC_LIBRARY-NOTFOUND
-
-//Path to a program.
-MSYS_CMD:FILEPATH=C:/msys64/msys2_shell.cmd
 
 //Define NO_GETADDRINFO
 NO_GETADDRINFO:BOOL=OFF
@@ -396,261 +379,11 @@ OpenMP_C_FLAGS:STRING=-openmp
 //C compiler libraries for OpenMP parallelization
 OpenMP_C_LIB_NAMES:STRING=
 
-//Path to a program.
-PERL_EXECUTABLE:FILEPATH=C:/devkitPro/msys2/usr/bin/perl.exe
-
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=C:/devkitPro/msys2/usr/bin/pkg-config.exe
 
-//Dependencies for the target
-SDL2-static_LIB_DEPENDS:STATIC=general;user32;general;gdi32;general;winmm;general;imm32;general;ole32;general;oleaut32;general;version;general;uuid;general;advapi32;general;setupapi;general;shell32;general;dinput8;
-
-//Value Computed by CMake
-SDL2_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/deps/SDL
-
-//The directory containing a CMake configuration file for SDL2.
-SDL2_DIR:PATH=SDL2_DIR-NOTFOUND
-
-//Value Computed by CMake
-SDL2_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-SDL2_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/SDL
-
-//Use 3Dnow! MMX assembly routines
-SDL_3DNOW:BOOL=ON
-
-//Support the ALSA audio API
-SDL_ALSA:BOOL=OFF
-
-//Use Altivec assembly routines
-SDL_ALTIVEC:BOOL=ON
-
-//use NEON assembly blitters on ARM
-SDL_ARMNEON:BOOL=OFF
-
-//use SIMD assembly blitters on ARM
-SDL_ARMSIMD:BOOL=OFF
-
-//Support the Analog Real Time Synthesizer
-SDL_ARTS:BOOL=OFF
-
-//Use AddressSanitizer to detect memory errors
-SDL_ASAN:BOOL=OFF
-
-//Enable assembly routines
-SDL_ASSEMBLY:BOOL=ON
-
-//Enable internal sanity checks (auto/disabled/release/enabled/paranoid)
-SDL_ASSERTIONS:STRING=auto
-
-//Enable the Atomic subsystem
-SDL_ATOMIC:BOOL=ON
-
-//Enable the Audio subsystem
-SDL_AUDIO:BOOL=ON
-
-//number to use for magic backgrounding signal or 'OFF'
-SDL_BACKGROUNDING_SIGNAL:STRING=OFF
-
-//Use clock_gettime() instead of gettimeofday()
-SDL_CLOCK_GETTIME:BOOL=OFF
-
-//Name suffix for debug builds
-SDL_CMAKE_DEBUG_POSTFIX:STRING=d
-
-//Use Cocoa video driver
-SDL_COCOA:BOOL=OFF
-
-//Enable the CPUinfo subsystem
-SDL_CPUINFO:BOOL=ON
-
-//Use DirectFB video driver
-SDL_DIRECTFB:BOOL=OFF
-
-//Use DirectX for Windows audio/video
-SDL_DIRECTX:BOOL=ON
-
-//Support the disk writer audio driver
-SDL_DISKAUDIO:BOOL=ON
-
-//Enable the Dlopen subsystem
-SDL_DLOPEN:BOOL=ON
-
-//Support the dummy audio driver
-SDL_DUMMYAUDIO:BOOL=ON
-
-//Use dummy video driver
-SDL_DUMMYVIDEO:BOOL=ON
-
-//Support the Enlightened Sound Daemon
-SDL_ESD:BOOL=OFF
-
-//Enable the Events subsystem
-SDL_EVENTS:BOOL=ON
-
-//Enable the File subsystem
-SDL_FILE:BOOL=ON
-
-//Enable the Filesystem subsystem
-SDL_FILESYSTEM:BOOL=ON
-
-//Force /MT for static VC runtimes
-SDL_FORCE_STATIC_VCRT:BOOL=OFF
-
-//number to use for magic foregrounding signal or 'OFF'
-SDL_FOREGROUNDING_SIGNAL:STRING=OFF
-
-//Use FusionSound audio driver
-SDL_FUSIONSOUND:BOOL=OFF
-
-//Use gcc builtin atomics
-SDL_GCC_ATOMICS:BOOL=OFF
-
-//Enable the Haptic subsystem
-SDL_HAPTIC:BOOL=ON
-
-//Enable the Hidapi subsystem
-SDL_HIDAPI:BOOL=ON
-
-//Use HIDAPI for low level joystick drivers
-SDL_HIDAPI_JOYSTICK:BOOL=ON
-
-//Support the JACK audio API
-SDL_JACK:BOOL=OFF
-
-//Enable the Joystick subsystem
-SDL_JOYSTICK:BOOL=ON
-
-//Use KMS DRM video driver
-SDL_KMSDRM:BOOL=OFF
-
-//Use the system C library
-SDL_LIBC:BOOL=OFF
-
-//Use libsamplerate for audio rate conversion
-SDL_LIBSAMPLERATE:BOOL=OFF
-
-//Enable the Loadso subsystem
-SDL_LOADSO:BOOL=ON
-
-//Enable the Locale subsystem
-SDL_LOCALE:BOOL=ON
-
-//Enable Metal support
-SDL_METAL:BOOL=OFF
-
-//Use MMX assembly routines
-SDL_MMX:BOOL=ON
-
-//Support the NAS audio API
-SDL_NAS:BOOL=OFF
-
-//Use offscreen video driver
-SDL_OFFSCREEN:BOOL=OFF
-
-//Include OpenGL support
-SDL_OPENGL:BOOL=ON
-
-//Include OpenGL ES support
-SDL_OPENGLES:BOOL=ON
-
-//Use Pipewire audio
-SDL_PIPEWIRE:BOOL=OFF
-
-//Enable the Power subsystem
-SDL_POWER:BOOL=ON
-
-//Use POSIX threads for multi-threading
-SDL_PTHREADS:BOOL=OFF
-
-//Use PulseAudio
-SDL_PULSEAUDIO:BOOL=OFF
-
-//Enable the Render subsystem
-SDL_RENDER:BOOL=ON
-
-//Enable the Direct3D render driver
-SDL_RENDER_D3D:BOOL=ON
-
-//Enable the Metal render driver
-SDL_RENDER_METAL:BOOL=OFF
-
-//Use an rpath when linking SDL
-SDL_RPATH:BOOL=OFF
-
-//Use Raspberry Pi video driver
-SDL_RPI:BOOL=OFF
-
-//Enable the Sensor subsystem
-SDL_SENSOR:BOOL=ON
-
-//Build a shared version of the library
-SDL_SHARED:BOOL=OFF
-
-//Support the sndio audio API
-SDL_SNDIO:BOOL=OFF
-
-//Dynamically load the sndio audio API
-SDL_SNDIO_SHARED:BOOL=OFF
-
-//Use SSE assembly routines
-SDL_SSE:BOOL=ON
-
-//Use SSE2 assembly routines
-SDL_SSE2:BOOL=ON
-
-//Use SSE3 assembly routines
-SDL_SSE3:BOOL=ON
-
-//Allow GCC to use SSE floating point math
-SDL_SSEMATH:BOOL=ON
-
-//Build a static version of the library
-SDL_STATIC:BOOL=ON
-
-//Static version of the library should be built with Position Independent
-// Code
-SDL_STATIC_PIC:BOOL=OFF
-
-//Build the test directory
-SDL_TEST:BOOL=OFF
-
-//Enable the Threads subsystem
-SDL_THREADS:BOOL=ON
-
-//Enable the Timers subsystem
-SDL_TIMERS:BOOL=ON
-
-//Enable the Video subsystem
-SDL_VIDEO:BOOL=ON
-
-//Enable the virtual-joystick driver
-SDL_VIRTUAL_JOYSTICK:BOOL=ON
-
-//Use Vivante EGL video driver
-SDL_VIVANTE:BOOL=OFF
-
-//Enable Vulkan support
-SDL_VULKAN:BOOL=ON
-
-//Use the Windows WASAPI audio driver
-SDL_WASAPI:BOOL=ON
-
-//Use Wayland video driver
-SDL_WAYLAND:BOOL=OFF
-
-//Dynamically load libdecor support
-SDL_WAYLAND_LIBDECOR_SHARED:BOOL=ON
-
-//Use X11 video driver
-SDL_X11:BOOL=OFF
-
-//Use Xinput for Windows
-SDL_XINPUT:BOOL=ON
-
-//Add SO version in .so build
-SHARED_LIB_VERSIONNING:BOOL=ON
+//Path to a program.
+PYTHON_EXECUTABLE:FILEPATH=C:/ProgramFiles/Python38/python.exe
 
 //Skip installation
 SKIP_GLSLANG_INSTALL:BOOL=OFF
@@ -679,27 +412,6 @@ UPNPC_NO_INSTALL:BOOL=ON
 //Use ccache
 USE_CCACHE:BOOL=OFF
 
-//Use GLES[3] API
-USE_GLES:BOOL=OFF
-
-//Use GLES2 API
-USE_GLES2:BOOL=OFF
-
-//Use host libzip
-USE_HOST_LIBZIP:BOOL=ON
-
-//Use Open GL API
-USE_OPENGL:BOOL=ON
-
-//Use OpenMP if available
-USE_OPENMP:BOOL=ON
-
-//RPI: use the legacy Broadcom GLES libraries
-USE_VIDEOCORE:BOOL=OFF
-
-//Build with Vulkan support
-USE_VULKAN:BOOL=ON
-
 //Create installation targets
 VOLK_INSTALL:BOOL=OFF
 
@@ -708,12 +420,6 @@ VanguardWrapper_LIB_DEPENDS:STATIC=general;Vanguard;
 
 //Dependencies for the target
 Vanguard_LIB_DEPENDS:STATIC=general;VanguardWrapper;
-
-//Path to a program.
-WINDRES:FILEPATH=C:/devkitPro/msys2/usr/bin/windres.exe
-
-//Use system provided zlib library
-WITH_SYSTEM_ZLIB:BOOL=OFF
 
 //Build the xxhsum binary
 XXHASH_BUILD_XXHSUM:BOOL=OFF
@@ -728,30 +434,6 @@ ZLIB_LIBRARY_DEBUG:FILEPATH=ZLIB_LIBRARY_DEBUG-NOTFOUND
 
 //Path to a library.
 ZLIB_LIBRARY_RELEASE:FILEPATH=ZLIB_LIBRARY_RELEASE-NOTFOUND
-
-//Dependencies for the target
-chdr-static_LIB_DEPENDS:STATIC=general;lzma;general;zlib;
-
-//Value Computed by CMake
-chdr_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/deps/libchdr
-
-//Value Computed by CMake
-chdr_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-chdr_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/libchdr
-
-//Value Computed by CMake
-dx9renderer_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/rend/dx9
-
-//Value Computed by CMake
-dx9renderer_IS_TOP_LEVEL:STATIC=OFF
-
-//Dependencies for the target
-dx9renderer_LIB_DEPENDS:STATIC=general;d3d9;general;d3dx9;
-
-//Value Computed by CMake
-dx9renderer_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/rend/dx9
 
 //Value Computed by CMake
 flycast_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019
@@ -784,15 +466,6 @@ glslang_LIB_DEPENDS:STATIC=general;OGLCompiler;general;OSDependent;general;HLSL;
 glslang_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/glslang
 
 //Value Computed by CMake
-libzip_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/deps/libzip
-
-//Value Computed by CMake
-libzip_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-libzip_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/libzip
-
-//Value Computed by CMake
 miniupnpc_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/deps/miniupnpc
 
 //Value Computed by CMake
@@ -811,15 +484,6 @@ volk_IS_TOP_LEVEL:STATIC=OFF
 volk_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/volk
 
 //Value Computed by CMake
-xbyak_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/deps/xbyak
-
-//Value Computed by CMake
-xbyak_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-xbyak_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/xbyak
-
-//Value Computed by CMake
 xxHash_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/deps/xxHash/cmake_unofficial
 
 //Value Computed by CMake
@@ -828,8 +492,14 @@ xxHash_IS_TOP_LEVEL:STATIC=OFF
 //Value Computed by CMake
 xxHash_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/xxHash/cmake_unofficial
 
-//Dependencies for the target
-zip_LIB_DEPENDS:STATIC=general;advapi32;general;ZLIB::ZLIB;
+//Value Computed by CMake
+zlib_BINARY_DIR:STATIC=M:/sourcecode/flycast/vs2019/core/deps/zlib
+
+//Value Computed by CMake
+zlib_IS_TOP_LEVEL:STATIC=OFF
+
+//Value Computed by CMake
+zlib_SOURCE_DIR:STATIC=M:/sourcecode/flycast/core/deps/zlib
 
 
 ########################
@@ -865,7 +535,7 @@ AO_ao_INCLUDEDIR:INTERNAL=
 AO_ao_LIBDIR:INTERNAL=
 AO_ao_PREFIX:INTERNAL=
 AO_ao_VERSION:INTERNAL=
-//Build shared libraries
+//Build Shared Libraries
 BUILD_SHARED_LIBS:INTERNAL=OFF
 //Test CFLAG_Wall
 CFLAG_Wall:INTERNAL=1
@@ -889,6 +559,19 @@ CFLAG_Wswitch_enum:INTERNAL=
 CFLAG_Wundef:INTERNAL=
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_ASM_MASM_COMPILER
+CMAKE_ASM_MASM_COMPILER-ADVANCED:INTERNAL=1
+CMAKE_ASM_MASM_COMPILER_WORKS:INTERNAL=1
+//ADVANCED property for variable: CMAKE_ASM_MASM_FLAGS
+CMAKE_ASM_MASM_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_ASM_MASM_FLAGS_DEBUG
+CMAKE_ASM_MASM_FLAGS_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_ASM_MASM_FLAGS_MINSIZEREL
+CMAKE_ASM_MASM_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_ASM_MASM_FLAGS_RELEASE
+CMAKE_ASM_MASM_FLAGS_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_ASM_MASM_FLAGS_RELWITHDEBINFO
+CMAKE_ASM_MASM_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //This is the directory where this CMakeCache.txt was created
 CMAKE_CACHEFILE_DIR:INTERNAL=m:/sourcecode/flycast/vs2019
 //Major version of cmake used to create the current loaded cache
@@ -999,7 +682,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MT
 CMAKE_MT-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=24
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=17
 //Platform information initialized
 CMAKE_PLATFORM_INFO_INITIALIZED:INTERNAL=1
 //noop for ranlib
@@ -1045,180 +728,76 @@ CMAKE_STATIC_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CYGWIN_BAT
-CYGWIN_BAT-ADVANCED:INTERNAL=1
-//Details about finding Git
-FIND_PACKAGE_MESSAGE_DETAILS_Git:INTERNAL=[C:/devkitPro/msys2/usr/bin/git.exe][v2.32.0()]
 //Details about finding OpenMP
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP:INTERNAL=[TRUE][TRUE][c ][v2.0()]
 //Details about finding OpenMP_C
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_C:INTERNAL=[-openmp][v2.0()]
 //Details about finding OpenMP_CXX
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_CXX:INTERNAL=[-openmp][v2.0()]
-//Details about finding Perl
-FIND_PACKAGE_MESSAGE_DETAILS_Perl:INTERNAL=[C:/devkitPro/msys2/usr/bin/perl.exe][v5.32.1()]
-//Details about finding PkgConfig
-FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[C:/devkitPro/msys2/usr/bin/pkg-config.exe][v1.7.4()]
-//Details about finding ZLIB
-FIND_PACKAGE_MESSAGE_DETAILS_ZLIB:INTERNAL=[M:/sourcecode/flycast/vs2019/core/deps/libchdr/deps/zlib-1.2.11/$(Configuration)/zlib.lib][M:/sourcecode/flycast/core/deps/libchdr/deps/zlib-1.2.11][v1.2.11(1.1.2)]
-FTS_LIB:INTERNAL=
+//Details about finding PythonInterp
+FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[C:/ProgramFiles/Python38/python.exe][v(3)]
+FLAC_CFLAGS:INTERNAL=
+FLAC_CFLAGS_I:INTERNAL=
+FLAC_CFLAGS_OTHER:INTERNAL=
+FLAC_FOUND:INTERNAL=
+FLAC_INCLUDEDIR:INTERNAL=
+FLAC_LIBDIR:INTERNAL=
+FLAC_LIBS:INTERNAL=
+FLAC_LIBS_L:INTERNAL=
+FLAC_LIBS_OTHER:INTERNAL=
+FLAC_LIBS_PATHS:INTERNAL=
+FLAC_MODULE_NAME:INTERNAL=
+FLAC_PREFIX:INTERNAL=
+FLAC_STATIC_CFLAGS:INTERNAL=
+FLAC_STATIC_CFLAGS_I:INTERNAL=
+FLAC_STATIC_CFLAGS_OTHER:INTERNAL=
+FLAC_STATIC_LIBDIR:INTERNAL=
+FLAC_STATIC_LIBS:INTERNAL=
+FLAC_STATIC_LIBS_L:INTERNAL=
+FLAC_STATIC_LIBS_OTHER:INTERNAL=
+FLAC_STATIC_LIBS_PATHS:INTERNAL=
+FLAC_VERSION:INTERNAL=
+FLAC_flac_INCLUDEDIR:INTERNAL=
+FLAC_flac_LIBDIR:INTERNAL=
+FLAC_flac_PREFIX:INTERNAL=
+FLAC_flac_VERSION:INTERNAL=
 //ADVANCED property for variable: GIT_EXECUTABLE
 GIT_EXECUTABLE-ADVANCED:INTERNAL=1
-//Have function arc4random
-HAVE_ARC4RANDOM:INTERNAL=
-//Have include audioclient.h
-HAVE_AUDIOCLIENT_H:INTERNAL=1
-//Have function clonefile
-HAVE_CLONEFILE:INTERNAL=
-//Have include d3d11_1.h
-HAVE_D3D11_H:INTERNAL=1
-//Have include d3d9.h
-HAVE_D3D_H:INTERNAL=1
-//Have include ddraw.h
-HAVE_DDRAW_H:INTERNAL=1
-//Have include dinput.h
-HAVE_DINPUT_H:INTERNAL=1
-//Have include dsound.h
-HAVE_DSOUND_H:INTERNAL=1
-//Have include dxgi.h
-HAVE_DXGI_H:INTERNAL=1
-//Have function explicit_bzero
-HAVE_EXPLICIT_BZERO:INTERNAL=
-//Have function explicit_memset
-HAVE_EXPLICIT_MEMSET:INTERNAL=
-//Test HAVE_FICLONERANGE
-HAVE_FICLONERANGE:INTERNAL=
-//Have function fileno
-HAVE_FILENO:INTERNAL=1
 //Have function fseeko
 HAVE_FSEEKO:INTERNAL=
-//Have function ftello
-HAVE_FTELLO:INTERNAL=
-//Have includes sys/types.h;sys/stat.h;fts.h
-HAVE_FTS_H:INTERNAL=
-//Have function getprogname
-HAVE_GETPROGNAME:INTERNAL=
-//Have include immintrin.h
-HAVE_IMMINTRIN_H:INTERNAL=1
 //Result of TRY_COMPILE
-HAVE_INT16_T_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_INT32_T_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_INT64_T_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_INT8_T_LIBZIP:INTERNAL=TRUE
-//Have include inttypes.h
-HAVE_INTTYPES_H_LIBZIP:INTERNAL=1
-//Result of TRY_COMPILE
-HAVE_INT_LIBZIP:INTERNAL=TRUE
-HAVE_LIB_FTS:INTERNAL=
-//Have function localtime_r
-HAVE_LOCALTIME_R:INTERNAL=
-//Result of TRY_COMPILE
-HAVE_LONG_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_LONG_LONG_LIBZIP:INTERNAL=TRUE
-//Have include mmdeviceapi.h
-HAVE_MMDEVICEAPI_H:INTERNAL=1
-//Test HAVE_NULLABLE
-HAVE_NULLABLE:INTERNAL=
-//Have include sensorsapi.h
-HAVE_SENSORSAPI_H:INTERNAL=1
-//Have function setmode
-HAVE_SETMODE:INTERNAL=1
-//Result of TRY_COMPILE
-HAVE_SHORT_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_SIZEOF_OFF_T:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_SIZEOF_SIZE_T:INTERNAL=TRUE
-//Have include stdbool.h
-HAVE_STDBOOL_H:INTERNAL=1
+HAVE_OFF64_T:INTERNAL=FALSE
 //Have include stddef.h
 HAVE_STDDEF_H:INTERNAL=1
 //Have include stdint.h
 HAVE_STDINT_H:INTERNAL=1
-//Have include stdint.h
-HAVE_STDINT_H_LIBZIP:INTERNAL=1
-//Have function strcasecmp
-HAVE_STRCASECMP:INTERNAL=
-//Have function strdup
-HAVE_STRDUP:INTERNAL=1
-//Have function stricmp
-HAVE_STRICMP:INTERNAL=1
-//Have includes strings.h
-HAVE_STRINGS_H:INTERNAL=
-//Have function strtoll
-HAVE_STRTOLL:INTERNAL=1
-//Have function strtoull
-HAVE_STRTOULL:INTERNAL=1
 //Have include sys/types.h
 HAVE_SYS_TYPES_H:INTERNAL=1
-//Have include sys/types.h
-HAVE_SYS_TYPES_H_LIBZIP:INTERNAL=1
-//Have include tpcshrd.h
-HAVE_TPCSHRD_H:INTERNAL=1
-//Result of TRY_COMPILE
-HAVE_UINT16_T_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_UINT32_T_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_UINT64_T_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE_UINT8_T_LIBZIP:INTERNAL=TRUE
-//Have includes unistd.h
-HAVE_UNISTD_H:INTERNAL=
-//Test HAVE_WIN32_CC
-HAVE_WIN32_CC:INTERNAL=1
-//Test HAVE_WINDOWS_GAMING_INPUT_H
-HAVE_WINDOWS_GAMING_INPUT_H:INTERNAL=1
-//Test HAVE_XINPUT_GAMEPAD_EX
-HAVE_XINPUT_GAMEPAD_EX:INTERNAL=
-//Test HAVE_XINPUT_H
-HAVE_XINPUT_H:INTERNAL=1
-//Test HAVE_XINPUT_STATE_EX
-HAVE_XINPUT_STATE_EX:INTERNAL=
-//Have function _close
-HAVE__CLOSE:INTERNAL=1
-//Have function _dup
-HAVE__DUP:INTERNAL=1
-//Have function _fdopen
-HAVE__FDOPEN:INTERNAL=1
-//Have function _fileno
-HAVE__FILENO:INTERNAL=1
-//Have function _setmode
-HAVE__SETMODE:INTERNAL=1
-//Have function _snprintf
-HAVE__SNPRINTF:INTERNAL=
-//Have function _strdup
-HAVE__STRDUP:INTERNAL=1
-//Have function _stricmp
-HAVE__STRICMP:INTERNAL=1
-//Have function _strtoi64
-HAVE__STRTOI64:INTERNAL=1
-//Have function _strtoui64
-HAVE__STRTOUI64:INTERNAL=1
-//Have function _unlink
-HAVE__UNLINK:INTERNAL=1
-//Result of TRY_COMPILE
-HAVE___INT16_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE___INT32_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE___INT64_LIBZIP:INTERNAL=TRUE
-//Result of TRY_COMPILE
-HAVE___INT8_LIBZIP:INTERNAL=TRUE
-//CHECK_TYPE_SIZE: sizeof(int16_t)
-INT16_T_LIBZIP:INTERNAL=2
-//CHECK_TYPE_SIZE: sizeof(int32_t)
-INT32_T_LIBZIP:INTERNAL=4
-//CHECK_TYPE_SIZE: sizeof(int64_t)
-INT64_T_LIBZIP:INTERNAL=8
-//CHECK_TYPE_SIZE: sizeof(int8_t)
-INT8_T_LIBZIP:INTERNAL=1
-//CHECK_TYPE_SIZE: sizeof(int)
-INT_LIBZIP:INTERNAL=4
+LIBEVDEV_CFLAGS:INTERNAL=
+LIBEVDEV_CFLAGS_I:INTERNAL=
+LIBEVDEV_CFLAGS_OTHER:INTERNAL=
+LIBEVDEV_FOUND:INTERNAL=
+LIBEVDEV_INCLUDEDIR:INTERNAL=
+LIBEVDEV_LIBDIR:INTERNAL=
+LIBEVDEV_LIBS:INTERNAL=
+LIBEVDEV_LIBS_L:INTERNAL=
+LIBEVDEV_LIBS_OTHER:INTERNAL=
+LIBEVDEV_LIBS_PATHS:INTERNAL=
+LIBEVDEV_MODULE_NAME:INTERNAL=
+LIBEVDEV_PREFIX:INTERNAL=
+LIBEVDEV_STATIC_CFLAGS:INTERNAL=
+LIBEVDEV_STATIC_CFLAGS_I:INTERNAL=
+LIBEVDEV_STATIC_CFLAGS_OTHER:INTERNAL=
+LIBEVDEV_STATIC_LIBDIR:INTERNAL=
+LIBEVDEV_STATIC_LIBS:INTERNAL=
+LIBEVDEV_STATIC_LIBS_L:INTERNAL=
+LIBEVDEV_STATIC_LIBS_OTHER:INTERNAL=
+LIBEVDEV_STATIC_LIBS_PATHS:INTERNAL=
+LIBEVDEV_VERSION:INTERNAL=
+LIBEVDEV_libevdev_INCLUDEDIR:INTERNAL=
+LIBEVDEV_libevdev_LIBDIR:INTERNAL=
+LIBEVDEV_libevdev_PREFIX:INTERNAL=
+LIBEVDEV_libevdev_VERSION:INTERNAL=
 LIBPULSE_CFLAGS:INTERNAL=
 LIBPULSE_CFLAGS_I:INTERNAL=
 LIBPULSE_CFLAGS_OTHER:INTERNAL=
@@ -1277,22 +856,14 @@ LLVM_USE_CRT_MINSIZEREL-STRINGS:INTERNAL=MD;MDd;MT;MTd
 LLVM_USE_CRT_RELEASE-STRINGS:INTERNAL=MD;MDd;MT;MTd
 //STRINGS property for variable: LLVM_USE_CRT_RELWITHDEBINFO
 LLVM_USE_CRT_RELWITHDEBINFO-STRINGS:INTERNAL=MD;MDd;MT;MTd
-//CHECK_TYPE_SIZE: sizeof(long)
-LONG_LIBZIP:INTERNAL=4
-//CHECK_TYPE_SIZE: sizeof(long long)
-LONG_LONG_LIBZIP:INTERNAL=8
-//ADVANCED property for variable: LUA_INCLUDE_DIR
-LUA_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: LUA_LIBRARY
-LUA_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: MINIUPNP_INCLUDE_DIR
 MINIUPNP_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: MINIUPNP_LIBRARY
 MINIUPNP_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: MINIUPNP_STATIC_LIBRARY
 MINIUPNP_STATIC_LIBRARY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: MSYS_CMD
-MSYS_CMD-ADVANCED:INTERNAL=1
+//CHECK_TYPE_SIZE: off64_t unknown
+OFF64_T:INTERNAL=
 //Result of TRY_COMPILE
 OpenMP_COMPILE_RESULT_CXX_openmp:INTERNAL=TRUE
 //Result of TRY_COMPILE
@@ -1313,26 +884,10 @@ OpenMP_C_SPEC_DATE:INTERNAL=200203
 OpenMP_SPECTEST_CXX_:INTERNAL=TRUE
 //Result of TRY_COMPILE
 OpenMP_SPECTEST_C_:INTERNAL=TRUE
-//ADVANCED property for variable: PERL_EXECUTABLE
-PERL_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
 PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: SDL_CMAKE_DEBUG_POSTFIX
-SDL_CMAKE_DEBUG_POSTFIX-ADVANCED:INTERNAL=1
-//CHECK_TYPE_SIZE: sizeof(short)
-SHORT_LIBZIP:INTERNAL=2
-//CHECK_TYPE_SIZE: sizeof(off_t)
-SIZEOF_OFF_T:INTERNAL=4
-//CHECK_TYPE_SIZE: sizeof(size_t)
-SIZEOF_SIZE_T:INTERNAL=8
-//CHECK_TYPE_SIZE: sizeof(uint16_t)
-UINT16_T_LIBZIP:INTERNAL=2
-//CHECK_TYPE_SIZE: sizeof(uint32_t)
-UINT32_T_LIBZIP:INTERNAL=4
-//CHECK_TYPE_SIZE: sizeof(uint64_t)
-UINT64_T_LIBZIP:INTERNAL=8
-//CHECK_TYPE_SIZE: sizeof(uint8_t)
-UINT8_T_LIBZIP:INTERNAL=1
+//ADVANCED property for variable: PYTHON_EXECUTABLE
+PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: XXHASH_BUNDLED_MODE
 XXHASH_BUNDLED_MODE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: ZLIB_INCLUDE_DIR
@@ -1341,17 +896,13 @@ ZLIB_INCLUDE_DIR-ADVANCED:INTERNAL=1
 ZLIB_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: ZLIB_LIBRARY_RELEASE
 ZLIB_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//Have include unistd.h
+Z_HAVE_UNISTD_H:INTERNAL=
 //CMAKE_INSTALL_PREFIX during last run
 _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=install
-//CHECK_TYPE_SIZE: sizeof(__int16)
-__INT16_LIBZIP:INTERNAL=2
-//CHECK_TYPE_SIZE: sizeof(__int32)
-__INT32_LIBZIP:INTERNAL=4
-//CHECK_TYPE_SIZE: sizeof(__int64)
-__INT64_LIBZIP:INTERNAL=8
-//CHECK_TYPE_SIZE: sizeof(__int8)
-__INT8_LIBZIP:INTERNAL=1
 __pkg_config_checked_AO:INTERNAL=1
+__pkg_config_checked_FLAC:INTERNAL=1
+__pkg_config_checked_LIBEVDEV:INTERNAL=1
 __pkg_config_checked_LIBPULSE:INTERNAL=1
 __pkg_config_checked_LIBZIP:INTERNAL=1
 

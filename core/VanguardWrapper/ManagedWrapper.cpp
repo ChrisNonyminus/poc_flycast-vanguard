@@ -6,7 +6,6 @@
 #include <string>
 #include "../types.h"
 #include "../stdclass.h"
-#include <oslib/oslib.h>
 unsigned char ManagedWrapper::peekbyte(long long addr)
 {
 	return _vmem_readt<u8, u8>(static_cast<u32>(addr));
@@ -20,7 +19,7 @@ void ManagedWrapper::pokebyte(long long addr, unsigned char val)
 void ManagedWrapper::savesavestate()
 {
 	dc_savestate();
-	EventManager::event(Event::Resume);
+	dc_resume();
 	
 }
 int ManagedWrapper::GetMemSize()
@@ -42,16 +41,15 @@ int ManagedWrapper::GetBIOSSize()
 void ManagedWrapper::loadsavestate()
 {
 	dc_loadstate();
-	EventManager::event(Event::Resume);
+	dc_resume();
 }
 void ManagedWrapper::RelayToFlycastLog(std::string string)
 {
 	//ERROR_LOG(COMMON, string.c_str());
-	INFO_LOG(COMMON, string.c_str());
 }
 std::string ManagedWrapper::getstatepath()
 {
-	std::string state_file = hostfs::getSavestatePath(0, true);
+	std::string state_file = settings.imgread.ImagePath;
 	size_t lastindex = state_file.find_last_of('/');
 #ifdef _WIN32
 	size_t lastindex2 = state_file.find_last_of('\\');
