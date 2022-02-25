@@ -299,7 +299,6 @@ void gui_open_settings()
 
 static void gui_start_game(const std::string& path)
 {
-	VanguardClientInitializer::Initialize();
 	scanner.stop();
 	gui_state = Loading;
 	static std::string path_copy;

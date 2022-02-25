@@ -412,6 +412,7 @@ static bool reset_requested;
 
 int reicast_init(int argc, char* argv[])
 {
+	VanguardClientInitializer::Initialize();
 #if defined(TEST_AUTOMATION)
 	setbuf(stdout, 0);
 	setbuf(stderr, 0);

@@ -5555,3 +5555,13 @@
 00:00:071 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
 00:00:210 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 0000000000000000
 00:00:211 windows\winmain.cpp:186 E[COMMON]: [GPF]Unhandled access to : 0000000000000000
+00:00:000 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:00:017 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:00:342 rend\gui.cpp:1848 E[BOOT]: Cannot open C:\ROMS\Dreamcast/doa2m.zip
+00:03:291 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:03:495 rend\gui.cpp:1848 E[BOOT]: Cannot open C:\ROMS\Dreamcast/doa2m.zip
+00:00:000 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:00:020 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:06:262 rend\gui.cpp:1848 E[BOOT]: Cannot open C:\ROMS\Dreamcast/doa2m.zip
+00:09:126 hw\mem\_vmem.cpp:496 N[VMEM]: Info: nvmem is enabled, with addr space of size 512MB
+00:09:346 rend\gui.cpp:1848 E[BOOT]: Cannot open C:\ROMS\Dreamcast/doa2m.zip
