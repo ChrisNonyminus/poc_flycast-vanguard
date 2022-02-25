@@ -901,20 +901,20 @@ bool VanguardClient::LoadState(std::string filename) {
     stateLoading = true;
     IO::File::Delete(Helpers::utf8StringToSystemString(ManagedWrapper::getstatepath()));
     IO::File::Copy(Helpers::utf8StringToSystemString(filename), Helpers::utf8StringToSystemString(ManagedWrapper::getstatepath()));
-    ManagedWrapper::loadsavestate(filename);
+    ManagedWrapper::loadsavestate();
     // We have to do it this way to prevent deadlock due to synced calls. It sucks but it's required
     // at the moment
-    int i = 0;
-    do {
-        Thread::Sleep(20);
-        System::Windows::Forms::Application::DoEvents();
+    //int i = 0;
+    //do {
+    //    Thread::Sleep(20);
+    //    System::Windows::Forms::Application::DoEvents();
 
-        // We wait for 20 ms every time. If loading a game takes longer than 10 seconds, break out.
-        if (++i > 500) {
-            stateLoading = false;
-            return false;
-        }
-    } while (stateLoading);
+    //    // We wait for 20 ms every time. If loading a game takes longer than 10 seconds, break out.
+    //    if (++i > 500) {
+    //        stateLoading = false;
+    //        return false;
+    //    }
+    //} while (stateLoading);
     RefreshDomains();
     return true;
 }
@@ -922,12 +922,11 @@ bool VanguardClient::LoadState(std::string filename) {
 bool VanguardClient::SaveState(String ^ filename, bool wait) {/*
     std::string s = Helpers::systemStringToUtf8String(filename);
     const char* converted_filename = s.c_str();*/
-    //ManagedWrapper::RelayToFlycastLog(Helpers::systemStringToUtf8String(filename));
     VanguardClient::lastStateName = filename;
     VanguardClient::fileToCopy = filename;
-    ManagedWrapper::savesavestate(Helpers::systemStringToUtf8String(filename));
-    /*std::string filetocopylog = ("Savestate filename to copy is %s.", Helpers::systemStringToUtf8String(VanguardClient::fileToCopy));
-    ManagedWrapper::RelayToFlycastLog(filetocopylog.c_str());*/
+    ManagedWrapper::savesavestate();
+    std::string filetocopylog = ("Savestate filename to copy is %s.", Helpers::systemStringToUtf8String(VanguardClient::fileToCopy));
+    ManagedWrapper::RelayToFlycastLog(filetocopylog.c_str());
     return true;
 }
 
@@ -938,7 +937,7 @@ void VanguardClientUnmanaged::SAVE_STATE_DONE() {
     //Thread::Sleep(2000);
     System::IO::File::Copy(Helpers::utf8StringToSystemString(ManagedWrapper::getstatepath()), VanguardClient::fileToCopy, true);
     //ManagedWrapper::loadsavestate();
-    //ManagedWrapper::RelayToFlycastLog(("Attempted to copy %s to %s.", ManagedWrapper::getstatepath, Helpers::systemStringToUtf8String(VanguardClient::fileToCopy)));
+    ManagedWrapper::RelayToFlycastLog(("Attempted to copy %s to %s.", ManagedWrapper::getstatepath, Helpers::systemStringToUtf8String(VanguardClient::fileToCopy)));
 }
 
 // No fun anonymous classes with closure here

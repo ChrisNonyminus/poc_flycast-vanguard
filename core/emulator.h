@@ -35,8 +35,8 @@ int flycast_init(int argc, char* argv[]);
 void dc_reset(bool hard); // for tests only
 void flycast_term();
 void dc_exit();
-void dc_savestate(int index = 0, std::string filepath = "");
-void dc_loadstate(int index = 0, std::string filepath = "");
+void dc_savestate(int index = 0);
+void dc_loadstate(int index = 0);
 void dc_loadstate(Deserializer& deser);
 
 enum class Event {

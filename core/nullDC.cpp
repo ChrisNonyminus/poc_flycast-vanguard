@@ -81,7 +81,7 @@ void flycast_term()
 	emu.term();
 }
 
-void dc_savestate(int index, std::string filepath)
+void dc_savestate(int index)
 {
 	Serializer ser;
 	dc_serialize(ser);
@@ -98,10 +98,6 @@ void dc_savestate(int index, std::string filepath)
 	dc_serialize(ser);
 
 	std::string filename = hostfs::getSavestatePath(index, true);
-	if (filepath != "") {
-		// RTC_Hijack: override filename
-		filename = filepath;
-	}
 #if 0
 	FILE *f = nowide::fopen(filename.c_str(), "wb") ;
 
@@ -141,7 +137,7 @@ void dc_savestate(int index, std::string filepath)
 	VanguardClientUnmanaged::SAVE_STATE_DONE();
 }
 
-void dc_loadstate(int index, std::string filepath)
+void dc_loadstate(int index)
 {
 	u32 total_size = 0;
 	FILE *f = nullptr;
@@ -149,10 +145,6 @@ void dc_loadstate(int index, std::string filepath)
 	emu.stop();
 
 	std::string filename = hostfs::getSavestatePath(index, false);
-	if (filepath != "") {
-		// RTC_Hijack: override filename
-		filename = filepath;
-	}
 	RZipFile zipFile;
 	if (zipFile.Open(filename, false))
 	{
