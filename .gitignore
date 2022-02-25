@@ -11,3 +11,5 @@ out/
 .idea/
 cmake-build-*/
 /vs2019
+vs2019/flycast.log
+vs2019/flycast.log

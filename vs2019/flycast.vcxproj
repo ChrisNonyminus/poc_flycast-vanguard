@@ -67,7 +67,7 @@
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">M:\sourcecode\flycast\vs2019\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">flycast.dir\Release\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">flycast</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">flycast-vanguard</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
@@ -147,8 +147,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;_7ZIP_ST;USE_OPENGL;USE_VULKAN;HAVE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;GL_SILENCE_DEPRECATION;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;NOMINMAX;USE_SDL;USE_SDL_AUDIO;_7ZIP_ST;USE_OPENGL;USE_VULKAN;HAVE_VULKAN;MINIUPNP_STATICLIB;VK_USE_PLATFORM_WIN32_KHR;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
@@ -166,7 +165,7 @@
       <AdditionalDependencies>core\deps\xxHash\cmake_unofficial\Release\xxhash.lib;core\Vanguard\Release\Vanguard.lib;core\VanguardWrapper\Release\VanguardWrapper.lib;core\deps\glslang\SPIRV\Release\SPIRV.lib;core\deps\SDL\Release\SDL2.lib;core\deps\libchdr\Release\chdr-static.lib;core\deps\libchdr\deps\zlib-1.2.11\Release\zlib.lib;core\deps\miniupnpc\Release\libminiupnpc.lib;core\deps\libzip\lib\Release\zip.lib;core\deps\volk\Release\volk.lib;core\rend\dx9\Release\dx9renderer.lib;d3d11.lib;d3dcompiler.lib;dsound.lib;opengl32.lib;winmm.lib;ws2_32.lib;wsock32.lib;xinput9_1_0.lib;core\Vanguard\Release\Vanguard.lib;core\VanguardWrapper\Release\VanguardWrapper.lib;core\deps\glslang\glslang\Release\glslang.lib;core\deps\glslang\OGLCompilersDLL\Release\OGLCompiler.lib;core\deps\glslang\glslang\OSDependent\Windows\Release\OSDependent.lib;core\deps\glslang\hlsl\Release\HLSL.lib;user32.lib;gdi32.lib;imm32.lib;ole32.lib;oleaut32.lib;version.lib;uuid.lib;setupapi.lib;shell32.lib;dinput8.lib;core\deps\libchdr\deps\lzma-19.00\Release\lzma.lib;iphlpapi.lib;advapi32.lib;core\deps\libchdr\deps\zlib-1.2.11\$(Configuration)\zlib.lib;d3d9.lib;d3dx9.lib;winmm.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/Lib/x64;C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/Lib/x64/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 -s</AdditionalOptions>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>M:/sourcecode/flycast/vs2019/Release/flycast.lib</ImportLibrary>
       <ProgramDataBaseFile>M:/sourcecode/flycast/vs2019/Release/flycast.pdb</ProgramDataBaseFile>
